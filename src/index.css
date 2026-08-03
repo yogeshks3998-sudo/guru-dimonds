@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-warm-ivory: #FFF9F0;
+    --bg-burgundy: #7A1822;
+    --bg-wine-brown: #4D1017;
+    --bg-antique-gold: #B8893D;
+    --text-espresso: #281C18;
+    --bg-champagne: #F4E4C8;
+    --bg-dusty-blush: #F3DDD7;
+    --bg-pearl: #FFFFFF;
+    --text-warm-grey: #796A65;
+    --border-sand-beige: #E9D9C5;
+    --bg-midnight-teal: #063F43;
+    --bg-muted-rose: #B45E67;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #FFF9F0;
+    color: #281C18;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FFF9F0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #B8893D;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7A1822;
+}
+
+/* Heritage Subtle Jaali Pattern Overlay */
+.pattern-jaali {
+  background-image: radial-gradient(#B8893D 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  opacity: 0.12;
+}
+
+/* Subtle Gold Speckle / Shimmer effect */
+.pattern-gold-shimmer {
+  background-image: radial-gradient(rgba(184, 137, 61, 0.15) 1px, transparent 0);
+  background-size: 16px 16px;
+}
+
+/* Custom Image Hover Glow */
+.image-heritage-hover {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.image-heritage-hover:hover {
+  transform: scale(1.03);
+}
