@@ -98,24 +98,75 @@ async function seed() {
     });
   }
 
-  await prisma.adminUser.upsert({
-    where: { email: 'owner@vedaara.com' },
-    create: {
-      id: 'adm-1',
+  const adminUsers = [
+    {
+      id: 'adm-super',
+      name: 'Vedaara Super Admin',
+      email: 'superadmin@vedaara.com',
+      role: 'SUPER_ADMIN',
+    },
+    {
+      id: 'adm-owner',
       name: 'Vedaara Owner',
       email: 'owner@vedaara.com',
-      passwordHash: adminPasswordHash,
       role: 'OWNER',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-      active: true,
-      lastLogin: null,
     },
-    update: {
-      passwordHash: adminPasswordHash,
-      role: 'OWNER',
-      active: true,
+    {
+      id: 'adm-product',
+      name: 'Product Manager',
+      email: 'product.manager@vedaara.com',
+      role: 'PRODUCT_MANAGER',
     },
-  });
+    {
+      id: 'adm-inventory',
+      name: 'Inventory Manager',
+      email: 'inventory.manager@vedaara.com',
+      role: 'INVENTORY_MANAGER',
+    },
+    {
+      id: 'adm-order',
+      name: 'Order Manager',
+      email: 'order.manager@vedaara.com',
+      role: 'ORDER_MANAGER',
+    },
+    {
+      id: 'adm-content',
+      name: 'Content Manager',
+      email: 'content.manager@vedaara.com',
+      role: 'CONTENT_MANAGER',
+    },
+    {
+      id: 'adm-finance',
+      name: 'Finance Manager',
+      email: 'finance.manager@vedaara.com',
+      role: 'FINANCE',
+    },
+    {
+      id: 'adm-staff',
+      name: 'Store Staff',
+      email: 'staff@vedaara.com',
+      role: 'STAFF',
+    },
+  ];
+
+  for (const admin of adminUsers) {
+    await prisma.adminUser.upsert({
+      where: { email: admin.email },
+      create: {
+        ...admin,
+        passwordHash: adminPasswordHash,
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+        active: true,
+        lastLogin: null,
+      },
+      update: {
+        name: admin.name,
+        passwordHash: adminPasswordHash,
+        role: admin.role,
+        active: true,
+      },
+    });
+  }
 
   for (const order of INITIAL_ORDERS) {
     await prisma.$transaction(async (tx) => {
