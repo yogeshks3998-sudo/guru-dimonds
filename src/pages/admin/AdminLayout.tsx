@@ -35,7 +35,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
           <div className="w-12 h-12 bg-[#A67C32]/20 border border-[#A67C32] rounded-2xl flex items-center justify-center mx-auto text-[#D8C29D]">
             <Flame className="w-6 h-6" />
           </div>
-          <h2 className="font-serif text-2xl font-bold text-white">Vedaara Admin Portal</h2>
+          <h2 className="font-serif text-2xl font-bold text-white">Guru Diamonds Admin Portal</h2>
           <p className="text-xs text-[#A7A9AC]">Access restricted to authorized jewellery store managers and goldsmith admins.</p>
           <button
             onClick={() => navigateTo('/admin/login')}
@@ -62,7 +62,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
       {/* Mobile Top Nav */}
       <div className="md:hidden bg-[#1B1A18] text-white p-4 flex items-center justify-between border-b border-[#2D2A26]">
         <div className="flex items-center gap-2">
-          <span className="font-serif font-bold tracking-widest text-[#D8C29D]">VEDAARA ADMIN</span>
+          <span className="font-serif font-bold tracking-widest text-[#D8C29D]">GURU DIAMONDS ADMIN</span>
         </div>
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-[#D8C29D]">
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -78,7 +78,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
         <div className="space-y-8">
           {/* Logo */}
           <div className="space-y-1">
-            <span className="font-serif text-xl font-bold tracking-widest text-white block">VEDAARA</span>
+            <span className="font-serif text-xl font-bold tracking-widest text-white block">GURU DIAMONDS</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#A67C32] block">
               Goldsmith CMS v2.4
             </span>

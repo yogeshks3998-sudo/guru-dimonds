@@ -52,7 +52,7 @@ export const HomePage: React.FC = () => {
             <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-16 py-16 space-y-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#B8893D]/20 border border-[#B8893D]/40 text-[#F4E4C8] text-xs font-semibold uppercase tracking-widest backdrop-blur-sm">
                 <Sparkles className="w-3.5 h-3.5 text-[#B8893D]" />
-                <span>Royal Indian Jewellery Heritage</span>
+                <span>Where Trust Meets Brilliance</span>
               </div>
 
               <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[#FFF9F0] leading-tight tracking-tight">
@@ -295,26 +295,26 @@ export const HomePage: React.FC = () => {
           <div className="bg-[#FFF9F0] border border-[#E9D9C5] rounded-3xl p-8 lg:p-12 text-center space-y-8 shadow-xs">
             <div className="max-w-2xl mx-auto space-y-3">
               <span className="text-xs font-bold uppercase tracking-widest text-[#B8893D]">Uncompromising Trust</span>
-              <h2 className="font-serif text-3xl font-bold text-[#281C18]">The Vedaara Authenticity Guarantee</h2>
+              <h2 className="font-serif text-3xl font-bold text-[#281C18]">The Guru Diamonds Authenticity Promise</h2>
               <p className="text-xs text-[#796A65] leading-relaxed">
-                Every gold and silver piece crafted at Vedaara carries the official Bureau of Indian Standards (BIS) hallmark and individual laboratory certification from SGL or IGI labs.
+                Every gemstone and jewellery piece at Guru Diamonds is carefully verified for authenticity, quality, and long-lasting value before it reaches you.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
               <div className="p-6 bg-white rounded-2xl border border-[#E9D9C5] space-y-2 shadow-xs">
                 <ShieldCheck className="w-8 h-8 text-[#7A1822]" />
-                <h4 className="font-serif font-bold text-base text-[#281C18]">100% BIS Hallmarking</h4>
+                <h4 className="font-serif font-bold text-base text-[#281C18]">100% Genuine Products</h4>
                 <p className="text-xs text-[#796A65]">
-                  Verified 6-digit HUID code stamped on every gold creation for complete traceable purity.
+                  Carefully verified stones and jewellery selected for authenticity, purity, and dependable quality.
                 </p>
               </div>
 
               <div className="p-6 bg-white rounded-2xl border border-[#E9D9C5] space-y-2 shadow-xs">
                 <Award className="w-8 h-8 text-[#B8893D]" />
-                <h4 className="font-serif font-bold text-base text-[#281C18]">SGL / IGI Lab Certificates</h4>
+                <h4 className="font-serif font-bold text-base text-[#281C18]">Strict Quality Inspection</h4>
                 <p className="text-xs text-[#796A65]">
-                  Individual QR-coded lab certificate verifying gemstone weight, cut, clarity, and origin.
+                  Each product is reviewed for stone quality, finish, and craftsmanship before dispatch.
                 </p>
               </div>
 

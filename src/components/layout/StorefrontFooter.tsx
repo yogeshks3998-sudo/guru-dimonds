@@ -14,8 +14,8 @@ export const StorefrontFooter: React.FC = () => {
         <div className="flex items-center gap-3.5 p-4 rounded-xl bg-[#3D0B10] border border-[#B8893D]/20 shadow-inner">
           <ShieldCheck className="w-8 h-8 text-[#B8893D] shrink-0" />
           <div>
-            <h4 className="text-xs font-serif font-bold text-[#FFF9F0] uppercase tracking-wider">100% BIS Hallmarked</h4>
-            <p className="text-[11px] text-[#F4E4C8]/80 mt-0.5">22K / 18K Purity Guaranteed</p>
+            <h4 className="text-xs font-serif font-bold text-[#FFF9F0] uppercase tracking-wider">100% Genuine Products</h4>
+            <p className="text-[11px] text-[#F4E4C8]/80 mt-0.5">Authenticity You Can Trust</p>
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export const StorefrontFooter: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         {/* Col 1: Brand Info */}
         <div className="lg:col-span-2 space-y-4">
-          <span className="font-serif text-3xl font-bold tracking-[0.2em] text-[#FFF9F0] block">VEDAARA</span>
+          <span className="font-serif text-3xl font-bold tracking-[0.2em] text-[#FFF9F0] block">GURU DIAMONDS</span>
           <p className="text-xs text-[#F4E4C8]/80 leading-relaxed max-w-sm">{footer.aboutText}</p>
           <div className="space-y-2 text-xs text-[#F4E4C8] pt-2">
             <p className="flex items-center gap-2">
@@ -139,8 +139,8 @@ export const StorefrontFooter: React.FC = () => {
 
         {/* Col 4: Newsletter & Legal */}
         <div className="space-y-4">
-          <h4 className="font-serif font-bold text-sm text-[#B8893D] uppercase tracking-wider">Vedaara Journal</h4>
-          <p className="text-xs text-[#F4E4C8]/80 leading-relaxed">Subscribe for private trunk show invitations and daily live bullion rates.</p>
+          <h4 className="font-serif font-bold text-sm text-[#B8893D] uppercase tracking-wider">Guru Diamonds Journal</h4>
+          <p className="text-xs text-[#F4E4C8]/80 leading-relaxed">Subscribe for gemstone guidance, new arrivals, and trusted stone buying updates.</p>
           <form onSubmit={(e) => e.preventDefault()} className="flex items-center">
             <input
               type="email"
@@ -173,7 +173,7 @@ export const StorefrontFooter: React.FC = () => {
 
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-[#B8893D]/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#F4E4C8]/60">
-        <p>© {new Date().getFullYear()} Vedaara Fine Jewellery Pvt. Ltd. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Guru Diamonds. All rights reserved.</p>
         <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-[#B8893D]">
           <span>UPI / GPay</span>
           <span>•</span>

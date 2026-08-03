@@ -1,10 +1,10 @@
-# Vedaara Fine Jewellery
+# Guru Diamonds
 
-A premium Indian luxury jewellery e-commerce storefront and admin CMS prototype built with Vite, React, TypeScript, Tailwind CSS, and Zustand.
+A premium gemstone, precious stone, and jewellery e-commerce storefront with an admin CMS built with Vite, React, TypeScript, Tailwind CSS, Zustand, Express, Prisma, and PostgreSQL.
 
 ## Project Status
 
-This is currently a frontend prototype. Storefront, checkout, admin, CMS, products, rates, orders, cart, wishlist, and compare flows are implemented with mock data and browser local storage. A production backend, real authentication, payment gateway, and persistent database are planned for later phases.
+The project now has a PostgreSQL-backed data layer, real customer/admin authentication, role-protected admin routes, persisted cart and wishlist flows, checkout validation, scaffolded payment/email/order lifecycle handling, code-split production builds, SEO generation, and focused test coverage.
 
 ## Run Locally
 
@@ -28,8 +28,13 @@ This is currently a frontend prototype. Storefront, checkout, admin, CMS, produc
 
 ```bash
 npm run dev
+npm run dev:full
 npm run lint
+npm run test
 npm run build
+npm run build:prod
 npm run preview
 npm run clean
 ```
+
+See [Environment Configuration](docs/ENVIRONMENT.md) and [Deployment](docs/DEPLOYMENT.md) for production setup notes.

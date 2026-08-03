@@ -134,7 +134,7 @@ export const ShopPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header & Title */}
       <div className="space-y-2 border-b border-[#E7E1D7] pb-6">
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1B1A18]">Fine Jewellery Catalogue</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1B1A18]">Gemstones & Jewellery Catalogue</h1>
         <p className="text-xs sm:text-sm text-[#6F6A62]">
           Browse 100% BIS Hallmarked 22K/18K Gold, 925 Sterling Silver, and certified Gemstones.
         </p>

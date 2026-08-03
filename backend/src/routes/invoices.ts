@@ -30,7 +30,7 @@ invoicesRouter.post(
       data: {
         orderId: order.id,
         recipient: customer.email,
-        subject: `Vedaara order ${order.orderNumber} confirmation`,
+        subject: `Guru Diamonds order ${order.orderNumber} confirmation`,
         template: 'order_confirmation',
         status: 'QUEUED',
         provider: process.env.EMAIL_PROVIDER || 'log',
@@ -40,4 +40,3 @@ invoicesRouter.post(
     res.status(201).json(log);
   })
 );
-

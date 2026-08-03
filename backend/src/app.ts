@@ -34,8 +34,13 @@ app.use('/api', ratesRouter);
 app.use('/api', wishlistRouter);
 app.use('/api', invoicesRouter);
 
-app.use((_req, _res, next) => {
-  next(new HttpError(404, 'API route not found'));
+app.use((req, _res, next) => {
+  if (req.path.startsWith('/api')) {
+    next(new HttpError(404, 'API route not found'));
+    return;
+  }
+
+  next();
 });
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

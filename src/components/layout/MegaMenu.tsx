@@ -133,7 +133,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ activeMenu, onClose }) => {
                     onClick={() => handleNav(() => setSelectedGender('Women'))}
                     className="hover:text-[#7A1822] transition-colors"
                   >
-                    Women's Royal Heritage
+                    Women's Gemstone Jewellery
                   </button>
                 </li>
                 <li>
@@ -234,7 +234,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ activeMenu, onClose }) => {
               </span>
               <h5 className="font-serif font-bold text-sm text-[#281C18]">100% Certified Origin Guarantee</h5>
               <p className="text-xs text-[#796A65] leading-relaxed">
-                Every gemstone sold at Vedaara comes with an individual QR-coded SGL or IGI lab certificate detailing carat weight, refractive index, origin, and clarity.
+                Every gemstone sold at Guru Diamonds is carefully verified for authenticity, quality, and customer confidence.
               </p>
               <button
                 onClick={() => handleNav(() => setSelectedCategory('Gemstones'))}

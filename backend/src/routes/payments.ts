@@ -87,7 +87,7 @@ paymentsRouter.post(
 
     await prisma.emailLog.create({
       data: {
-        recipient: process.env.FROM_EMAIL || 'orders@vedaara.com',
+        recipient: process.env.FROM_EMAIL || 'infi@gurudimonds.in',
         subject: 'Razorpay webhook received',
         template: 'razorpay_webhook',
         status: 'RECEIVED',
@@ -98,4 +98,3 @@ paymentsRouter.post(
     res.json({ received: true });
   })
 );
-

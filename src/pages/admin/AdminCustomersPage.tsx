@@ -31,7 +31,7 @@ export const AdminCustomersPage: React.FC = () => {
         <div className="border-b border-[#E7E1D7] pb-6">
           <h1 className="font-serif text-3xl font-bold text-[#1B1A18]">VIP Patrons & Client Directory</h1>
           <p className="text-xs text-[#6F6A62]">
-            Directory of registered fine jewellery patrons, total lifetime valuation, and delivery addresses.
+            Directory of registered Guru Diamonds customers, total lifetime valuation, and delivery addresses.
           </p>
         </div>
 

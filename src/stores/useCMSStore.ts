@@ -18,12 +18,31 @@ interface CMSState {
   hydrateCMS: () => Promise<void>;
 }
 
-const LOCAL_KEY = 'vedaara_cms_content_v1';
+const LOCAL_KEY = 'guru_diamonds_cms_content_v1';
+const LEGACY_LOCAL_KEY = 'vedaara_cms_content_v1';
+const BRAND_FOOTER_CONTACT: Pick<CMSContent['footer'], 'phone' | 'email' | 'address' | 'whatsapp'> = {
+  phone: '+91 78991 25449',
+  email: 'infi@gurudimonds.in',
+  address: 'No. 1108, 1st Cross, Kurubageri, Lashkar Mohalla, Mysuru - 570001, Karnataka, India',
+  whatsapp: '+91 78991 25449',
+};
+
+const withBrandFooterContact = (cms: CMSContent): CMSContent => ({
+  ...cms,
+  footer: {
+    ...cms.footer,
+    ...BRAND_FOOTER_CONTACT,
+  },
+});
 
 const getInitialCMS = (): CMSContent => {
   try {
-    const data = localStorage.getItem(LOCAL_KEY);
-    return data ? JSON.parse(data) : INITIAL_CMS;
+    const data = localStorage.getItem(LOCAL_KEY) || localStorage.getItem(LEGACY_LOCAL_KEY);
+    if (data && !localStorage.getItem(LOCAL_KEY)) {
+      localStorage.setItem(LOCAL_KEY, data);
+    }
+    const cms = data ? JSON.parse(data) : INITIAL_CMS;
+    return withBrandFooterContact(cms);
   } catch {
     return INITIAL_CMS;
   }
@@ -31,7 +50,7 @@ const getInitialCMS = (): CMSContent => {
 
 const saveCMS = (cms: CMSContent) => {
   try {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(cms));
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(withBrandFooterContact(cms)));
   } catch {}
 };
 
@@ -43,7 +62,7 @@ export const useCMSStore = create<CMSState>((set, get) => ({
   hydrateCMS: async () => {
     set({ loading: true, error: null });
     try {
-      const cms = await cmsApi.getCMS();
+      const cms = withBrandFooterContact(await cmsApi.getCMS());
       saveCMS(cms);
       set({ cms, loading: false });
     } catch (error) {
@@ -111,7 +130,7 @@ export const useCMSStore = create<CMSState>((set, get) => ({
   updateFooter: (footerData) => {
     const updated = {
       ...get().cms,
-      footer: { ...get().cms.footer, ...footerData },
+      footer: { ...get().cms.footer, ...footerData, ...BRAND_FOOTER_CONTACT },
     };
     saveCMS(updated);
     set({ cms: updated });

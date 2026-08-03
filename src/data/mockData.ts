@@ -587,8 +587,8 @@ export const INITIAL_COUPONS: Coupon[] = [
   },
   {
     id: 'coup-3',
-    code: 'VEDAARAGOLD',
-    description: 'Flat 5% off on total making charges for gold jewellery.',
+    code: 'GURUGEMS',
+    description: 'Flat 5% off on total making charges for gemstone and gold jewellery.',
     discountType: 'PERCENTAGE',
     discountValue: 5,
     minOrderAmount: 25000,
@@ -658,13 +658,13 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
 export const INITIAL_CMS: CMSContent = {
   announcementBar: {
     enabled: true,
-    text: '✨ Complimenting 100% BIS Hallmarked 22K Gold & Natural Certified Gemstones. Free Express Insured Shipping across India.',
+    text: 'Where Trust Meets Brilliance. 100% genuine gemstones, carefully verified stones, and insured shipping across India.',
     link: '/shop',
   },
   heroBanner: {
-    title: 'Sacred Heritage & Timeless Luxury',
-    subtitle: 'Handcrafted 22K Gold, 925 Sterling Silver & Certified Natural Gemstones for the modern connoisseur.',
-    ctaLabel: 'Explore New Arrivals',
+    title: 'Guru Diamonds',
+    subtitle: 'Your trusted destination for precious stones, natural gemstones, silver jewellery, and expert product guidance since 2000.',
+    ctaLabel: 'Explore Gemstones',
     ctaLink: '/shop',
     imageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1600&q=80',
     mobileImageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
@@ -717,20 +717,20 @@ export const INITIAL_CMS: CMSContent = {
     {
       id: 'sec-6',
       type: 'BRAND_STORY',
-      title: 'The Vedaara Legacy',
-      subtitle: 'Preserving 120 Years of Royal Indian Goldsmithing',
+      title: 'The Guru Diamonds Promise',
+      subtitle: 'Authentic gemstones, transparent service, and trusted relationships since 2000',
       enabled: true,
       order: 6,
       content: {
-        text: 'Vedaara Fine Jewellery represents four generations of meticulous artistry, sacred geometry, and uncompromising metal purity. Every gemstone is personally inspected by certified gemologists.',
+        text: 'Guru Diamonds has served customers with genuine gemstones, uncompromising quality, and honest guidance for over two decades. Every stone is carefully verified before it reaches our customers.',
       },
     },
   ],
   footer: {
-    aboutText: 'Vedaara Fine Jewellery is India’s premier luxury e-commerce house dedicated to 100% BIS Hallmarked 22K/18K Gold, 925 Sterling Silver, and SGL/IGI Certified natural gemstones.',
-    phone: '+91 1800 212 9000',
-    email: 'concierge@vedaara.com',
-    address: 'Vedaara Heritage Tower, MG Road, Kala Ghoda, Mumbai 400001, India',
-    whatsapp: '+91 98200 98200',
+    aboutText: 'Guru Diamonds is a trusted gemstone and precious stone destination in Mysuru, offering genuine diamonds, pearls, rubies, emeralds, sapphires, coral, crystals, silver jewellery, and personalized customer assistance.',
+    phone: '+91 78991 25449',
+    email: 'infi@gurudimonds.in',
+    address: 'No. 1108, 1st Cross, Kurubageri, Lashkar Mohalla, Mysuru - 570001, Karnataka, India',
+    whatsapp: '+91 78991 25449',
   },
 };

@@ -8,7 +8,6 @@ healthRouter.get(
   '/',
   asyncHandler(async (_req, res) => {
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ ok: true, service: 'vedaara-api' });
+    res.json({ ok: true, service: 'guru-diamonds-api' });
   })
 );
-

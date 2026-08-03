@@ -10,11 +10,15 @@ interface CompareState {
   setDrawerOpen: (open: boolean) => void;
 }
 
-const LOCAL_KEY = 'vedaara_compare_ids_v1';
+const LOCAL_KEY = 'guru_diamonds_compare_ids_v1';
+const LEGACY_LOCAL_KEY = 'vedaara_compare_ids_v1';
 
 const getInitialCompare = (): string[] => {
   try {
-    const data = localStorage.getItem(LOCAL_KEY);
+    const data = localStorage.getItem(LOCAL_KEY) || localStorage.getItem(LEGACY_LOCAL_KEY);
+    if (data && !localStorage.getItem(LOCAL_KEY)) {
+      localStorage.setItem(LOCAL_KEY, data);
+    }
     return data ? JSON.parse(data) : [];
   } catch {
     return [];

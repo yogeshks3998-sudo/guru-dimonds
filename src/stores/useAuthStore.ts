@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { AdminRole, AdminUser, Customer } from '../types';
-import { AUTH_TOKEN_KEY } from '../services/api';
+import { AUTH_TOKEN_KEY, LEGACY_AUTH_TOKEN_KEY } from '../services/api';
 import { authApi } from '../services/authApi';
 
 interface AuthState {
@@ -26,7 +26,11 @@ interface AuthState {
 
 const getSavedToken = () => {
   try {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+    const token = localStorage.getItem(AUTH_TOKEN_KEY) || localStorage.getItem(LEGACY_AUTH_TOKEN_KEY);
+    if (token && !localStorage.getItem(AUTH_TOKEN_KEY)) {
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+    }
+    return token;
   } catch {
     return null;
   }
@@ -35,7 +39,10 @@ const getSavedToken = () => {
 const saveToken = (token: string | null) => {
   try {
     if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
-    else localStorage.removeItem(AUTH_TOKEN_KEY);
+    else {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
+    }
   } catch {
     // Ignore storage errors so logout/login state still updates in memory.
   }

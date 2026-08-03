@@ -4,6 +4,8 @@ import { asyncHandler, HttpError } from '../utils/http';
 import { toAddressData, toCustomerData, toOrderCreateData, toOrderResponse } from '../utils/serializers';
 import type { Customer, Order } from '../../../src/types';
 import { requireRole } from '../middleware/auth';
+import { canTransitionOrderStatus } from '../../../src/utils/orderLifecycle';
+import type { OrderStatus } from '../../../src/types';
 
 export const ordersRouter = Router();
 
@@ -105,6 +107,12 @@ ordersRouter.patch(
     const status = String(req.body.status || '');
     const note = String(req.body.note || `Status updated to ${status}`);
     const updatedBy = String(req.body.updatedBy || 'Admin User');
+
+    const existing = await prisma.order.findUnique({ where: { id: String(req.params.id) } });
+    if (!existing) throw new HttpError(404, 'Order not found');
+    if (!canTransitionOrderStatus(existing.orderStatus as OrderStatus, status as OrderStatus)) {
+      throw new HttpError(400, `Cannot transition order from ${existing.orderStatus} to ${status}`);
+    }
 
     const saved = await prisma.order.update({
       where: { id: String(req.params.id) },

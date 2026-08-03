@@ -53,13 +53,13 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
       name: '',
       slug: '',
       sku: `VED-${Math.floor(1000 + Math.random() * 9000)}`,
-      shortDescription: 'Handcrafted hallmarked gold creation by Vedaara kaarigars.',
+      shortDescription: 'Carefully crafted jewellery creation by Guru Diamonds artisans.',
       category: 'Gold rings',
       subcategory: 'Rings',
-      collection: 'Royal Heritage',
+      collection: 'Premium Gemstone Heritage',
       gender: 'Women',
       occasion: ['Wedding', 'Festive'],
-      description: 'Handcrafted hallmarked gold creation by Vedaara kaarigars.',
+      description: 'Carefully crafted jewellery creation by Guru Diamonds artisans.',
       pricingMode: 'RATE_LINKED',
       metalType: 'GOLD',
       metalPurity: '22K',
@@ -448,7 +448,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                 </div>
               </div>
 
-              {/* Quick Preset Fine Jewellery Studio Photography Presets */}
+              {/* Quick preset gemstone and jewellery studio photography presets */}
               <div className="space-y-2">
                 <span className="font-bold text-[#6F6A62] text-[11px] block">
                   Quick Attach Studio Presets:

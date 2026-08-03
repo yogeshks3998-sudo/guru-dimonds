@@ -13,11 +13,15 @@ interface WishlistState {
   mergeGuestWishlistToCustomer: () => Promise<void>;
 }
 
-const LOCAL_KEY = 'vedaara_wishlist_ids';
+const LOCAL_KEY = 'guru_diamonds_wishlist_ids';
+const LEGACY_LOCAL_KEY = 'vedaara_wishlist_ids';
 
 const getInitialWishlist = (): string[] => {
   try {
-    const d = localStorage.getItem(LOCAL_KEY);
+    const d = localStorage.getItem(LOCAL_KEY) || localStorage.getItem(LEGACY_LOCAL_KEY);
+    if (d && !localStorage.getItem(LOCAL_KEY)) {
+      localStorage.setItem(LOCAL_KEY, d);
+    }
     return d ? JSON.parse(d) : ['prod-1', 'prod-3']; // Default sample items
   } catch {
     return ['prod-1', 'prod-3'];

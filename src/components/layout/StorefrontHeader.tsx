@@ -150,10 +150,10 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
         <div className="flex items-center gap-8">
           <button onClick={() => navigateTo('/')} className="text-left group flex flex-col">
             <span className="font-serif text-2xl sm:text-3xl font-bold tracking-[0.2em] text-[#281C18] group-hover:text-[#7A1822] transition-colors leading-none">
-              VEDAARA
+              GURU DIAMONDS
             </span>
             <span className="text-[9px] uppercase tracking-[0.35em] text-[#B8893D] font-semibold block mt-1">
-              FINE JEWELLERY • EST. 1906
+              WHERE TRUST MEETS BRILLIANCE
             </span>
           </button>
 
@@ -164,7 +164,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
             className="hidden xl:flex items-center relative w-72 bg-[#FFFFFF] border border-[#E9D9C5] rounded-full px-4 py-2 hover:border-[#B8893D] transition-all shadow-xs text-left cursor-pointer group"
           >
             <Search className="w-4 h-4 text-[#B8893D] shrink-0 mr-2 group-hover:scale-110 transition-transform" />
-            <span className="text-xs text-[#796A65] font-medium truncate">Search 22K Gold, Polki, Solitaires...</span>
+            <span className="text-xs text-[#796A65] font-medium truncate">Search diamonds, rubies, emeralds...</span>
             <span className="ml-auto text-[10px] bg-[#F4E4C8] text-[#7A1822] font-bold px-1.5 py-0.5 rounded-md">
               ⌘K
             </span>
@@ -180,7 +180,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
               className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#7A1822] bg-[#F4E4C8] border border-[#B8893D]/40 px-3 py-1.5 rounded-full hover:bg-[#7A1822] hover:text-[#FFF9F0] transition-all shadow-xs"
             >
               <LayoutDashboard className="w-3.5 h-3.5 text-[#B8893D]" />
-              <span>Goldsmith CMS</span>
+              <span>Admin CMS</span>
             </button>
           )}
 
@@ -327,7 +327,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex">
           <div className="w-4/5 max-w-sm bg-[#FFF9F0] h-full shadow-2xl flex flex-col p-6 overflow-y-auto border-r border-[#E9D9C5]">
             <div className="flex items-center justify-between pb-4 border-b border-[#E9D9C5]">
-              <span className="font-serif text-xl font-bold tracking-widest text-[#281C18]">VEDAARA</span>
+              <span className="font-serif text-xl font-bold tracking-widest text-[#281C18]">GURU DIAMONDS</span>
               <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-[#796A65]">
                 <X className="w-6 h-6" />
               </button>
@@ -355,16 +355,16 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
                   }}
                   className="w-full mt-4 text-left p-3 bg-[#F4E4C8] border border-[#B8893D]/40 text-[#7A1822] rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2"
                 >
-                  <LayoutDashboard className="w-4 h-4 text-[#B8893D]" /> Goldsmith CMS Panel
+                  <LayoutDashboard className="w-4 h-4 text-[#B8893D]" /> Guru Diamonds CMS
                 </button>
               )}
             </div>
 
             <div className="mt-auto pt-6 border-t border-[#E9D9C5] text-xs text-[#796A65] space-y-2">
               <p className="flex items-center gap-2 font-medium">
-                <PhoneCall className="w-4 h-4 text-[#B8893D]" /> Royal Concierge: +91 1800 212 9000
+                <PhoneCall className="w-4 h-4 text-[#B8893D]" /> Customer Assistance: +91 78991 25449
               </p>
-              <p>100% BIS Hallmarked • Certified Gemstones</p>
+              <p>100% genuine products • Premium certified gemstones</p>
             </div>
           </div>
         </div>

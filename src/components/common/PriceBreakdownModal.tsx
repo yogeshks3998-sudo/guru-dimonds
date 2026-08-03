@@ -120,7 +120,7 @@ export const PriceBreakdownModal: React.FC<PriceBreakdownModalProps> = ({
         </div>
 
         <p className="text-[11px] text-[#6F6A62] text-center flex items-center justify-center gap-1">
-          <Info className="w-3.5 h-3.5 text-[#A67C32]" /> Vedaara guarantees 100% pricing transparency without hidden overheads.
+          <Info className="w-3.5 h-3.5 text-[#A67C32]" /> Guru Diamonds guarantees transparent pricing without hidden overheads.
         </p>
       </div>
     </Modal>

@@ -3,7 +3,7 @@ import { prisma } from './config/db';
 import { app } from './app';
 
 const server = app.listen(env.port, () => {
-  console.log(`Vedaara API listening on http://localhost:${env.port}`);
+  console.log(`Guru Diamonds API listening on http://localhost:${env.port}`);
 });
 
 const shutdown = async () => {
@@ -15,4 +15,3 @@ const shutdown = async () => {
 
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
-

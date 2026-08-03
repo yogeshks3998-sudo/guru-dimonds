@@ -11,7 +11,8 @@ interface GlobalSearchOverlayProps {
   onClose: () => void;
 }
 
-const RECENT_SEARCHES_KEY = 'vedaara_recent_searches_v1';
+const RECENT_SEARCHES_KEY = 'guru_diamonds_recent_searches_v1';
+const LEGACY_RECENT_SEARCHES_KEY = 'vedaara_recent_searches_v1';
 const TRENDING_KEYWORDS = [
   '22K Gold Ring',
   'Polki Choker',
@@ -33,7 +34,10 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+      const saved = localStorage.getItem(RECENT_SEARCHES_KEY) || localStorage.getItem(LEGACY_RECENT_SEARCHES_KEY);
+      if (saved && !localStorage.getItem(RECENT_SEARCHES_KEY)) {
+        localStorage.setItem(RECENT_SEARCHES_KEY, saved);
+      }
       if (saved) setRecentSearches(JSON.parse(saved));
     } catch {
       // ignore error

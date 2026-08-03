@@ -36,7 +36,7 @@ export const OrderConfirmationPage: React.FC = () => {
         </span>
 
         <h1 className="font-serif text-3xl font-bold text-[#1B1A18]">
-          Thank You For Choosing Vedaara Fine Jewellery
+          Thank You For Choosing Guru Diamonds
         </h1>
 
         <p className="text-xs text-[#6F6A62] max-w-md mx-auto">

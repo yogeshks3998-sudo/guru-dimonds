@@ -449,8 +449,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
 
           {/* WhatsApp Direct Inquiry */}
           <a
-            href={`https://wa.me/919820098200?text=${encodeURIComponent(
-              `Namaste Vedaara Concierge, I am interested in ${product.name} (SKU: ${product.sku}).`
+            href={`https://wa.me/917899125449?text=${encodeURIComponent(
+              `Namaste Guru Diamonds, I am interested in ${product.name} (SKU: ${product.sku}).`
             )}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -502,7 +502,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           <div className="space-y-4 text-xs sm:text-sm text-[#1B1A18] leading-relaxed">
             <p>{product.description}</p>
             <p className="text-[#6F6A62]">
-              Vedaara Fine Jewellery guarantees that all precious metals are 100% ethically sourced and refined to pure 916 (22K) / 750 (18K) standards.
+              Guru Diamonds verifies every gemstone and jewellery piece for authenticity, quality, and craftsmanship before dispatch.
             </p>
           </div>
         )}

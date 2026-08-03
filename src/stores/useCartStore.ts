@@ -44,11 +44,15 @@ interface CartState {
   getTotal: () => number;
 }
 
-const LOCAL_STORAGE_KEY = 'vedaara_cart_items_v1';
+const LOCAL_STORAGE_KEY = 'guru_diamonds_cart_items_v1';
+const LEGACY_LOCAL_STORAGE_KEY = 'vedaara_cart_items_v1';
 
 const getInitialItems = (): CartItem[] => {
   try {
-    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const data = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY);
+    if (data && !localStorage.getItem(LOCAL_STORAGE_KEY)) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, data);
+    }
     return data ? JSON.parse(data) : [];
   } catch {
     return [];

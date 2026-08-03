@@ -22,8 +22,8 @@ export const CheckoutPage: React.FC = () => {
     customer?.addresses[0] || {
       id: 'addr-default',
       fullName: customer?.name || 'Valued Customer',
-      phone: customer?.phone || '+91 98200 98200',
-      email: customer?.email || 'customer@vedaara.com',
+      phone: customer?.phone || '+91 78991 25449',
+      email: customer?.email || 'customer@gurudimonds.in',
       street: '402, Royal Palms, Koregaon Park',
       city: 'Pune',
       state: 'Maharashtra',

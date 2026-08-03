@@ -31,11 +31,15 @@ interface OrderState {
   hydrateOrders: () => Promise<void>;
 }
 
-const LOCAL_KEY = 'vedaara_orders_v1';
+const LOCAL_KEY = 'guru_diamonds_orders_v1';
+const LEGACY_LOCAL_KEY = 'vedaara_orders_v1';
 
 const getInitialOrders = (): Order[] => {
   try {
-    const data = localStorage.getItem(LOCAL_KEY);
+    const data = localStorage.getItem(LOCAL_KEY) || localStorage.getItem(LEGACY_LOCAL_KEY);
+    if (data && !localStorage.getItem(LOCAL_KEY)) {
+      localStorage.setItem(LOCAL_KEY, data);
+    }
     return data ? JSON.parse(data) : INITIAL_ORDERS;
   } catch {
     return INITIAL_ORDERS;
@@ -66,7 +70,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
 
   placeOrder: (params) => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const orderNumber = `VED-2026-${randomNum}`;
+    const orderNumber = `GD-2026-${randomNum}`;
     const now = new Date().toISOString();
 
     const newOrder: Order = {

@@ -45,7 +45,7 @@ const createInvoiceAndEmailLog = async (tx: any, order: Order, gstNumber?: strin
     data: {
       orderId: order.id,
       recipient: order.customer.email,
-      subject: `Vedaara order ${order.orderNumber} received`,
+      subject: `Guru Diamonds order ${order.orderNumber} received`,
       template: 'order_confirmation',
       status: 'QUEUED',
       provider: process.env.EMAIL_PROVIDER || 'log',
@@ -125,4 +125,3 @@ checkoutRouter.post(
     res.status(201).json(toOrderResponse(saved));
   })
 );
-

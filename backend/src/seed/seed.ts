@@ -26,7 +26,7 @@ import {
 } from '../utils/serializers';
 
 async function seed() {
-  console.log('Seeding PostgreSQL with current Vedaara mock data...');
+  console.log('Seeding PostgreSQL with current Guru Diamonds data...');
   const customerPasswordHash = await bcrypt.hash('password123', 12);
   const adminPasswordHash = await bcrypt.hash('admin123', 12);
 
@@ -101,50 +101,50 @@ async function seed() {
   const adminUsers = [
     {
       id: 'adm-super',
-      name: 'Vedaara Super Admin',
-      email: 'superadmin@vedaara.com',
+      name: 'Guru Diamonds Super Admin',
+      email: 'superadmin@gurudimonds.in',
       role: 'SUPER_ADMIN',
     },
     {
       id: 'adm-owner',
-      name: 'Vedaara Owner',
-      email: 'owner@vedaara.com',
+      name: 'Guru Diamonds Owner',
+      email: 'owner@gurudimonds.in',
       role: 'OWNER',
     },
     {
       id: 'adm-product',
       name: 'Product Manager',
-      email: 'product.manager@vedaara.com',
+      email: 'product.manager@gurudimonds.in',
       role: 'PRODUCT_MANAGER',
     },
     {
       id: 'adm-inventory',
       name: 'Inventory Manager',
-      email: 'inventory.manager@vedaara.com',
+      email: 'inventory.manager@gurudimonds.in',
       role: 'INVENTORY_MANAGER',
     },
     {
       id: 'adm-order',
       name: 'Order Manager',
-      email: 'order.manager@vedaara.com',
+      email: 'order.manager@gurudimonds.in',
       role: 'ORDER_MANAGER',
     },
     {
       id: 'adm-content',
       name: 'Content Manager',
-      email: 'content.manager@vedaara.com',
+      email: 'content.manager@gurudimonds.in',
       role: 'CONTENT_MANAGER',
     },
     {
       id: 'adm-finance',
       name: 'Finance Manager',
-      email: 'finance.manager@vedaara.com',
+      email: 'finance.manager@gurudimonds.in',
       role: 'FINANCE',
     },
     {
       id: 'adm-staff',
       name: 'Store Staff',
-      email: 'staff@vedaara.com',
+      email: 'staff@gurudimonds.in',
       role: 'STAFF',
     },
   ];
