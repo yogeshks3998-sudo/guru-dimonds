@@ -1,11 +1,16 @@
 import { create } from 'zustand';
 import { Product } from '../types';
+import { wishlistApi } from '../services/wishlistApi';
+import { useAuthStore } from './useAuthStore';
 
 interface WishlistState {
   wishlistIds: string[];
+  syncError: string | null;
   toggleWishlist: (productId: string) => void;
   isInWishlist: (productId: string) => boolean;
   clearWishlist: () => void;
+  hydrateWishlist: () => Promise<void>;
+  mergeGuestWishlistToCustomer: () => Promise<void>;
 }
 
 const LOCAL_KEY = 'vedaara_wishlist_ids';
@@ -21,6 +26,32 @@ const getInitialWishlist = (): string[] => {
 
 export const useWishlistStore = create<WishlistState>((set, get) => ({
   wishlistIds: getInitialWishlist(),
+  syncError: null,
+
+  hydrateWishlist: async () => {
+    if (!useAuthStore.getState().isCustomerLoggedIn) return;
+    try {
+      const wishlist = await wishlistApi.getWishlist();
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(wishlist.productIds));
+      set({ wishlistIds: wishlist.productIds, syncError: null });
+    } catch (error) {
+      set({ syncError: error instanceof Error ? error.message : 'Unable to load customer wishlist' });
+    }
+  },
+
+  mergeGuestWishlistToCustomer: async () => {
+    if (!useAuthStore.getState().isCustomerLoggedIn) return;
+    try {
+      for (const productId of get().wishlistIds) {
+        await wishlistApi.addItem(productId);
+      }
+      const wishlist = await wishlistApi.getWishlist();
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(wishlist.productIds));
+      set({ wishlistIds: wishlist.productIds, syncError: null });
+    } catch (error) {
+      set({ syncError: error instanceof Error ? error.message : 'Unable to merge wishlist' });
+    }
+  },
 
   toggleWishlist: (productId) => {
     const current = get().wishlistIds;
@@ -30,6 +61,17 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
     } catch {}
     set({ wishlistIds: updated });
+    if (useAuthStore.getState().isCustomerLoggedIn) {
+      const action = exists ? wishlistApi.removeItem(productId) : wishlistApi.addItem(productId);
+      void action
+        .then((wishlist) => {
+          localStorage.setItem(LOCAL_KEY, JSON.stringify(wishlist.productIds));
+          set({ wishlistIds: wishlist.productIds, syncError: null });
+        })
+        .catch((error) => {
+          set({ syncError: error instanceof Error ? error.message : 'Unable to sync wishlist' });
+        });
+    }
   },
 
   isInWishlist: (productId) => {
@@ -41,6 +83,11 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
       localStorage.removeItem(LOCAL_KEY);
     } catch {}
     set({ wishlistIds: [] });
+    if (useAuthStore.getState().isCustomerLoggedIn) {
+      void wishlistApi.clearWishlist().catch((error) => {
+        set({ syncError: error instanceof Error ? error.message : 'Unable to clear synced wishlist' });
+      });
+    }
   },
 }));
 

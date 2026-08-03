@@ -11,6 +11,7 @@ import { useMetalRateStore } from './stores/useMetalRateStore';
 import { useOrderStore } from './stores/useOrderStore';
 import { useProductStore } from './stores/useProductStore';
 import { useAuthStore } from './stores/useAuthStore';
+import { useWishlistStore } from './stores/useWishlistStore';
 import { roleCan, routePermissions } from './utils/permissions';
 
 // Storefront Pages
@@ -68,6 +69,13 @@ export function App() {
       void useOrderStore.getState().hydrateOrders();
     }
   }, [isAdminLoggedIn]);
+
+  useEffect(() => {
+    if (isCustomerLoggedIn) {
+      void useCartStore.getState().mergeGuestCartToCustomer();
+      void useWishlistStore.getState().mergeGuestWishlistToCustomer();
+    }
+  }, [isCustomerLoggedIn]);
 
   const isAdminRoute = currentPath.startsWith('/admin');
 

@@ -85,6 +85,8 @@ model Product {
   variants            ProductVariant[]
   media               ProductMedia[]
   inventoryItems      InventoryItem[]
+  cartItems           CartItem[]
+  wishlistItems       WishlistItem[]
 
   @@index([category])
   @@index([status])
@@ -106,6 +108,7 @@ model ProductVariant {
   enabled          Boolean
   dispatchTimeDays Int
   product          Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems        CartItem[]
 
   @@index([productId])
 }
@@ -149,6 +152,8 @@ model Customer {
   createdAt         DateTime
   addresses         Address[]
   orders            Order[]
+  cart              Cart?
+  wishlistItems     WishlistItem[]
 }
 
 model Address {
@@ -206,6 +211,8 @@ model Order {
   customer                     Customer?            @relation(fields: [customerId], references: [id])
   items                        OrderItem[]
   history                      OrderStatusHistory[]
+  payments                     Payment[]
+  invoice                      Invoice?
 
   @@index([orderStatus])
   @@index([placedAt])
@@ -236,6 +243,90 @@ model OrderStatusHistory {
   note      String
   updatedBy String
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Cart {
+  id         String     @id @default(cuid())
+  customerId String     @unique
+  couponCode String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items      CartItem[]
+}
+
+model CartItem {
+  id                 String          @id @default(cuid())
+  cartId             String
+  productId          String
+  variantId          String?
+  selectedAttributes Json
+  quantity           Int
+  customEngraving    String?
+  giftWrap           Boolean         @default(false)
+  giftMessage        String?
+  addedAt            DateTime        @default(now())
+  cart               Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product            Product         @relation(fields: [productId], references: [id])
+  variant            ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([cartId])
+  @@index([productId])
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  customerId String
+  productId  String
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([customerId])
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  orderId           String?
+  provider          String
+  providerOrderId   String?
+  providerPaymentId String?
+  providerSignature String?
+  amount            Float
+  currency          String   @default("INR")
+  status            String
+  method            String?
+  rawPayload        Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  order             Order?   @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([providerOrderId])
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  invoiceNumber String   @unique
+  gstNumber     String?
+  invoiceData   Json
+  createdAt     DateTime @default(now())
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  orderId   String?
+  recipient String
+  subject   String
+  template  String
+  status    String
+  provider  String?
+  error     String?
+  payload   Json?
+  createdAt DateTime @default(now())
 }
 
 model MetalRate {

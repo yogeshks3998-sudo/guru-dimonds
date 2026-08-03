@@ -5,6 +5,7 @@ import { useOrderStore } from '../stores/useOrderStore';
 import { formatINR } from '../utils/formatters';
 import { navigateTo } from '../utils/navigation';
 import { Address } from '../types';
+import { checkoutApi } from '../services/checkoutApi';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { ShieldCheck, CheckCircle2, Lock, ArrowLeft, CreditCard, QrCode, Building, Banknote } from 'lucide-react';
 
@@ -54,46 +55,62 @@ export const CheckoutPage: React.FC = () => {
     );
   }
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     setIsProcessing(true);
-
-    setTimeout(() => {
-      const order = placeOrder({
-        customer: {
-          id: customer?.id || `cust-${Date.now()}`,
-          name: selectedAddress.fullName,
-          email: selectedAddress.email,
-          phone: selectedAddress.phone,
-        },
+    try {
+      const payload = {
         shippingAddress: selectedAddress,
         billingAddress: selectedAddress,
         items: items.map((item) => ({
-          id: item.id,
           productId: item.productId,
           variantId: item.variantId,
-          productName: item.product.name,
-          variantSku: item.selectedVariant?.sku,
-          variantDetails: item.selectedAttributes,
-          image: item.product.images[0],
+          selectedAttributes: item.selectedAttributes,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.unitPrice * item.quantity,
-          priceBreakdownSnapshot: item.priceBreakdown,
           customEngraving: item.customEngraving,
         })),
-        subtotal: getSubtotal(),
-        discountAmount: getDiscountAmount(),
-        gstTotal: getGSTTotal(),
-        shippingCharge: getShippingCharge(),
-        totalAmount: getTotal(),
+        couponCode: useCartStore.getState().appliedCoupon?.code,
         paymentMethod,
         notes: orderNotes,
-      });
-
+        gstNumber: gstInvoiceRequested ? gstNumber : undefined,
+      };
+      const order = isCustomerLoggedIn ? await checkoutApi.createOrder(payload) : placeOrder({
+          customer: {
+            id: customer?.id || `cust-${Date.now()}`,
+            name: selectedAddress.fullName,
+            email: selectedAddress.email,
+            phone: selectedAddress.phone,
+          },
+          shippingAddress: selectedAddress,
+          billingAddress: selectedAddress,
+          items: items.map((item) => ({
+            id: item.id,
+            productId: item.productId,
+            variantId: item.variantId,
+            productName: item.product.name,
+            variantSku: item.selectedVariant?.sku,
+            variantDetails: item.selectedAttributes,
+            image: item.product.images[0],
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.unitPrice * item.quantity,
+            priceBreakdownSnapshot: item.priceBreakdown,
+            customEngraving: item.customEngraving,
+          })),
+          subtotal: getSubtotal(),
+          discountAmount: getDiscountAmount(),
+          gstTotal: getGSTTotal(),
+          shippingCharge: getShippingCharge(),
+          totalAmount: getTotal(),
+          paymentMethod,
+          notes: orderNotes,
+        });
       clearCart();
       setIsProcessing(false);
       navigateTo(`/checkout/success?orderNumber=${order.orderNumber}`);
-    }, 1500);
+    } catch (error) {
+      setIsProcessing(false);
+      alert(error instanceof Error ? error.message : 'Unable to place order');
+    }
   };
 
   return (
