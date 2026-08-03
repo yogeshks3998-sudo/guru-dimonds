@@ -1,9 +1,12 @@
 import { create } from 'zustand';
 import { Order, OrderStatus, Address } from '../types';
 import { INITIAL_ORDERS } from '../data/mockData';
+import { orderApi } from '../services/orderApi';
 
 interface OrderState {
   orders: Order[];
+  loading: boolean;
+  error: string | null;
   
   // Actions
   placeOrder: (params: {
@@ -25,6 +28,7 @@ interface OrderState {
   addTrackingInfo: (orderId: string, trackingNumber: string, courierPartner: string) => void;
   cancelOrder: (orderId: string, reason: string) => void;
   requestReturn: (orderId: string, reason: string) => void;
+  hydrateOrders: () => Promise<void>;
 }
 
 const LOCAL_KEY = 'vedaara_orders_v1';
@@ -46,6 +50,19 @@ const saveOrders = (orders: Order[]) => {
 
 export const useOrderStore = create<OrderState>((set, get) => ({
   orders: getInitialOrders(),
+  loading: false,
+  error: null,
+
+  hydrateOrders: async () => {
+    set({ loading: true, error: null });
+    try {
+      const orders = await orderApi.listOrders();
+      saveOrders(orders);
+      set({ orders, loading: false });
+    } catch (error) {
+      set({ loading: false, error: error instanceof Error ? error.message : 'Unable to load orders from API' });
+    }
+  },
 
   placeOrder: (params) => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
@@ -88,6 +105,9 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     const updated = [newOrder, ...get().orders];
     saveOrders(updated);
     set({ orders: updated });
+    void orderApi.createOrder(newOrder).catch((error) => {
+      set({ error: error instanceof Error ? error.message : 'Unable to persist order' });
+    });
     return newOrder;
   },
 
@@ -112,6 +132,9 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     });
     saveOrders(updated);
     set({ orders: updated });
+    void orderApi.updateStatus(orderId, status, note, updatedBy).catch((error) => {
+      set({ error: error instanceof Error ? error.message : 'Unable to persist order status' });
+    });
   },
 
   addTrackingInfo: (orderId, trackingNumber, courierPartner) => {

@@ -1,9 +1,12 @@
 import { create } from 'zustand';
 import { Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/mockProducts';
+import { productApi } from '../services/productApi';
 
 interface ProductState {
   products: Product[];
+  loading: boolean;
+  error: string | null;
   searchQuery: string;
   selectedCategory: string | null;
   selectedSubcategory: string | null;
@@ -23,6 +26,7 @@ interface ProductState {
   setPriceRange: (range: [number, number]) => void;
   setSortBy: (sort: string) => void;
   resetFilters: () => void;
+  hydrateProducts: () => Promise<void>;
   
   // Product Admin Operations
   addProduct: (product: Product) => void;
@@ -33,6 +37,8 @@ interface ProductState {
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: INITIAL_PRODUCTS,
+  loading: false,
+  error: null,
   searchQuery: '',
   selectedCategory: null,
   selectedSubcategory: null,
@@ -63,18 +69,45 @@ export const useProductStore = create<ProductState>((set, get) => ({
       sortBy: 'RECOMMENDED',
     }),
 
+  hydrateProducts: async () => {
+    set({ loading: true, error: null });
+    try {
+      const products = await productApi.listProducts();
+      set({ products, loading: false });
+    } catch (error) {
+      set({
+        products: get().products.length ? get().products : INITIAL_PRODUCTS,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unable to load products from API',
+      });
+    }
+  },
+
   addProduct: (newProd) => {
     set({ products: [newProd, ...get().products] });
+    void productApi.createProduct(newProd).catch((error) => {
+      set({ error: error instanceof Error ? error.message : 'Unable to save product' });
+    });
   },
 
   updateProduct: (id, updated) => {
+    const nextProduct = get().products.find((p) => p.id === id);
+    const merged = nextProduct ? { ...nextProduct, ...updated, updatedAt: new Date().toISOString() } : null;
     set({
-      products: get().products.map((p) => (p.id === id ? { ...p, ...updated, updatedAt: new Date().toISOString() } : p)),
+      products: get().products.map((p) => (p.id === id && merged ? merged : p)),
     });
+    if (merged) {
+      void productApi.updateProduct(id, merged).catch((error) => {
+        set({ error: error instanceof Error ? error.message : 'Unable to update product' });
+      });
+    }
   },
 
   deleteProduct: (id) => {
     set({ products: get().products.filter((p) => p.id !== id) });
+    void productApi.deleteProduct(id).catch((error) => {
+      set({ error: error instanceof Error ? error.message : 'Unable to delete product' });
+    });
   },
 
   duplicateProduct: (id) => {
@@ -90,5 +123,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
       updatedAt: new Date().toISOString(),
     };
     set({ products: [duplicated, ...get().products] });
+    void productApi.createProduct(duplicated).catch((error) => {
+      set({ error: error instanceof Error ? error.message : 'Unable to duplicate product' });
+    });
   },
 }));

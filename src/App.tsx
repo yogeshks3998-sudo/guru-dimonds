@@ -5,6 +5,11 @@ import { StorefrontHeader } from './components/layout/StorefrontHeader';
 import { StorefrontFooter } from './components/layout/StorefrontFooter';
 import { CartDrawer } from './components/storefront/CartDrawer';
 import { ToastProvider } from './components/ui/Toast';
+import { useCartStore } from './stores/useCartStore';
+import { useCMSStore } from './stores/useCMSStore';
+import { useMetalRateStore } from './stores/useMetalRateStore';
+import { useOrderStore } from './stores/useOrderStore';
+import { useProductStore } from './stores/useProductStore';
 
 // Storefront Pages
 import { HomePage } from './pages/HomePage';
@@ -45,6 +50,14 @@ export function App() {
 
     window.addEventListener('popstate', handleLocationChange);
     return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  useEffect(() => {
+    void useProductStore.getState().hydrateProducts();
+    void useMetalRateStore.getState().hydrateMetalRates();
+    void useCMSStore.getState().hydrateCMS();
+    void useOrderStore.getState().hydrateOrders();
+    void useCartStore.getState().hydrateCoupons();
   }, []);
 
   const isAdminRoute = currentPath.startsWith('/admin');
@@ -108,7 +121,7 @@ export function App() {
           {!isAdminRoute && (
             <>
               <RateTicker />
-              <StorefrontHeader onOpenCart={() => setCartDrawerOpen(true)} />
+              <StorefrontHeader onOpenCartDrawer={() => setCartDrawerOpen(true)} />
             </>
           )}
 

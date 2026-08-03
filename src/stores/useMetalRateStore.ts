@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { MetalRate, MetalType, MetalPurity } from '../types';
 import { INITIAL_METAL_RATES } from '../data/mockData';
 import { getRateKey } from '../utils/pricing';
+import { metalRateApi } from '../services/metalRateApi';
 
 interface RateImpactSummary {
   affectedProductsCount: number;
@@ -16,6 +17,8 @@ interface RateImpactSummary {
 interface MetalRateState {
   rates: MetalRate[];
   rateHistory: MetalRate[];
+  loading: boolean;
+  error: string | null;
   
   // Rate getter
   getRate: (metal: MetalType, purity: MetalPurity) => number;
@@ -25,11 +28,24 @@ interface MetalRateState {
   publishNewRate: (metal: MetalType, purity: MetalPurity, newRatePerGram: number, notes?: string, adminName?: string) => void;
   rollbackRate: (rateId: string) => void;
   calculateRateImpact: (metal: MetalType, purity: MetalPurity, proposedRate: number, products: any[]) => RateImpactSummary;
+  hydrateMetalRates: () => Promise<void>;
 }
 
 export const useMetalRateStore = create<MetalRateState>((set, get) => ({
   rates: INITIAL_METAL_RATES,
   rateHistory: INITIAL_METAL_RATES,
+  loading: false,
+  error: null,
+
+  hydrateMetalRates: async () => {
+    set({ loading: true, error: null });
+    try {
+      const rates = await metalRateApi.listRates();
+      set({ rates: rates.filter((r) => r.status === 'PUBLISHED'), rateHistory: rates, loading: false });
+    } catch (error) {
+      set({ loading: false, error: error instanceof Error ? error.message : 'Unable to load metal rates from API' });
+    }
+  },
 
   getRate: (metal, purity) => {
     const record = get().rates.find((r) => r.metal === metal && r.purity === purity && r.status === 'PUBLISHED');
@@ -92,6 +108,11 @@ export const useMetalRateStore = create<MetalRateState>((set, get) => ({
       rates: updatedRates,
       rateHistory: [newRecord, ...get().rateHistory],
     });
+    void metalRateApi
+      .publishRate({ metal, purity, ratePerGram: newRatePerGram, notes, updatedBy: adminName })
+      .catch((error) => {
+        set({ error: error instanceof Error ? error.message : 'Unable to publish metal rate' });
+      });
   },
 
   rollbackRate: (rateId) => {
@@ -105,6 +126,9 @@ export const useMetalRateStore = create<MetalRateState>((set, get) => ({
           : r
       ),
     }));
+    void metalRateApi.rollbackRate(rateId).catch((error) => {
+      set({ error: error instanceof Error ? error.message : 'Unable to rollback metal rate' });
+    });
   },
 
   calculateRateImpact: (metal, purity, proposedRate, products) => {

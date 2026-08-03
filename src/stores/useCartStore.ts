@@ -3,10 +3,13 @@ import { CartItem, Product, ProductVariant, Coupon } from '../types';
 import { calculateJewelleryPrice } from '../utils/pricing';
 import { useMetalRateStore } from './useMetalRateStore';
 import { INITIAL_COUPONS } from '../data/mockData';
+import { couponApi } from '../services/couponApi';
 
 interface CartState {
   items: CartItem[];
   appliedCoupon: Coupon | null;
+  coupons: Coupon[];
+  couponError: string | null;
   priceLockExpiresAt: number | null; // Timestamp 15 minutes from first addition
   
   // Actions
@@ -26,6 +29,7 @@ interface CartState {
   applyCoupon: (code: string) => { success: boolean; message: string };
   removeCoupon: () => void;
   clearCart: () => void;
+  hydrateCoupons: () => Promise<void>;
   
   // Computations
   getSubtotal: () => number;
@@ -57,7 +61,18 @@ const saveItems = (items: CartItem[]) => {
 export const useCartStore = create<CartState>((set, get) => ({
   items: getInitialItems(),
   appliedCoupon: null,
+  coupons: INITIAL_COUPONS,
+  couponError: null,
   priceLockExpiresAt: Date.now() + 15 * 60 * 1000, // 15-min price lock
+
+  hydrateCoupons: async () => {
+    try {
+      const coupons = await couponApi.listCoupons();
+      set({ coupons, couponError: null });
+    } catch (error) {
+      set({ coupons: INITIAL_COUPONS, couponError: error instanceof Error ? error.message : 'Unable to load coupons' });
+    }
+  },
 
   addItem: ({ product, variant, selectedAttributes = {}, quantity = 1, customEngraving, giftWrap = false, giftMessage }) => {
     const metalRates = useMetalRateStore.getState();
@@ -140,7 +155,7 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   applyCoupon: (code) => {
     const cleanCode = code.trim().toUpperCase();
-    const found = INITIAL_COUPONS.find((c) => c.code === cleanCode && c.active);
+    const found = get().coupons.find((c) => c.code === cleanCode && c.active);
 
     if (!found) {
       return { success: false, message: 'Invalid or expired coupon code.' };
@@ -155,6 +170,9 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
 
     set({ appliedCoupon: found });
+    void couponApi.validateCoupon(cleanCode, subtotal).catch((error) => {
+      set({ couponError: error instanceof Error ? error.message : 'Unable to validate coupon with API' });
+    });
     return { success: true, message: `Coupon ${found.code} applied successfully!` };
   },
 

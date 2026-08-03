@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { useMetalRateStore } from '../../stores/useMetalRateStore';
 import { useProductStore } from '../../stores/useProductStore';
+import { MetalType, MetalPurity } from '../../types';
 import { formatINR, formatDate } from '../../utils/formatters';
 import { calculateJewelleryPrice } from '../../utils/pricing';
 import { useToast } from '../../components/ui/Toast';
@@ -15,7 +16,7 @@ export const AdminMetalRatesPage: React.FC = () => {
   const [localRates, setLocalRates] = useState(rates);
   const [percentageAdjustment, setPercentageAdjustment] = useState<number>(0);
 
-  const handleRateChange = (metal: 'GOLD' | 'SILVER' | 'PLATINUM', purity: string, newRate: number) => {
+  const handleRateChange = (metal: MetalType, purity: MetalPurity, newRate: number) => {
     setLocalRates((prev) =>
       prev.map((r) => (r.metal === metal && r.purity === purity ? { ...r, ratePerGram: newRate } : r))
     );

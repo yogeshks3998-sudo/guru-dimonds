@@ -53,17 +53,21 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
       name: '',
       slug: '',
       sku: `VED-${Math.floor(1000 + Math.random() * 9000)}`,
+      shortDescription: 'Handcrafted hallmarked gold creation by Vedaara kaarigars.',
       category: 'Gold rings',
       subcategory: 'Rings',
       collection: 'Royal Heritage',
       gender: 'Women',
+      occasion: ['Wedding', 'Festive'],
       description: 'Handcrafted hallmarked gold creation by Vedaara kaarigars.',
       pricingMode: 'RATE_LINKED',
       metalType: 'GOLD',
       metalPurity: '22K',
-      metalColor: 'Yellow Gold',
+      metalColor: 'Yellow',
       grossWeightGrams: 8.5,
       netWeightGrams: 8.0,
+      hallmarked: true,
+      certified: true,
       makingChargeType: 'PER_GRAM',
       makingChargeValue: 650,
       wastagePercentage: 2.0,
@@ -71,13 +75,24 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
       certificationCharge: 500,
       packagingCharge: 300,
       gstPercentage: 3,
-      stockStatus: 'READY_TO_SHIP',
+      totalStock: 1,
+      hasVariants: false,
+      variantAttributes: [],
+      variants: [],
+      lowStockThreshold: 1,
       images: ['https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80'],
-      badges: ['HALLMARKED_BIS', 'CERTIFIED'],
+      readyToShip: true,
+      dispatchDays: 2,
+      returnEligible: true,
+      returnPolicyDays: 7,
+      codAvailable: true,
+      badges: ['HALLMARKED', 'CERTIFIED'],
       tags: ['gold', 'ring', 'royal'],
       rating: 5.0,
       reviewCount: 1,
+      status: 'ACTIVE',
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
   );
 
@@ -306,7 +321,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                   <input
                     type="text"
                     value={formData.metalColor}
-                    onChange={(e) => setFormData({ ...formData, metalColor: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, metalColor: e.target.value as Product['metalColor'] })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
                   />
                 </div>

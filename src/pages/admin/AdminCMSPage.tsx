@@ -73,8 +73,8 @@ export const AdminCMSPage: React.FC = () => {
                 <label className="font-bold text-[#1B1A18] block mb-1">Link Target URL</label>
                 <input
                   type="text"
-                  value={announcementForm.linkUrl || ''}
-                  onChange={(e) => setAnnouncementForm({ ...announcementForm, linkUrl: e.target.value })}
+                  value={announcementForm.link || ''}
+                  onChange={(e) => setAnnouncementForm({ ...announcementForm, link: e.target.value })}
                   className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
                 />
               </div>

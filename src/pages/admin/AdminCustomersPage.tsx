@@ -1,10 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { INITIAL_CUSTOMERS } from '../../data/mockData';
+import { customerApi } from '../../services/customerApi';
+import { Customer } from '../../types';
 import { formatINR } from '../../utils/formatters';
 import { Users, Mail, Phone, MapPin, Award } from 'lucide-react';
 
 export const AdminCustomersPage: React.FC = () => {
+  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
+
+  useEffect(() => {
+    let mounted = true;
+    void customerApi
+      .listCustomers()
+      .then((apiCustomers) => {
+        if (mounted) setCustomers(apiCustomers);
+      })
+      .catch(() => {
+        if (mounted) setCustomers(INITIAL_CUSTOMERS);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <AdminLayout activeTab="customers">
       <div className="space-y-6">
@@ -18,7 +37,7 @@ export const AdminCustomersPage: React.FC = () => {
 
         {/* Directory Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {INITIAL_CUSTOMERS.map((cust) => (
+          {customers.map((cust) => (
             <div key={cust.id} className="bg-white border border-[#E7E1D7] rounded-2xl p-6 space-y-4 shadow-sm">
               <div className="flex items-center justify-between border-b border-[#E7E1D7] pb-3">
                 <div className="flex items-center gap-3">
