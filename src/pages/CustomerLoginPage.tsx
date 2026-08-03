@@ -5,20 +5,20 @@ import { useToast } from '../components/ui/Toast';
 import { Mail, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export const CustomerLoginPage: React.FC = () => {
-  const { loginCustomer } = useAuthStore();
+  const { loginCustomer, loading, error } = useAuthStore();
   const { showToast } = useToast();
 
-  const [email, setEmail] = useState('priya.sharma@example.com');
+  const [email, setEmail] = useState('ananya.d@gmail.com');
   const [password, setPassword] = useState('password123');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = loginCustomer(email);
+    const success = await loginCustomer(email, password);
     if (success) {
       showToast('Welcome Back', 'Logged in to Vedaara Fine Jewellery patron portal.');
       navigateTo('/account');
     } else {
-      showToast('Login Failed', 'Invalid email or password', 'error');
+      showToast('Login Failed', error || 'Invalid email or password', 'error');
     }
   };
 
@@ -65,13 +65,14 @@ export const CustomerLoginPage: React.FC = () => {
             className="w-full py-3.5 bg-[#A67C32] hover:bg-[#8e6828] text-white font-bold uppercase tracking-widest rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
           >
             <span>Sign In to Account</span>
+            {loading && <span>...</span>}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
         <div className="p-3 bg-[#FAF3E6] border border-[#D8C29D] rounded-xl text-[11px] text-[#1B1A18] space-y-1">
-          <p className="font-bold">Demo Login Credentials:</p>
-          <p>Email: priya.sharma@example.com</p>
+          <p className="font-bold">Seeded Login Credentials:</p>
+          <p>Email: ananya.d@gmail.com</p>
           <p>Password: password123</p>
         </div>
       </div>

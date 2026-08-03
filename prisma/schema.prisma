@@ -134,6 +134,8 @@ model Customer {
   id                String    @id
   name              String
   email             String    @unique
+  passwordHash      String?
+  emailVerified     Boolean   @default(false)
   phone             String
   avatar            String?
   totalOrders       Int       @default(0)
@@ -143,6 +145,7 @@ model Customer {
   tags              Json
   marketingConsent  Boolean   @default(false)
   status            String
+  lastLoginAt       DateTime?
   createdAt         DateTime
   addresses         Address[]
   orders            Order[]

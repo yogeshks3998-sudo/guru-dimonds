@@ -5,17 +5,21 @@ import { useToast } from '../components/ui/Toast';
 import { ShieldCheck, Flame, ArrowRight } from 'lucide-react';
 
 export const AdminLoginPage: React.FC = () => {
-  const { loginAdmin } = useAuthStore();
+  const { loginAdmin, loading, error } = useAuthStore();
   const { showToast } = useToast();
 
-  const [username, setUsername] = useState('admin');
+  const [username, setUsername] = useState('owner@vedaara.com');
   const [password, setPassword] = useState('admin123');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    loginAdmin('OWNER');
-    showToast('Admin Authenticated', 'Access granted to Vedaara Goldsmith CMS.');
-    navigateTo('/admin');
+    const success = await loginAdmin(username, password);
+    if (success) {
+      showToast('Admin Authenticated', 'Access granted to Vedaara Goldsmith CMS.');
+      navigateTo('/admin');
+    } else {
+      showToast('Admin Login Failed', error || 'Invalid admin credentials', 'error');
+    }
   };
 
   return (
@@ -57,13 +61,14 @@ export const AdminLoginPage: React.FC = () => {
             className="w-full py-3.5 bg-[#A67C32] hover:bg-[#8e6828] text-white font-bold uppercase tracking-widest rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
           >
             <span>Enter Admin Portal</span>
+            {loading && <span>...</span>}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
         <div className="p-3 bg-[#1B1A18] border border-[#3D3A36] rounded-xl text-[11px] text-[#A7A9AC] space-y-1">
-          <p className="font-bold text-[#D8C29D]">Demo Admin Credentials:</p>
-          <p>Username: admin</p>
+          <p className="font-bold text-[#D8C29D]">Seeded Admin Credentials:</p>
+          <p>Email: owner@vedaara.com</p>
           <p>Password: admin123</p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { navigateTo } from '../../utils/navigation';
+import { roleCan } from '../../utils/permissions';
 import {
   LayoutDashboard,
   Coins,
@@ -48,13 +49,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
   }
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard Overview', icon: LayoutDashboard, path: '/admin' },
-    { id: 'rates', label: 'Live Metal Rates', icon: Coins, path: '/admin/metal-rates' },
-    { id: 'products', label: 'Jewellery Products', icon: Package, path: '/admin/products' },
-    { id: 'orders', label: 'Customer Orders', icon: ShoppingBag, path: '/admin/orders' },
-    { id: 'customers', label: 'Patrons & Clients', icon: Users, path: '/admin/customers' },
-    { id: 'cms', label: 'CMS & Banners', icon: FileText, path: '/admin/cms' },
-  ];
+    { id: 'dashboard', label: 'Dashboard Overview', icon: LayoutDashboard, path: '/admin', roles: ['STAFF', 'PRODUCT_MANAGER', 'ORDER_MANAGER', 'CONTENT_MANAGER', 'FINANCE'] },
+    { id: 'rates', label: 'Live Metal Rates', icon: Coins, path: '/admin/metal-rates', roles: ['FINANCE'] },
+    { id: 'products', label: 'Jewellery Products', icon: Package, path: '/admin/products', roles: ['PRODUCT_MANAGER'] },
+    { id: 'orders', label: 'Customer Orders', icon: ShoppingBag, path: '/admin/orders', roles: ['ORDER_MANAGER', 'FINANCE'] },
+    { id: 'customers', label: 'Patrons & Clients', icon: Users, path: '/admin/customers', roles: ['ORDER_MANAGER'] },
+    { id: 'cms', label: 'CMS & Banners', icon: FileText, path: '/admin/cms', roles: ['CONTENT_MANAGER'] },
+  ].filter((item) => roleCan(adminUser?.role, ...(item.roles as any)));
 
   return (
     <div className="min-h-screen bg-[#F7F5F0] text-[#1B1A18] flex flex-col md:flex-row">

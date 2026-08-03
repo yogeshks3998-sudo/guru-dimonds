@@ -3,6 +3,7 @@ import { prisma } from '../config/db';
 import { asyncHandler, HttpError } from '../utils/http';
 import { toMetalRateData, toMetalRateResponse } from '../utils/serializers';
 import type { MetalPurity, MetalRate, MetalType } from '../../../src/types';
+import { requireRole } from '../middleware/auth';
 
 export const ratesRouter = Router();
 
@@ -16,6 +17,7 @@ ratesRouter.get(
 
 ratesRouter.post(
   '/metal-rates',
+  requireRole('OWNER', 'FINANCE'),
   asyncHandler(async (req, res) => {
     const body = req.body as {
       metal: MetalType;
@@ -55,6 +57,7 @@ ratesRouter.post(
 
 ratesRouter.post(
   '/metal-rates/:id/rollback',
+  requireRole('OWNER', 'FINANCE'),
   asyncHandler(async (req, res) => {
     const target = await prisma.metalRate.findUnique({ where: { id: String(req.params.id) } });
     if (!target) throw new HttpError(404, 'Metal rate not found');

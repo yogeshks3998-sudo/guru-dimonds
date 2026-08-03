@@ -3,6 +3,7 @@ import { prisma } from '../config/db';
 import { asyncHandler, HttpError } from '../utils/http';
 import { toCategoryData, toCollectionData, toProductCreateData, toProductResponse } from '../utils/serializers';
 import type { Category, Collection, Product } from '../../../src/types';
+import { requireRole } from '../middleware/auth';
 
 export const catalogRouter = Router();
 
@@ -16,6 +17,7 @@ catalogRouter.get(
 
 catalogRouter.put(
   '/categories/:id',
+  requireRole('OWNER', 'PRODUCT_MANAGER'),
   asyncHandler(async (req, res) => {
     const category = req.body as Category;
     const id = String(req.params.id);
@@ -38,6 +40,7 @@ catalogRouter.get(
 
 catalogRouter.put(
   '/collections/:id',
+  requireRole('OWNER', 'PRODUCT_MANAGER', 'CONTENT_MANAGER'),
   asyncHandler(async (req, res) => {
     const collection = req.body as Collection;
     const id = String(req.params.id);
@@ -93,6 +96,7 @@ catalogRouter.get(
 
 catalogRouter.post(
   '/products',
+  requireRole('OWNER', 'PRODUCT_MANAGER'),
   asyncHandler(async (req, res) => {
     const product = req.body as Product;
     const saved = await prisma.$transaction(async (tx) => {
@@ -122,6 +126,7 @@ catalogRouter.post(
 
 catalogRouter.put(
   '/products/:id',
+  requireRole('OWNER', 'PRODUCT_MANAGER'),
   asyncHandler(async (req, res) => {
     const id = String(req.params.id);
     const product = { ...(req.body as Product), id };
@@ -155,6 +160,7 @@ catalogRouter.put(
 
 catalogRouter.delete(
   '/products/:id',
+  requireRole('OWNER', 'PRODUCT_MANAGER'),
   asyncHandler(async (req, res) => {
     await prisma.product.delete({ where: { id: String(req.params.id) } });
     res.status(204).send();

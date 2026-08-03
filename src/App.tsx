@@ -10,6 +10,8 @@ import { useCMSStore } from './stores/useCMSStore';
 import { useMetalRateStore } from './stores/useMetalRateStore';
 import { useOrderStore } from './stores/useOrderStore';
 import { useProductStore } from './stores/useProductStore';
+import { useAuthStore } from './stores/useAuthStore';
+import { roleCan, routePermissions } from './utils/permissions';
 
 // Storefront Pages
 import { HomePage } from './pages/HomePage';
@@ -41,6 +43,7 @@ import { AdminCustomersPage } from './pages/admin/AdminCustomersPage';
 export function App() {
   const [currentPath, setCurrentPath] = useState(getCurrentPath());
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const { isAdminLoggedIn, isCustomerLoggedIn, adminUser } = useAuthStore();
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -53,18 +56,37 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    void useAuthStore.getState().restoreSession();
     void useProductStore.getState().hydrateProducts();
     void useMetalRateStore.getState().hydrateMetalRates();
     void useCMSStore.getState().hydrateCMS();
-    void useOrderStore.getState().hydrateOrders();
     void useCartStore.getState().hydrateCoupons();
   }, []);
+
+  useEffect(() => {
+    if (isAdminLoggedIn) {
+      void useOrderStore.getState().hydrateOrders();
+    }
+  }, [isAdminLoggedIn]);
 
   const isAdminRoute = currentPath.startsWith('/admin');
 
   const renderContent = () => {
     // Admin Routes
     if (currentPath === '/admin/login') return <AdminLoginPage />;
+    if (isAdminRoute && !isAdminLoggedIn) return <AdminLoginPage />;
+    const exactAdminPath = currentPath.startsWith('/admin/products/edit/') ? '/admin/products' : currentPath;
+    const allowedRoles = routePermissions[exactAdminPath];
+    if (isAdminRoute && allowedRoles && !roleCan(adminUser?.role, ...allowedRoles)) {
+      return (
+        <div className="min-h-screen bg-[#1B1A18] text-[#FAF8F3] flex items-center justify-center p-6 text-center">
+          <div className="max-w-md space-y-3">
+            <h1 className="font-serif text-3xl font-bold">Access Restricted</h1>
+            <p className="text-sm text-[#D8C29D]">Your admin role does not include permission for this section.</p>
+          </div>
+        </div>
+      );
+    }
     if (currentPath === '/admin') return <AdminDashboardPage />;
     if (currentPath === '/admin/metal-rates') return <AdminMetalRatesPage />;
     if (currentPath === '/admin/products') return <AdminProductsPage />;
@@ -87,6 +109,7 @@ export function App() {
     if (currentPath === '/checkout') return <CheckoutPage />;
     if (currentPath.startsWith('/checkout/success')) return <OrderConfirmationPage />;
     if (currentPath === '/wishlist') return <WishlistPage />;
+    if (currentPath === '/account' && !isCustomerLoggedIn) return <CustomerLoginPage />;
     if (currentPath === '/account') return <CustomerAccountPage />;
     if (currentPath === '/track-order') return <TrackOrderPage />;
     if (currentPath === '/login') return <CustomerLoginPage />;

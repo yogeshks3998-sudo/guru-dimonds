@@ -3,6 +3,7 @@ import { prisma } from '../config/db';
 import { asyncHandler, HttpError } from '../utils/http';
 import { toAddressData, toCustomerData, toOrderCreateData, toOrderResponse } from '../utils/serializers';
 import type { Customer, Order } from '../../../src/types';
+import { requireRole } from '../middleware/auth';
 
 export const ordersRouter = Router();
 
@@ -13,6 +14,7 @@ const orderInclude = {
 
 ordersRouter.get(
   '/orders',
+  requireRole('OWNER', 'ORDER_MANAGER', 'FINANCE'),
   asyncHandler(async (_req, res) => {
     const orders = await prisma.order.findMany({
       include: orderInclude,
@@ -24,6 +26,7 @@ ordersRouter.get(
 
 ordersRouter.get(
   '/orders/:id',
+  requireRole('OWNER', 'ORDER_MANAGER', 'FINANCE'),
   asyncHandler(async (req, res) => {
     const order = await prisma.order.findFirst({
       where: { OR: [{ id: String(req.params.id) }, { orderNumber: String(req.params.id) }] },
@@ -97,6 +100,7 @@ ordersRouter.post(
 
 ordersRouter.patch(
   '/orders/:id/status',
+  requireRole('OWNER', 'ORDER_MANAGER'),
   asyncHandler(async (req, res) => {
     const status = String(req.body.status || '');
     const note = String(req.body.note || `Status updated to ${status}`);

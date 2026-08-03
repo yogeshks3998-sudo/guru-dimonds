@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
+import { authRouter } from './routes/auth';
 import { catalogRouter } from './routes/catalog';
 import { contentRouter } from './routes/content';
 import { couponsRouter } from './routes/coupons';
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
 app.use('/api/health', healthRouter);
+app.use('/api', authRouter);
 app.use('/api', catalogRouter);
 app.use('/api', contentRouter);
 app.use('/api', couponsRouter);
@@ -32,4 +34,3 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     message: err.message || 'Unexpected server error',
   });
 });
-

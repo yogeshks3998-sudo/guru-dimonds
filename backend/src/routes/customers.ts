@@ -3,6 +3,7 @@ import { prisma } from '../config/db';
 import { asyncHandler, HttpError } from '../utils/http';
 import { toAddressData, toCustomerData } from '../utils/serializers';
 import type { Customer } from '../../../src/types';
+import { requireRole } from '../middleware/auth';
 
 export const customersRouter = Router();
 
@@ -17,6 +18,7 @@ const toCustomerResponse = (customer: Customer): Customer =>
 
 customersRouter.get(
   '/customers',
+  requireRole('OWNER', 'ORDER_MANAGER'),
   asyncHandler(async (_req, res) => {
     const customers = await prisma.customer.findMany({
       include: { addresses: true },
@@ -28,6 +30,7 @@ customersRouter.get(
 
 customersRouter.get(
   '/customers/:id',
+  requireRole('OWNER', 'ORDER_MANAGER'),
   asyncHandler(async (req, res) => {
     const customer = await prisma.customer.findUnique({
       where: { id: String(req.params.id) },
@@ -40,6 +43,7 @@ customersRouter.get(
 
 customersRouter.put(
   '/customers/:id',
+  requireRole('OWNER'),
   asyncHandler(async (req, res) => {
     const id = String(req.params.id);
     const customer = { ...(req.body as Customer), id };

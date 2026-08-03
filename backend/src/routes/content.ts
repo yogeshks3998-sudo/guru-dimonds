@@ -3,6 +3,7 @@ import { prisma } from '../config/db';
 import { asyncHandler, HttpError } from '../utils/http';
 import { toCMSData, toCMSResponse } from '../utils/serializers';
 import type { CMSContent } from '../../../src/types';
+import { requireRole } from '../middleware/auth';
 
 export const contentRouter = Router();
 
@@ -17,6 +18,7 @@ contentRouter.get(
 
 contentRouter.put(
   '/cms',
+  requireRole('OWNER', 'CONTENT_MANAGER'),
   asyncHandler(async (req, res) => {
     const cms = req.body as CMSContent;
     const saved = await prisma.cMSContent.upsert({
@@ -27,4 +29,3 @@ contentRouter.put(
     res.json(toCMSResponse(saved));
   })
 );
-

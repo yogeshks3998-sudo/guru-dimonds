@@ -1,4 +1,5 @@
 import { prisma } from '../config/db';
+import bcrypt from 'bcryptjs';
 import { INITIAL_PRODUCTS } from '../../../src/data/mockProducts';
 import {
   INITIAL_AUDIT_LOGS,
@@ -26,6 +27,8 @@ import {
 
 async function seed() {
   console.log('Seeding PostgreSQL with current Vedaara mock data...');
+  const customerPasswordHash = await bcrypt.hash('password123', 12);
+  const adminPasswordHash = await bcrypt.hash('admin123', 12);
 
   for (const category of INITIAL_CATEGORIES) {
     await prisma.category.upsert({
@@ -81,15 +84,38 @@ async function seed() {
         where: { id: customer.id },
         create: {
           ...toCustomerData(customer),
+          passwordHash: customerPasswordHash,
+          emailVerified: true,
           addresses: { create: customer.addresses.map((address) => toAddressData(address)) },
         },
         update: {
           ...toCustomerData(customer),
+          passwordHash: customerPasswordHash,
+          emailVerified: true,
           addresses: { create: customer.addresses.map((address) => toAddressData(address)) },
         },
       });
     });
   }
+
+  await prisma.adminUser.upsert({
+    where: { email: 'owner@vedaara.com' },
+    create: {
+      id: 'adm-1',
+      name: 'Vedaara Owner',
+      email: 'owner@vedaara.com',
+      passwordHash: adminPasswordHash,
+      role: 'OWNER',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+      active: true,
+      lastLogin: null,
+    },
+    update: {
+      passwordHash: adminPasswordHash,
+      role: 'OWNER',
+      active: true,
+    },
+  });
 
   for (const order of INITIAL_ORDERS) {
     await prisma.$transaction(async (tx) => {

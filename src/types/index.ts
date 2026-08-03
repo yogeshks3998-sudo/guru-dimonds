@@ -315,7 +315,15 @@ export interface AuditLog {
   ipAddress: string;
 }
 
-export type AdminRole = 'SUPER_ADMIN' | 'OWNER' | 'PRODUCT_MANAGER' | 'INVENTORY_MANAGER' | 'ORDER_MANAGER' | 'CONTENT_MANAGER' | 'FINANCE';
+export type AdminRole =
+  | 'SUPER_ADMIN'
+  | 'OWNER'
+  | 'PRODUCT_MANAGER'
+  | 'INVENTORY_MANAGER'
+  | 'ORDER_MANAGER'
+  | 'CONTENT_MANAGER'
+  | 'FINANCE'
+  | 'STAFF';
 
 export interface AdminUser {
   id: string;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { useOrderStore } from '../../stores/useOrderStore';
 import { formatINR, formatDate } from '../../utils/formatters';
@@ -6,10 +6,14 @@ import { useToast } from '../../components/ui/Toast';
 import { Search, Printer, Truck, CheckCircle2, Eye, FileText, ChevronDown } from 'lucide-react';
 
 export const AdminOrdersPage: React.FC = () => {
-  const { orders, updateOrderStatus, addTrackingInfo } = useOrderStore();
+  const { orders, updateOrderStatus, addTrackingInfo, hydrateOrders } = useOrderStore();
   const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+
+  useEffect(() => {
+    void hydrateOrders();
+  }, [hydrateOrders]);
 
   const filteredOrders = orders.filter(
     (o) =>

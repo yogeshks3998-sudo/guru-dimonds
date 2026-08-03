@@ -6,11 +6,15 @@ import { navigateTo } from '../../utils/navigation';
 import { useToast } from '../../components/ui/Toast';
 import { ImageWithFallback } from '../../components/ui/ImageWithFallback';
 import { Search, Plus, Edit3, Trash2, Eye, BadgeAlert, Sparkles } from 'lucide-react';
+import { useAuthStore } from '../../stores/useAuthStore';
+import { roleCan } from '../../utils/permissions';
 
 export const AdminProductsPage: React.FC = () => {
   const { products, deleteProduct } = useProductStore();
+  const { adminUser } = useAuthStore();
   const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const canWrite = roleCan(adminUser?.role, 'PRODUCT_MANAGER');
 
   const filteredProducts = products.filter(
     (p) =>
@@ -38,12 +42,14 @@ export const AdminProductsPage: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => navigateTo('/admin/products/new')}
-            className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all"
-          >
-            <Plus className="w-4 h-4" /> Add New Product
-          </button>
+          {canWrite && (
+            <button
+              onClick={() => navigateTo('/admin/products/new')}
+              className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all"
+            >
+              <Plus className="w-4 h-4" /> Add New Product
+            </button>
+          )}
         </div>
 
         {/* Filter & Search Bar */}
@@ -123,20 +129,24 @@ export const AdminProductsPage: React.FC = () => {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => navigateTo(`/admin/products/edit/${product.id}`)}
-                          className="p-1.5 text-[#6F6A62] hover:text-[#A67C32]"
-                          title="Edit Product"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id, product.name)}
-                          className="p-1.5 text-[#6F6A62] hover:text-[#B43C3C]"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {canWrite && (
+                          <>
+                            <button
+                              onClick={() => navigateTo(`/admin/products/edit/${product.id}`)}
+                              className="p-1.5 text-[#6F6A62] hover:text-[#A67C32]"
+                              title="Edit Product"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(product.id, product.name)}
+                              className="p-1.5 text-[#6F6A62] hover:text-[#B43C3C]"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

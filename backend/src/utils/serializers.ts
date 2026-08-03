@@ -104,6 +104,8 @@ export const toCustomerData = (customer: Customer): Record<string, any> => ({
   id: customer.id,
   name: customer.name,
   email: customer.email,
+  passwordHash: (customer as any).passwordHash,
+  emailVerified: (customer as any).emailVerified || false,
   phone: customer.phone,
   avatar: customer.avatar,
   totalOrders: customer.totalOrders,
@@ -113,6 +115,7 @@ export const toCustomerData = (customer: Customer): Record<string, any> => ({
   tags: customer.tags,
   marketingConsent: customer.marketingConsent,
   status: customer.status,
+  lastLoginAt: (customer as any).lastLoginAt ? new Date((customer as any).lastLoginAt) : null,
   createdAt: new Date(customer.createdAt),
 });
 
