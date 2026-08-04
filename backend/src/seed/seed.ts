@@ -79,9 +79,13 @@ async function seed() {
 
   for (const customer of INITIAL_CUSTOMERS) {
     await prisma.$transaction(async (tx) => {
-      await tx.address.deleteMany({ where: { customerId: customer.id } });
+      await tx.address.deleteMany({
+        where: {
+          OR: [{ customerId: customer.id }, { email: customer.email }],
+        },
+      });
       await tx.customer.upsert({
-        where: { id: customer.id },
+        where: { email: customer.email },
         create: {
           ...toCustomerData(customer),
           passwordHash: customerPasswordHash,
