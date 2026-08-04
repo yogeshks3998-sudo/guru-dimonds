@@ -22,7 +22,7 @@ import {
 
 export const HomePage: React.FC = () => {
   const { cms } = useCMSStore();
-  const { products, setSelectedCategory, setSelectedCollection } = useProductStore();
+  const { products, setSelectedCategory, setSelectedCollection, setSelectedGender, resetFilters } = useProductStore();
   const { rates } = useMetalRateStore();
 
   const hero = cms.heroBanner;
@@ -37,7 +37,7 @@ export const HomePage: React.FC = () => {
           ctaLabel: hero.ctaLabel,
           ctaLink: hero.ctaLink,
           secondaryCtaLabel: 'Custom Commissions',
-          secondaryCtaLink: '/custom-jewellery',
+          secondaryCtaLink: '/contact',
           imageUrl: hero.imageUrl,
           mobileImageUrl: hero.mobileImageUrl,
         },
@@ -68,6 +68,24 @@ export const HomePage: React.FC = () => {
     return () => window.clearInterval(timer);
   }, [heroSlides.length]);
 
+  const handleHeroNavigation = (link: string) => {
+    const targetLink = link || '/shop';
+
+    if (targetLink.startsWith('/shop?')) {
+      const queryString = targetLink.split('?')[1] || '';
+      const params = new URLSearchParams(queryString);
+
+      resetFilters();
+      setSelectedCategory(params.get('category'));
+      setSelectedCollection(params.get('collection'));
+      setSelectedGender(params.get('gender'));
+      navigateTo('/shop');
+      return;
+    }
+
+    navigateTo(targetLink);
+  };
+
   return (
     <div className="bg-[#FFF9F0] text-[#281C18] flex flex-col">
       {/* 1. Hero Campaign Section (Light Ivory Background Container) */}
@@ -79,7 +97,7 @@ export const HomePage: React.FC = () => {
               {heroSlides.map((slide, index) => (
                 <ImageWithFallback
                   key={slide.id}
-                  src={slide.imageUrl || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1600&q=80'}
+                  src={slide.imageUrl || '/hero/hero.png'}
                   alt={slide.title}
                   className={`absolute inset-0 w-full h-full object-cover object-center opacity-45 mix-blend-luminosity scale-102 transition-opacity duration-700 ${
                     index === activeHeroIndex ? 'opacity-45' : 'opacity-0'
@@ -104,7 +122,7 @@ export const HomePage: React.FC = () => {
 
               <div className="flex flex-wrap gap-4 pt-2">
                 <button
-                  onClick={() => navigateTo(activeHeroSlide.ctaLink || '/shop')}
+                  onClick={() => handleHeroNavigation(activeHeroSlide.ctaLink)}
                   className="luxury-action-button"
                 >
                   <span className="circle" aria-hidden="true">
@@ -114,7 +132,7 @@ export const HomePage: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={() => navigateTo(activeHeroSlide.secondaryCtaLink || '/custom-jewellery')}
+                  onClick={() => handleHeroNavigation(activeHeroSlide.secondaryCtaLink)}
                   className="luxury-action-button luxury-action-button-secondary"
                 >
                   <span className="circle" aria-hidden="true">

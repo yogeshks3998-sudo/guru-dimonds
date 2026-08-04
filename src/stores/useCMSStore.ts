@@ -36,22 +36,29 @@ const withBrandFooterContact = (cms: CMSContent): CMSContent => ({
   },
 });
 
+const isDemoHeroImage = (imageUrl?: string): boolean =>
+  !imageUrl || imageUrl.includes('images.unsplash.com') || imageUrl.includes('images.pexels.com');
+
 const createFallbackHeroSlides = (heroBanner: CMSContent['heroBanner']): CMSHeroSlide[] => {
   const defaultSlides = INITIAL_CMS.heroBanner.slides || [];
+  if (defaultSlides.length > 0) {
+    return defaultSlides.slice(0, 4);
+  }
+
   const firstSlide: CMSHeroSlide = {
-    id: defaultSlides[0]?.id || 'hero-slide-1',
-    eyebrow: defaultSlides[0]?.eyebrow || 'Where Trust Meets Brilliance',
-    title: heroBanner.title || defaultSlides[0]?.title || 'Guru Diamonds',
-    subtitle: heroBanner.subtitle || defaultSlides[0]?.subtitle || '',
-    ctaLabel: heroBanner.ctaLabel || defaultSlides[0]?.ctaLabel || 'Explore Collection',
-    ctaLink: heroBanner.ctaLink || defaultSlides[0]?.ctaLink || '/shop',
-    secondaryCtaLabel: defaultSlides[0]?.secondaryCtaLabel || 'Custom Commissions',
-    secondaryCtaLink: defaultSlides[0]?.secondaryCtaLink || '/custom-jewellery',
-    imageUrl: heroBanner.imageUrl || defaultSlides[0]?.imageUrl || '',
-    mobileImageUrl: heroBanner.mobileImageUrl || defaultSlides[0]?.mobileImageUrl || heroBanner.imageUrl || '',
+    id: 'hero-slide-1',
+    eyebrow: 'Where Trust Meets Brilliance',
+    title: heroBanner.title || 'Guru Diamonds',
+    subtitle: heroBanner.subtitle || '',
+    ctaLabel: heroBanner.ctaLabel || 'Explore Collection',
+    ctaLink: heroBanner.ctaLink || '/shop',
+    secondaryCtaLabel: 'Contact Store',
+    secondaryCtaLink: '/contact',
+    imageUrl: isDemoHeroImage(heroBanner.imageUrl) ? '/hero/hero.png' : heroBanner.imageUrl,
+    mobileImageUrl: isDemoHeroImage(heroBanner.mobileImageUrl) ? '/hero/hero.png' : heroBanner.mobileImageUrl,
   };
 
-  return [firstSlide, ...defaultSlides.slice(1)].slice(0, 3);
+  return [firstSlide];
 };
 
 const normalizeHeroBanner = (heroBanner: CMSContent['heroBanner']): CMSContent['heroBanner'] => {
@@ -62,11 +69,22 @@ const normalizeHeroBanner = (heroBanner: CMSContent['heroBanner']): CMSContent['
 
   const normalizedSlides = fallbackSlides.map((fallback, index) => {
     const slide = slides[index] || fallback;
+    const hasDemoImage = isDemoHeroImage(slide.imageUrl);
+    if (hasDemoImage) {
+      return {
+        ...fallback,
+        id: slide.id || fallback.id,
+      };
+    }
+
     return {
       ...fallback,
       ...slide,
       id: slide.id || fallback.id,
-      mobileImageUrl: slide.mobileImageUrl || slide.imageUrl || fallback.mobileImageUrl,
+      imageUrl: slide.imageUrl,
+      mobileImageUrl: isDemoHeroImage(slide.mobileImageUrl)
+        ? fallback.mobileImageUrl
+        : slide.mobileImageUrl || slide.imageUrl || fallback.mobileImageUrl,
     };
   });
 
