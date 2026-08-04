@@ -105,17 +105,22 @@ export const HomePage: React.FC = () => {
               <div className="flex flex-wrap gap-4 pt-2">
                 <button
                   onClick={() => navigateTo(activeHeroSlide.ctaLink || '/shop')}
-                  className="px-8 py-3.5 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center gap-2 border border-[#B8893D]/30"
+                  className="luxury-action-button"
                 >
-                  <span>{activeHeroSlide.ctaLabel}</span>
-                  <ArrowRight className="w-4 h-4 text-[#B8893D]" />
+                  <span className="circle" aria-hidden="true">
+                    <span className="icon arrow" />
+                  </span>
+                  <span className="button-text">{activeHeroSlide.ctaLabel}</span>
                 </button>
 
                 <button
                   onClick={() => navigateTo(activeHeroSlide.secondaryCtaLink || '/custom-jewellery')}
-                  className="px-8 py-3.5 bg-[#FFF9F0]/10 hover:bg-[#FFF9F0]/20 text-[#FFF9F0] border border-[#FFF9F0]/30 text-xs font-bold uppercase tracking-widest rounded-xl backdrop-blur-md transition-all"
+                  className="luxury-action-button luxury-action-button-secondary"
                 >
-                  {activeHeroSlide.secondaryCtaLabel}
+                  <span className="circle" aria-hidden="true">
+                    <span className="icon arrow" />
+                  </span>
+                  <span className="button-text">{activeHeroSlide.secondaryCtaLabel}</span>
                 </button>
               </div>
             </div>

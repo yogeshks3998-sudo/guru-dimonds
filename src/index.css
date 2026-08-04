@@ -131,3 +131,107 @@
 .image-heritage-hover:hover {
   transform: scale(1.03);
 }
+
+.luxury-action-button {
+  position: relative;
+  display: inline-block;
+  width: 15rem;
+  max-width: 100%;
+  height: 3rem;
+  cursor: pointer;
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  vertical-align: middle;
+  text-decoration: none;
+  font-family: 'Plus Jakarta Sans', 'Manrope', ui-sans-serif, system-ui, sans-serif;
+}
+
+.luxury-action-button .circle {
+  position: relative;
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  margin: 0;
+  border-radius: 1.625rem;
+  background: #7A1822;
+  border: 1px solid rgba(184, 137, 61, 0.5);
+  box-shadow: 0 12px 30px rgba(45, 8, 12, 0.3);
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+}
+
+.luxury-action-button-secondary .circle {
+  background: rgba(255, 249, 240, 0.14);
+  border-color: rgba(255, 249, 240, 0.35);
+}
+
+.luxury-action-button .circle .icon {
+  position: absolute;
+  inset-block: 0;
+  margin: auto;
+  background: #FFF9F0;
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+}
+
+.luxury-action-button .circle .icon.arrow {
+  left: 0.625rem;
+  width: 1.125rem;
+  height: 0.125rem;
+  background: transparent;
+}
+
+.luxury-action-button .circle .icon.arrow::before {
+  position: absolute;
+  content: "";
+  top: -0.29rem;
+  right: 0.0625rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-top: 0.125rem solid #FFF9F0;
+  border-right: 0.125rem solid #FFF9F0;
+  transform: rotate(45deg);
+}
+
+.luxury-action-button .button-text {
+  position: absolute;
+  inset: 0;
+  margin-left: 1.85rem;
+  padding: 0.75rem 0.65rem;
+  color: #FFF9F0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.6;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+}
+
+.luxury-action-button-secondary .button-text {
+  color: #F4E4C8;
+}
+
+.luxury-action-button:hover .circle,
+.luxury-action-button:focus-visible .circle {
+  width: 100%;
+  background: #7A1822;
+}
+
+.luxury-action-button:hover .circle .icon.arrow,
+.luxury-action-button:focus-visible .circle .icon.arrow {
+  background: #FFF9F0;
+  transform: translateX(1rem);
+}
+
+.luxury-action-button:hover .button-text,
+.luxury-action-button:focus-visible .button-text {
+  color: #FFF9F0;
+}
+
+.luxury-action-button:focus-visible {
+  border-radius: 1.625rem;
+  box-shadow: 0 0 0 3px rgba(184, 137, 61, 0.45);
+}
