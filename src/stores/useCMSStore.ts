@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { CMSContent, CMSSection } from '../types';
+import { CMSContent, CMSHeroSlide, CMSSection } from '../types';
 import { INITIAL_CMS } from '../data/mockData';
 import { cmsApi } from '../services/cmsApi';
 
@@ -29,11 +29,58 @@ const BRAND_FOOTER_CONTACT: Pick<CMSContent['footer'], 'phone' | 'email' | 'addr
 
 const withBrandFooterContact = (cms: CMSContent): CMSContent => ({
   ...cms,
+  heroBanner: normalizeHeroBanner(cms.heroBanner),
   footer: {
     ...cms.footer,
     ...BRAND_FOOTER_CONTACT,
   },
 });
+
+const createFallbackHeroSlides = (heroBanner: CMSContent['heroBanner']): CMSHeroSlide[] => {
+  const defaultSlides = INITIAL_CMS.heroBanner.slides || [];
+  const firstSlide: CMSHeroSlide = {
+    id: defaultSlides[0]?.id || 'hero-slide-1',
+    eyebrow: defaultSlides[0]?.eyebrow || 'Where Trust Meets Brilliance',
+    title: heroBanner.title || defaultSlides[0]?.title || 'Guru Diamonds',
+    subtitle: heroBanner.subtitle || defaultSlides[0]?.subtitle || '',
+    ctaLabel: heroBanner.ctaLabel || defaultSlides[0]?.ctaLabel || 'Explore Collection',
+    ctaLink: heroBanner.ctaLink || defaultSlides[0]?.ctaLink || '/shop',
+    secondaryCtaLabel: defaultSlides[0]?.secondaryCtaLabel || 'Custom Commissions',
+    secondaryCtaLink: defaultSlides[0]?.secondaryCtaLink || '/custom-jewellery',
+    imageUrl: heroBanner.imageUrl || defaultSlides[0]?.imageUrl || '',
+    mobileImageUrl: heroBanner.mobileImageUrl || defaultSlides[0]?.mobileImageUrl || heroBanner.imageUrl || '',
+  };
+
+  return [firstSlide, ...defaultSlides.slice(1)].slice(0, 3);
+};
+
+const normalizeHeroBanner = (heroBanner: CMSContent['heroBanner']): CMSContent['heroBanner'] => {
+  const fallbackSlides = createFallbackHeroSlides(heroBanner);
+  const slides = Array.isArray(heroBanner.slides) && heroBanner.slides.length > 0
+    ? heroBanner.slides
+    : fallbackSlides;
+
+  const normalizedSlides = fallbackSlides.map((fallback, index) => {
+    const slide = slides[index] || fallback;
+    return {
+      ...fallback,
+      ...slide,
+      id: slide.id || fallback.id,
+      mobileImageUrl: slide.mobileImageUrl || slide.imageUrl || fallback.mobileImageUrl,
+    };
+  });
+
+  return {
+    ...heroBanner,
+    title: normalizedSlides[0].title,
+    subtitle: normalizedSlides[0].subtitle,
+    ctaLabel: normalizedSlides[0].ctaLabel,
+    ctaLink: normalizedSlides[0].ctaLink,
+    imageUrl: normalizedSlides[0].imageUrl,
+    mobileImageUrl: normalizedSlides[0].mobileImageUrl,
+    slides: normalizedSlides,
+  };
+};
 
 const getInitialCMS = (): CMSContent => {
   try {
@@ -85,7 +132,7 @@ export const useCMSStore = create<CMSState>((set, get) => ({
   updateHeroBanner: (heroData) => {
     const updated = {
       ...get().cms,
-      heroBanner: { ...get().cms.heroBanner, ...heroData },
+      heroBanner: normalizeHeroBanner({ ...get().cms.heroBanner, ...heroData }),
     };
     saveCMS(updated);
     set({ cms: updated });

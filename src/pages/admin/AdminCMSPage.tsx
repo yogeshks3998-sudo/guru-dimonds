@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { useCMSStore } from '../../stores/useCMSStore';
 import { useToast } from '../../components/ui/Toast';
 import { Save, FileText, Image, MessageSquare, Megaphone, Globe } from 'lucide-react';
+import { CMSHeroSlide } from '../../types';
 
 export const AdminCMSPage: React.FC = () => {
   const { cms, updateHeroBanner, updateAnnouncement, updateFooter } = useCMSStore();
@@ -11,6 +12,30 @@ export const AdminCMSPage: React.FC = () => {
   const [heroForm, setHeroForm] = useState(cms.heroBanner);
   const [announcementForm, setAnnouncementForm] = useState(cms.announcementBar);
   const [footerForm, setFooterForm] = useState(cms.footer);
+  const heroSlides = heroForm.slides || [];
+
+  useEffect(() => {
+    setHeroForm(cms.heroBanner);
+    setAnnouncementForm(cms.announcementBar);
+    setFooterForm(cms.footer);
+  }, [cms]);
+
+  const updateHeroSlide = (index: number, slideData: Partial<CMSHeroSlide>) => {
+    const slides = heroSlides.map((slide, slideIndex) =>
+      slideIndex === index ? { ...slide, ...slideData } : slide
+    );
+    const firstSlide = slides[0];
+    setHeroForm({
+      ...heroForm,
+      slides,
+      title: firstSlide.title,
+      subtitle: firstSlide.subtitle,
+      ctaLabel: firstSlide.ctaLabel,
+      ctaLink: firstSlide.ctaLink,
+      imageUrl: firstSlide.imageUrl,
+      mobileImageUrl: firstSlide.mobileImageUrl,
+    });
+  };
 
   const handleSaveCMS = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,50 +109,122 @@ export const AdminCMSPage: React.FC = () => {
           {/* Hero Banner Editor */}
           <div className="bg-white border border-[#E7E1D7] rounded-2xl p-6 space-y-4 shadow-sm">
             <h3 className="font-serif font-bold text-base text-[#1B1A18] border-b border-[#E7E1D7] pb-2 flex items-center gap-2">
-              <Image className="w-4 h-4 text-[#A67C32]" /> Main Homepage Hero Banner
+              <Image className="w-4 h-4 text-[#A67C32]" /> Homepage Hero Slider
             </h3>
 
-            <div className="space-y-4">
-              <div>
-                <label className="font-bold text-[#1B1A18] block mb-1">Main Heading Title</label>
-                <input
-                  type="text"
-                  value={heroForm.title}
-                  onChange={(e) => setHeroForm({ ...heroForm, title: e.target.value })}
-                  className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-serif font-bold text-base"
-                />
-              </div>
+            <div className="space-y-6">
+              {heroSlides.map((slide, index) => (
+                <div key={slide.id} className="rounded-2xl border border-[#E7E1D7] bg-[#FAF8F3] p-4 space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#E7E1D7] pb-2">
+                    <h4 className="font-serif font-bold text-sm text-[#1B1A18]">Hero Slide {index + 1}</h4>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#A67C32]">Auto Carousel</span>
+                  </div>
 
-              <div>
-                <label className="font-bold text-[#1B1A18] block mb-1">Subheading Paragraph</label>
-                <textarea
-                  rows={2}
-                  value={heroForm.subtitle}
-                  onChange={(e) => setHeroForm({ ...heroForm, subtitle: e.target.value })}
-                  className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
-                />
-              </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px] gap-4">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="font-bold text-[#1B1A18] block mb-1">Small Label / Eyebrow</label>
+                        <input
+                          type="text"
+                          value={slide.eyebrow}
+                          onChange={(e) => updateHeroSlide(index, { eyebrow: e.target.value })}
+                          className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold"
+                        />
+                      </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-[#1B1A18] block mb-1">CTA Button Label</label>
-                  <input
-                    type="text"
-                    value={heroForm.ctaLabel}
-                    onChange={(e) => setHeroForm({ ...heroForm, ctaLabel: e.target.value })}
-                    className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold"
-                  />
+                      <div>
+                        <label className="font-bold text-[#1B1A18] block mb-1">Main Heading Title</label>
+                        <input
+                          type="text"
+                          value={slide.title}
+                          onChange={(e) => updateHeroSlide(index, { title: e.target.value })}
+                          className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-hero font-bold text-base"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-[#1B1A18] block mb-1">Subheading Paragraph</label>
+                        <textarea
+                          rows={2}
+                          value={slide.subtitle}
+                          onChange={(e) => updateHeroSlide(index, { subtitle: e.target.value })}
+                          className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl overflow-hidden bg-white border border-[#E7E1D7] min-h-40">
+                      {slide.imageUrl ? (
+                        <img src={slide.imageUrl} alt={`Hero slide ${index + 1} preview`} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-[#6F6A62] uppercase font-bold">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="font-bold text-[#1B1A18] block mb-1">Primary Button Label</label>
+                      <input
+                        type="text"
+                        value={slide.ctaLabel}
+                        onChange={(e) => updateHeroSlide(index, { ctaLabel: e.target.value })}
+                        className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-[#1B1A18] block mb-1">Primary Button Link</label>
+                      <input
+                        type="text"
+                        value={slide.ctaLink}
+                        onChange={(e) => updateHeroSlide(index, { ctaLink: e.target.value })}
+                        className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-[#1B1A18] block mb-1">Secondary Button Label</label>
+                      <input
+                        type="text"
+                        value={slide.secondaryCtaLabel}
+                        onChange={(e) => updateHeroSlide(index, { secondaryCtaLabel: e.target.value })}
+                        className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-[#1B1A18] block mb-1">Secondary Button Link</label>
+                      <input
+                        type="text"
+                        value={slide.secondaryCtaLink}
+                        onChange={(e) => updateHeroSlide(index, { secondaryCtaLink: e.target.value })}
+                        className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="font-bold text-[#1B1A18] block mb-1">Desktop Image URL</label>
+                      <input
+                        type="text"
+                        value={slide.imageUrl}
+                        onChange={(e) => updateHeroSlide(index, { imageUrl: e.target.value })}
+                        className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-[#1B1A18] block mb-1">Mobile Image URL</label>
+                      <input
+                        type="text"
+                        value={slide.mobileImageUrl}
+                        onChange={(e) => updateHeroSlide(index, { mobileImageUrl: e.target.value })}
+                        className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="font-bold text-[#1B1A18] block mb-1">Banner Background Image URL</label>
-                  <input
-                    type="text"
-                    value={heroForm.imageUrl}
-                    onChange={(e) => setHeroForm({ ...heroForm, imageUrl: e.target.value })}
-                    className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-mono"
-                  />
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </form>

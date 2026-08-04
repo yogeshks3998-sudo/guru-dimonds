@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { navigateTo } from '../utils/navigation';
 import { useCMSStore } from '../stores/useCMSStore';
 import { useProductStore } from '../stores/useProductStore';
@@ -26,6 +26,24 @@ export const HomePage: React.FC = () => {
   const { rates } = useMetalRateStore();
 
   const hero = cms.heroBanner;
+  const heroSlides = hero.slides && hero.slides.length > 0
+    ? hero.slides
+    : [
+        {
+          id: 'hero-slide-fallback',
+          eyebrow: 'Where Trust Meets Brilliance',
+          title: hero.title,
+          subtitle: hero.subtitle,
+          ctaLabel: hero.ctaLabel,
+          ctaLink: hero.ctaLink,
+          secondaryCtaLabel: 'Custom Commissions',
+          secondaryCtaLink: '/custom-jewellery',
+          imageUrl: hero.imageUrl,
+          mobileImageUrl: hero.mobileImageUrl,
+        },
+      ];
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+  const activeHeroSlide = heroSlides[activeHeroIndex] || heroSlides[0];
   const bestSellers = products.filter((p) => p.badges.includes('BEST_SELLER')).slice(0, 4);
   const newArrivals = products.filter((p) => p.badges.includes('NEW')).slice(0, 4);
   const gemstonesList = products.filter((p) => isGemstoneProduct(p) || p.category === 'Maalas').slice(0, 4);
@@ -34,52 +52,91 @@ export const HomePage: React.FC = () => {
   const gold22k = rates.find((r) => r.metal === 'GOLD' && r.purity === '22K')?.ratePerGram || 6830;
   const silver925 = rates.find((r) => r.metal === 'SILVER' && r.purity === '925')?.ratePerGram || 82;
 
+  useEffect(() => {
+    if (activeHeroIndex >= heroSlides.length) {
+      setActiveHeroIndex(0);
+    }
+  }, [activeHeroIndex, heroSlides.length]);
+
+  useEffect(() => {
+    if (heroSlides.length <= 1) return;
+
+    const timer = window.setInterval(() => {
+      setActiveHeroIndex((currentIndex) => (currentIndex + 1) % heroSlides.length);
+    }, 5500);
+
+    return () => window.clearInterval(timer);
+  }, [heroSlides.length]);
+
   return (
     <div className="bg-[#FFF9F0] text-[#281C18] flex flex-col">
       {/* 1. Hero Campaign Section (Light Ivory Background Container) */}
       <section className="bg-[#FFF9F0] py-8 sm:py-12">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative rounded-3xl overflow-hidden bg-[#2D080C] text-[#FFF9F0] min-h-[500px] lg:min-h-[600px] xl:min-h-[640px] flex items-center border border-[#B8893D]/30 shadow-xl">
-            {/* Campaign Image */}
+            {/* Campaign Image Slider */}
             <div className="absolute inset-0 z-0">
-              <ImageWithFallback
-                src={hero.imageUrl || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1600&q=80'}
-                alt={hero.title}
-                className="w-full h-full object-cover object-center opacity-45 mix-blend-luminosity scale-102"
-              />
+              {heroSlides.map((slide, index) => (
+                <ImageWithFallback
+                  key={slide.id}
+                  src={slide.imageUrl || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1600&q=80'}
+                  alt={slide.title}
+                  className={`absolute inset-0 w-full h-full object-cover object-center opacity-45 mix-blend-luminosity scale-102 transition-opacity duration-700 ${
+                    index === activeHeroIndex ? 'opacity-45' : 'opacity-0'
+                  }`}
+                />
+              ))}
               <div className="absolute inset-0 bg-gradient-to-r from-[#2D080C] via-[#2D080C]/80 to-transparent" />
             </div>
 
             <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-16 py-20 space-y-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#B8893D]/20 border border-[#B8893D]/40 text-[#F4E4C8] text-xs font-semibold uppercase tracking-widest backdrop-blur-sm">
-                <span>Where Trust Meets Brilliance</span>
+                <span>{activeHeroSlide.eyebrow}</span>
               </div>
 
               <h1 className="font-hero text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[#FFF9F0] leading-tight">
-                {hero.title}
+                {activeHeroSlide.title}
               </h1>
 
               <p className="text-sm sm:text-base text-[#F4E4C8]/90 font-sans leading-relaxed max-w-xl">
-                {hero.subtitle}
+                {activeHeroSlide.subtitle}
               </p>
 
               <div className="flex flex-wrap gap-4 pt-2">
                 <button
-                  onClick={() => navigateTo(hero.ctaLink || '/shop')}
+                  onClick={() => navigateTo(activeHeroSlide.ctaLink || '/shop')}
                   className="px-8 py-3.5 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center gap-2 border border-[#B8893D]/30"
                 >
-                  <span>{hero.ctaLabel}</span>
+                  <span>{activeHeroSlide.ctaLabel}</span>
                   <ArrowRight className="w-4 h-4 text-[#B8893D]" />
                 </button>
 
                 <button
-                  onClick={() => navigateTo('/custom-jewellery')}
+                  onClick={() => navigateTo(activeHeroSlide.secondaryCtaLink || '/custom-jewellery')}
                   className="px-8 py-3.5 bg-[#FFF9F0]/10 hover:bg-[#FFF9F0]/20 text-[#FFF9F0] border border-[#FFF9F0]/30 text-xs font-bold uppercase tracking-widest rounded-xl backdrop-blur-md transition-all"
                 >
-                  Custom Commissions
+                  {activeHeroSlide.secondaryCtaLabel}
                 </button>
               </div>
             </div>
+
+            {heroSlides.length > 1 && (
+              <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
+                {heroSlides.map((slide, index) => (
+                  <button
+                    key={slide.id}
+                    type="button"
+                    onClick={() => setActiveHeroIndex(index)}
+                    aria-label={`Show hero slide ${index + 1}`}
+                    className={`h-2.5 rounded-full border border-[#F4E4C8]/70 transition-all ${
+                      index === activeHeroIndex
+                        ? 'w-8 bg-[#B8893D]'
+                        : 'w-2.5 bg-[#FFF9F0]/35 hover:bg-[#FFF9F0]/70'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

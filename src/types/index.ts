@@ -345,6 +345,19 @@ export interface CMSSection {
   content: Record<string, any>;
 }
 
+export interface CMSHeroSlide {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  ctaLabel: string;
+  ctaLink: string;
+  secondaryCtaLabel: string;
+  secondaryCtaLink: string;
+  imageUrl: string;
+  mobileImageUrl: string;
+}
+
 export interface CMSContent {
   announcementBar: {
     enabled: boolean;
@@ -358,6 +371,7 @@ export interface CMSContent {
     ctaLink: string;
     imageUrl: string;
     mobileImageUrl: string;
+    slides?: CMSHeroSlide[];
   };
   sections: CMSSection[];
   footer: {
