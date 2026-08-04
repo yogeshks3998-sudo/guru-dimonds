@@ -6,6 +6,7 @@ import { useMetalRateStore } from '../stores/useMetalRateStore';
 import { ProductCard } from '../components/storefront/ProductCard';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { formatINR } from '../utils/formatters';
+import { isGemstoneProduct } from '../utils/productFilters';
 import {
   Sparkles,
   ShieldCheck,
@@ -27,7 +28,7 @@ export const HomePage: React.FC = () => {
   const hero = cms.heroBanner;
   const bestSellers = products.filter((p) => p.badges.includes('BEST_SELLER')).slice(0, 4);
   const newArrivals = products.filter((p) => p.badges.includes('NEW')).slice(0, 4);
-  const gemstonesList = products.filter((p) => p.category === 'Gemstones' || p.category === 'Maalas').slice(0, 4);
+  const gemstonesList = products.filter((p) => isGemstoneProduct(p) || p.category === 'Maalas').slice(0, 4);
 
   const gold24k = rates.find((r) => r.metal === 'GOLD' && r.purity === '24K')?.ratePerGram || 7450;
   const gold22k = rates.find((r) => r.metal === 'GOLD' && r.purity === '22K')?.ratePerGram || 6830;

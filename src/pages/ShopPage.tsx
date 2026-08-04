@@ -3,6 +3,7 @@ import { useProductStore } from '../stores/useProductStore';
 import { useMetalRateStore } from '../stores/useMetalRateStore';
 import { ProductCard } from '../components/storefront/ProductCard';
 import { calculateJewelleryPrice } from '../utils/pricing';
+import { productMatchesCategory } from '../utils/productFilters';
 import { INITIAL_CATEGORIES } from '../data/mockData';
 import { SlidersHorizontal, X, Search, RotateCcw, LayoutGrid, List } from 'lucide-react';
 
@@ -46,7 +47,7 @@ export const ShopPage: React.FC = () => {
       }
 
       // 2. Category
-      if (selectedCategory && product.category.toLowerCase() !== selectedCategory.toLowerCase()) {
+      if (selectedCategory && !productMatchesCategory(product, selectedCategory)) {
         return false;
       }
 
