@@ -7,6 +7,21 @@ import { requireRole } from '../middleware/auth';
 
 export const catalogRouter = Router();
 
+const toVariantCreateData = (variant: Product['variants'][number]): Record<string, any> => ({
+  id: variant.id,
+  sku: variant.sku,
+  barcode: variant.barcode,
+  attributes: variant.attributes,
+  price: variant.price,
+  compareAtPrice: variant.compareAtPrice,
+  netWeightGrams: variant.netWeightGrams,
+  grossWeightGrams: variant.grossWeightGrams,
+  stock: variant.stock,
+  images: variant.images || [],
+  enabled: variant.enabled,
+  dispatchTimeDays: variant.dispatchTimeDays,
+});
+
 catalogRouter.get(
   '/categories',
   asyncHandler(async (_req, res) => {
@@ -103,7 +118,7 @@ catalogRouter.post(
       const created = await tx.product.create({
         data: {
           ...toProductCreateData(product),
-          variants: { create: product.variants as any },
+          variants: { create: (product.variants || []).map(toVariantCreateData) },
           media: {
             create: product.images.map((url, position) => ({ url, position })),
           },
@@ -138,7 +153,7 @@ catalogRouter.put(
         where: { id },
         data: {
           ...toProductCreateData(product),
-          variants: { create: product.variants as any },
+          variants: { create: (product.variants || []).map(toVariantCreateData) },
           media: {
             create: product.images.map((url, position) => ({ url, position })),
           },

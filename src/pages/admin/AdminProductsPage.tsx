@@ -23,10 +23,14 @@ export const AdminProductsPage: React.FC = () => {
       p.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to delete ${name}?`)) {
-      deleteProduct(id);
-      showToast('Product Removed', `${name} deleted from catalogue.`);
+      try {
+        await deleteProduct(id);
+        showToast('Product Removed', `${name} deleted from catalogue.`);
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Unable to delete product. Please try again.');
+      }
     }
   };
 

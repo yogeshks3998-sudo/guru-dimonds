@@ -61,6 +61,46 @@ describe('Catalog APIs', () => {
     expect(response.body.name).toBe('Jest Updated Diamond');
   });
 
+  it('PUT /api/products/:id updates products that include existing variant relation fields', async () => {
+    const variantProduct = productFactory({
+      id: 'jest-prod-with-variant',
+      slug: 'jest-prod-with-variant',
+      sku: 'JEST-PROD-WITH-VARIANT',
+      variants: [
+        {
+          id: 'jest-variant-existing',
+          sku: 'JEST-PROD-WITH-VARIANT-DEFAULT',
+          barcode: 'JEST-PROD-WITH-VARIANT',
+          attributes: { Gemstone: 'Ruby' },
+          price: 1000,
+          netWeightGrams: 0,
+          grossWeightGrams: 0,
+          stock: 1,
+          images: [],
+          enabled: true,
+          dispatchTimeDays: 7,
+        },
+      ],
+    });
+
+    await cleanupProduct(variantProduct.id);
+    await api().post('/api/products').set(owner).send(variantProduct).expect(201);
+
+    const fetched = await api().get(`/api/products/${variantProduct.slug}`).expect(200);
+    expect(fetched.body.variants[0].productId).toBe(variantProduct.id);
+
+    const response = await api()
+      .put(`/api/products/${variantProduct.id}`)
+      .set(manager)
+      .send({ ...fetched.body, name: 'Jest Updated Variant Product' })
+      .expect(200);
+
+    expect(response.body.name).toBe('Jest Updated Variant Product');
+    expect(response.body.variants).toHaveLength(1);
+
+    await cleanupProduct(variantProduct.id);
+  });
+
   it('DELETE /api/products/:id denies STAFF', async () => {
     await api().delete(`/api/products/${product.id}`).set(staff).expect(403);
   });

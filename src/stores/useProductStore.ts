@@ -29,10 +29,10 @@ interface ProductState {
   hydrateProducts: () => Promise<void>;
   
   // Product Admin Operations
-  addProduct: (product: Product) => void;
-  updateProduct: (id: string, updated: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  duplicateProduct: (id: string) => void;
+  addProduct: (product: Product) => Promise<Product>;
+  updateProduct: (id: string, updated: Partial<Product>) => Promise<Product>;
+  deleteProduct: (id: string) => Promise<void>;
+  duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
@@ -83,36 +83,57 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  addProduct: (newProd) => {
+  addProduct: async (newProd) => {
     set({ products: [newProd, ...get().products] });
-    void productApi.createProduct(newProd).catch((error) => {
+    try {
+      const saved = await productApi.createProduct(newProd);
+      set({ products: get().products.map((p) => (p.id === newProd.id ? saved : p)) });
+      return saved;
+    } catch (error) {
+      set({ products: get().products.filter((p) => p.id !== newProd.id) });
       set({ error: error instanceof Error ? error.message : 'Unable to save product' });
-    });
-  },
-
-  updateProduct: (id, updated) => {
-    const nextProduct = get().products.find((p) => p.id === id);
-    const merged = nextProduct ? { ...nextProduct, ...updated, updatedAt: new Date().toISOString() } : null;
-    set({
-      products: get().products.map((p) => (p.id === id && merged ? merged : p)),
-    });
-    if (merged) {
-      void productApi.updateProduct(id, merged).catch((error) => {
-        set({ error: error instanceof Error ? error.message : 'Unable to update product' });
-      });
+      throw error;
     }
   },
 
-  deleteProduct: (id) => {
-    set({ products: get().products.filter((p) => p.id !== id) });
-    void productApi.deleteProduct(id).catch((error) => {
-      set({ error: error instanceof Error ? error.message : 'Unable to delete product' });
+  updateProduct: async (id, updated) => {
+    const nextProduct = get().products.find((p) => p.id === id);
+    const merged = nextProduct ? { ...nextProduct, ...updated, updatedAt: new Date().toISOString() } : null;
+    const previousProducts = get().products;
+    if (!merged) throw new Error('Product not found');
+
+    set({
+      products: previousProducts.map((p) => (p.id === id ? merged : p)),
     });
+
+    try {
+      const saved = await productApi.updateProduct(id, merged);
+      set({ products: get().products.map((p) => (p.id === id ? saved : p)) });
+      return saved;
+    } catch (error) {
+      set({
+        products: previousProducts,
+        error: error instanceof Error ? error.message : 'Unable to update product',
+      });
+      throw error;
+    }
   },
 
-  duplicateProduct: (id) => {
+  deleteProduct: async (id) => {
+    const previousProducts = get().products;
+    set({ products: previousProducts.filter((p) => p.id !== id) });
+    try {
+      await productApi.deleteProduct(id);
+    } catch (error) {
+      set({ products: previousProducts });
+      set({ error: error instanceof Error ? error.message : 'Unable to delete product' });
+      throw error;
+    }
+  },
+
+  duplicateProduct: async (id) => {
     const target = get().products.find((p) => p.id === id);
-    if (!target) return;
+    if (!target) return null;
     const duplicated: Product = {
       ...target,
       id: `prod-${Date.now()}`,
@@ -123,8 +144,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
       updatedAt: new Date().toISOString(),
     };
     set({ products: [duplicated, ...get().products] });
-    void productApi.createProduct(duplicated).catch((error) => {
+    try {
+      const saved = await productApi.createProduct(duplicated);
+      set({ products: get().products.map((p) => (p.id === duplicated.id ? saved : p)) });
+      return saved;
+    } catch (error) {
+      set({ products: get().products.filter((p) => p.id !== duplicated.id) });
       set({ error: error instanceof Error ? error.message : 'Unable to duplicate product' });
-    });
+      throw error;
+    }
   },
 }));

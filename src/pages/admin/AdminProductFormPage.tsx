@@ -182,7 +182,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
     gstPercentage: formData.gstPercentage || 3,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) return alert('Please enter product name.');
     if (!formData.sku) return alert('Please enter SKU number.');
@@ -190,20 +190,24 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
 
     const finalSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-    if (existing) {
-      updateProduct(existing.id, { ...formData, slug: finalSlug });
-      showToast('Product Updated', `${formData.name} updated successfully.`);
-    } else {
-      const newProduct: Product = {
-        ...(formData as Product),
-        id: `prod-${Date.now()}`,
-        slug: finalSlug,
-      };
-      addProduct(newProduct);
-      showToast('New Product Published', `${formData.name} added to storefront catalogue.`);
-    }
+    try {
+      if (existing) {
+        await updateProduct(existing.id, { ...formData, slug: finalSlug });
+        showToast('Product Updated', `${formData.name} updated successfully.`);
+      } else {
+        const newProduct: Product = {
+          ...(formData as Product),
+          id: `prod-${Date.now()}`,
+          slug: finalSlug,
+        };
+        await addProduct(newProduct);
+        showToast('New Product Published', `${formData.name} added to storefront catalogue.`);
+      }
 
-    navigateTo('/admin/products');
+      navigateTo('/admin/products');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to save product. Please try again.');
+    }
   };
 
   return (
