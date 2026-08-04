@@ -36,9 +36,9 @@ export const HomePage: React.FC = () => {
   return (
     <div className="bg-[#FFF9F0] text-[#281C18] flex flex-col">
       {/* 1. Hero Campaign Section (Light Ivory Background Container) */}
-      <section className="bg-[#FFF9F0] py-6 sm:py-10">
+      <section className="bg-[#FFF9F0] py-8 sm:py-12">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden bg-[#2D080C] text-[#FFF9F0] min-h-[460px] lg:min-h-[520px] flex items-center border border-[#B8893D]/30 shadow-xl">
+          <div className="relative rounded-3xl overflow-hidden bg-[#2D080C] text-[#FFF9F0] min-h-[500px] lg:min-h-[600px] xl:min-h-[640px] flex items-center border border-[#B8893D]/30 shadow-xl">
             {/* Campaign Image */}
             <div className="absolute inset-0 z-0">
               <ImageWithFallback
@@ -49,7 +49,7 @@ export const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-[#2D080C] via-[#2D080C]/80 to-transparent" />
             </div>
 
-            <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-16 py-16 space-y-6">
+            <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-16 py-20 space-y-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#B8893D]/20 border border-[#B8893D]/40 text-[#F4E4C8] text-xs font-semibold uppercase tracking-widest backdrop-blur-sm">
                 <span>Where Trust Meets Brilliance</span>
               </div>
@@ -84,7 +84,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 2. Daily Bullion Rate & Formula Guarantee Banner (Champagne Background - #F4E4C8) */}
-      <section className="bg-[#F4E4C8] py-12 sm:py-16 border-y border-[#E9D9C5]">
+      <section className="bg-[#F4E4C8] py-14 sm:py-20 border-y border-[#E9D9C5]">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-[#FFF9F0] border border-[#E9D9C5] rounded-2xl p-6 lg:p-8 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-6 items-center">
             <div>
@@ -121,7 +121,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 3. Featured Categories (Light Ivory Background - #FFF9F0) */}
-      <section className="bg-[#FFF9F0] py-16 sm:py-20">
+      <section className="bg-[#FFF9F0] py-20 sm:py-24">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="text-center max-w-xl mx-auto space-y-2">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#B8893D]">Curated Masterpieces</span>
@@ -187,7 +187,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 4. Signature Bestsellers (Dusty Blush Background - #F3DDD7) */}
-      <section className="bg-[#F3DDD7] py-16 sm:py-20 border-y border-[#E9D9C5]/80">
+      <section className="bg-[#F3DDD7] py-20 sm:py-24 border-y border-[#E9D9C5]/80">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="flex items-end justify-between border-b border-[#E9D9C5] pb-4">
             <div>
@@ -212,7 +212,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 5. Spiritual Heritage Spotlight (Deep Imperial Burgundy Background - #3D0B10) */}
-      <section className="bg-[#3D0B10] text-[#FFF9F0] py-16 sm:py-20 border-y border-[#B8893D]/40">
+      <section className="bg-[#3D0B10] text-[#FFF9F0] py-20 sm:py-24 border-y border-[#B8893D]/40">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#B8893D]/20 border border-[#B8893D]/40 text-[#F4E4C8] text-xs font-semibold uppercase tracking-widest">
@@ -261,7 +261,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 6. Certified Gemstones Showcase (Champagne Background - #F4E4C8) */}
-      <section className="bg-[#F4E4C8] py-16 sm:py-20 border-b border-[#E9D9C5]">
+      <section className="bg-[#F4E4C8] py-20 sm:py-24 border-b border-[#E9D9C5]">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="flex items-end justify-between border-b border-[#E9D9C5] pb-4">
             <div>
@@ -289,7 +289,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 7. Authenticity & Brand Trust (Light Ivory Background - #FFF9F0) */}
-      <section className="bg-[#FFF9F0] py-16 sm:py-20">
+      <section className="bg-[#FFF9F0] py-20 sm:py-24">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-[#FFF9F0] border border-[#E9D9C5] rounded-3xl p-8 lg:p-12 text-center space-y-8 shadow-xs">
             <div className="max-w-2xl mx-auto space-y-3">
