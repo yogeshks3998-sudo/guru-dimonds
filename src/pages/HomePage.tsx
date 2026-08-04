@@ -251,11 +251,11 @@ export const HomePage: React.FC = () => {
             </button>
           </div>
 
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-[#B8893D]/40 shadow-2xl">
+          <div className="relative rounded-2xl overflow-hidden border border-[#B8893D]/40 shadow-2xl bg-[#FFF9F0] flex items-center justify-center p-4">
             <ImageWithFallback
               src={spiritualCollectionImage}
               alt="Sphatika Maala"
-              className="w-full h-full object-cover"
+              className="w-full h-auto max-h-[560px] object-contain"
             />
           </div>
         </div>
