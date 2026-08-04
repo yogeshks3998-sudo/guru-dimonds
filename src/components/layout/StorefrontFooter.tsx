@@ -2,6 +2,7 @@ import React from 'react';
 import { navigateTo } from '../../utils/navigation';
 import { useCMSStore } from '../../stores/useCMSStore';
 import { ShieldCheck, Award, Truck, RefreshCw, Phone, Mail, MapPin, Send } from 'lucide-react';
+import guruDiamondsLogo from '../../../assets/gurudimondslogo.png';
 
 export const StorefrontFooter: React.FC = () => {
   const { cms } = useCMSStore();
@@ -48,7 +49,9 @@ export const StorefrontFooter: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         {/* Col 1: Brand Info */}
         <div className="lg:col-span-2 space-y-4">
-          <span className="font-serif text-3xl font-bold tracking-[0.2em] text-[#FFF9F0] block">GURU DIAMONDS</span>
+          <button onClick={() => navigateTo('/')} className="inline-flex rounded-lg bg-[#FFF9F0] p-2" aria-label="Guru Diamonds home">
+            <img src={guruDiamondsLogo} alt="Guru Diamonds" className="h-20 w-auto max-w-[250px] object-contain" />
+          </button>
           <p className="text-xs text-[#F4E4C8]/80 leading-relaxed max-w-sm">{footer.aboutText}</p>
           <div className="space-y-2 text-xs text-[#F4E4C8] pt-2">
             <p className="flex items-center gap-2">

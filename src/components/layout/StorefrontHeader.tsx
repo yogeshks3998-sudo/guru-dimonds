@@ -7,6 +7,7 @@ import { useCMSStore } from '../../stores/useCMSStore';
 import { useProductStore } from '../../stores/useProductStore';
 import { GlobalSearchOverlay } from './GlobalSearchOverlay';
 import { MegaMenu } from './MegaMenu';
+import guruDiamondsLogo from '../../../assets/gurudimondslogo.png';
 import {
   Search,
   Heart,
@@ -148,13 +149,12 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
 
         {/* Center/Left: Brand Logo */}
         <div className="flex items-center gap-8">
-          <button onClick={() => navigateTo('/')} className="text-left group flex flex-col">
-            <span className="font-serif text-2xl sm:text-3xl font-bold tracking-[0.2em] text-[#281C18] group-hover:text-[#7A1822] transition-colors leading-none">
-              GURU DIAMONDS
-            </span>
-            <span className="text-[9px] uppercase tracking-[0.35em] text-[#B8893D] font-semibold block mt-1">
-              WHERE TRUST MEETS BRILLIANCE
-            </span>
+          <button onClick={() => navigateTo('/')} className="group flex items-center" aria-label="Guru Diamonds home">
+            <img
+              src={guruDiamondsLogo}
+              alt="Guru Diamonds"
+              className="h-12 w-auto max-w-[210px] object-contain transition-transform group-hover:scale-[1.02] sm:h-14 sm:max-w-[260px]"
+            />
           </button>
 
           {/* Desktop Search Trigger */}
@@ -327,7 +327,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex">
           <div className="w-4/5 max-w-sm bg-[#FFF9F0] h-full shadow-2xl flex flex-col p-6 overflow-y-auto border-r border-[#E9D9C5]">
             <div className="flex items-center justify-between pb-4 border-b border-[#E9D9C5]">
-              <span className="font-serif text-xl font-bold tracking-widest text-[#281C18]">GURU DIAMONDS</span>
+              <img src={guruDiamondsLogo} alt="Guru Diamonds" className="h-12 w-auto max-w-[220px] object-contain" />
               <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-[#796A65]">
                 <X className="w-6 h-6" />
               </button>
