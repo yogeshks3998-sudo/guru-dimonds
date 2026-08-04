@@ -22,7 +22,7 @@ const LOCAL_KEY = 'guru_diamonds_cms_content_v1';
 const LEGACY_LOCAL_KEY = 'vedaara_cms_content_v1';
 const BRAND_FOOTER_CONTACT: Pick<CMSContent['footer'], 'phone' | 'email' | 'address' | 'whatsapp'> = {
   phone: '+91 78991 25449',
-  email: 'infi@gurudimonds.in',
+  email: 'info@gurudimonds.in',
   address: 'No. 1108, 1st Cross, Kurubageri, Lashkar Mohalla, Mysuru - 570001, Karnataka, India',
   whatsapp: '+91 78991 25449',
 };

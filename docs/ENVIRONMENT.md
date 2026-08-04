@@ -32,7 +32,7 @@ SMTP_HOST=""
 SMTP_PORT=""
 SMTP_USER=""
 SMTP_PASS=""
-FROM_EMAIL="infi@gurudimonds.in"
+FROM_EMAIL="info@gurudimonds.in"
 ```
 
 Phase 4 stores email intent records in `EmailLog`. A real SMTP/provider sender can be attached later.

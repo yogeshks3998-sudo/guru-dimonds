@@ -37,7 +37,7 @@ export const ContactPage: React.FC = () => (
       <div className="bg-white border border-[#E7E1D7] p-6 rounded-2xl space-y-2">
         <Mail className="w-6 h-6 text-[#A67C32]" />
         <h4 className="font-serif font-bold text-sm">Email</h4>
-        <p className="text-[#6F6A62]">infi@gurudimonds.in</p>
+        <p className="text-[#6F6A62]">info@gurudimonds.in</p>
       </div>
       <div className="bg-white border border-[#E7E1D7] p-6 rounded-2xl space-y-2">
         <MapPin className="w-6 h-6 text-[#A67C32]" />

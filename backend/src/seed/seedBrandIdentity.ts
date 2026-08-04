@@ -6,7 +6,7 @@ const BRAND_FOOTER = {
   aboutText:
     'Guru Diamonds is a trusted gemstone and precious stone destination in Mysuru, offering genuine diamonds, pearls, rubies, emeralds, sapphires, coral, crystals, silver jewellery, and personalized customer assistance.',
   phone: '+91 78991 25449',
-  email: 'infi@gurudimonds.in',
+  email: 'info@gurudimonds.in',
   address: 'No. 1108, 1st Cross, Kurubageri, Lashkar Mohalla, Mysuru - 570001, Karnataka, India',
   whatsapp: '+91 78991 25449',
 };

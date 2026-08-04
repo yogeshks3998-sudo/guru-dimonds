@@ -27,7 +27,7 @@ describe('React component tests', () => {
   it('Footer renders final contact details', () => {
     renderWithProviders(<StorefrontFooter />);
 
-    expect(screen.getByText('infi@gurudimonds.in')).toBeInTheDocument();
+    expect(screen.getByText('info@gurudimonds.in')).toBeInTheDocument();
     expect(screen.getByText(/Kurubageri, Lashkar Mohalla/i)).toBeInTheDocument();
   });
 

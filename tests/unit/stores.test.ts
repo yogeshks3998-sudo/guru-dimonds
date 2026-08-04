@@ -79,7 +79,7 @@ describe('Zustand store tests', () => {
 
     await useCMSStore.getState().hydrateCMS();
 
-    expect(useCMSStore.getState().cms.footer.email).toBe('infi@gurudimonds.in');
+    expect(useCMSStore.getState().cms.footer.email).toBe('info@gurudimonds.in');
   });
 
   it('CMS Store handles API failure', async () => {
@@ -94,7 +94,7 @@ describe('Zustand store tests', () => {
     useCMSStore.getState().updateFooter({ email: 'wrong@example.com', aboutText: 'Updated text' });
 
     expect(useCMSStore.getState().cms.footer.aboutText).toBe('Updated text');
-    expect(useCMSStore.getState().cms.footer.email).toBe('infi@gurudimonds.in');
+    expect(useCMSStore.getState().cms.footer.email).toBe('info@gurudimonds.in');
   });
 
   it('Metal Rate Store hydrates success', async () => {
