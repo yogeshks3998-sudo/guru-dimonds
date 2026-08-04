@@ -7,6 +7,7 @@ import { ProductCard } from '../components/storefront/ProductCard';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { formatINR } from '../utils/formatters';
 import { isGemstoneProduct } from '../utils/productFilters';
+import spiritualCollectionImage from '../../assets/Screenshot 2026-08-04 170018.png';
 import {
   ShieldCheck,
   Award,
@@ -252,7 +253,7 @@ export const HomePage: React.FC = () => {
 
           <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-[#B8893D]/40 shadow-2xl">
             <ImageWithFallback
-              src="https://images.unsplash.com/photo-1611591475281-a120023a105f?auto=format&fit=crop&w=1000&q=80"
+              src={spiritualCollectionImage}
               alt="Sphatika Maala"
               className="w-full h-full object-cover"
             />
