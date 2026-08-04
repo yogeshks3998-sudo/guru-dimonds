@@ -29,7 +29,7 @@ export const AdminLoginPage: React.FC = () => {
           <div className="w-12 h-12 bg-[#A67C32]/20 border border-[#A67C32] rounded-2xl flex items-center justify-center mx-auto text-[#D8C29D]">
             <Flame className="w-6 h-6" />
           </div>
-          <span className="font-serif text-2xl font-bold tracking-widest text-white block">GURU DIAMONDS CMS</span>
+          <span className="font-logo text-2xl font-bold text-white block">GURU DIAMONDS CMS</span>
           <p className="text-[#A7A9AC]">Authorized Manager & Staff Portal</p>
         </div>
 

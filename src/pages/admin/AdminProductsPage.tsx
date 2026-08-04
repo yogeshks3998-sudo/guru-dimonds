@@ -101,7 +101,7 @@ export const AdminProductsPage: React.FC = () => {
                           className="w-12 h-12 object-cover rounded-xl bg-[#FAF8F3] shrink-0"
                         />
                         <div>
-                          <h5 className="font-bold text-[#1B1A18] line-clamp-1">{product.name}</h5>
+                          <h5 className="font-product font-bold text-[#1B1A18] line-clamp-1">{product.name}</h5>
                           <span className="text-[10px] text-[#A67C32] uppercase font-semibold">
                             {product.collection}
                           </span>

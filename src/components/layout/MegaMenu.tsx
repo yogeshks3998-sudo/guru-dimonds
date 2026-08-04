@@ -169,7 +169,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ activeMenu, onClose }) => {
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#B8893D] bg-[#B8893D]/20 px-2.5 py-0.5 rounded-full">
                   <Sparkles className="w-3 h-3" /> Custom Commissions
                 </span>
-                <h5 className="font-serif font-bold text-base text-[#FFF9F0] leading-snug">
+                <h5 className="font-product font-bold text-base text-[#FFF9F0] leading-snug">
                   Bespoke Goldsmith Artistry
                 </h5>
                 <p className="text-[11px] text-[#F4E4C8]/80 leading-relaxed font-sans">

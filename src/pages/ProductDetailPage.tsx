@@ -161,7 +161,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
         <ChevronRight className="w-3 h-3 text-[#A67C32]" />
         <button onClick={() => navigateTo('/shop')} className="hover:text-[#A67C32] transition-colors">{product.category}</button>
         <ChevronRight className="w-3 h-3 text-[#A67C32]" />
-        <span className="text-[#1B1A18] font-bold line-clamp-1">{product.name}</span>
+        <span className="font-product text-[#1B1A18] font-bold line-clamp-1">{product.name}</span>
       </nav>
 
       {/* Main PDP Grid */}
@@ -246,7 +246,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               <span className="text-xs text-[#6F6A62] font-mono ml-auto">SKU: {selectedVariant?.sku || product.sku}</span>
             </div>
 
-            <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1B1A18] leading-tight">{product.name}</h1>
+            <h1 className="font-product text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1B1A18] leading-tight">{product.name}</h1>
 
             <div className="flex items-center gap-4 text-xs pt-1">
               <div className="flex items-center gap-1 text-[#A67C32]">
@@ -428,7 +428,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                 {product.metalPurity} {product.metalType}
               </span>
               <span className="text-sm font-extrabold text-[#7A1822]">
-                ₹{finalPrice.toLocaleString('en-IN')}
+                {formatINR(finalPrice)}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -715,7 +715,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               alt={product.name}
               className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl"
             />
-            <p className="text-white text-xs font-serif mt-4">{product.name} — High Resolution Studio View</p>
+            <p className="text-white text-xs font-product mt-4">{product.name} - High Resolution Studio View</p>
           </div>
         </div>
       )}

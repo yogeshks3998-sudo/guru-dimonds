@@ -108,7 +108,7 @@ export const CustomerAccountPage: React.FC = () => {
                     <div key={i} className="flex items-center gap-3 text-xs">
                       <ImageWithFallback src={item.image} alt={item.productName} className="w-10 h-10 object-cover rounded-lg bg-[#FAF8F3]" />
                       <div className="flex-1">
-                        <p className="font-bold text-[#1B1A18] line-clamp-1">{item.productName}</p>
+                        <p className="font-product font-bold text-[#1B1A18] line-clamp-1">{item.productName}</p>
                         <p className="text-[10px] text-[#6F6A62]">Qty: {item.quantity}</p>
                       </div>
                       <span className="font-bold">{formatINR(item.totalPrice)}</span>

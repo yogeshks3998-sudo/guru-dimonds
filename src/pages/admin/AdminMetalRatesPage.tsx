@@ -167,7 +167,7 @@ export const AdminMetalRatesPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <img src={product.images[0]} alt="" className="w-10 h-10 object-cover rounded-lg bg-white" />
                     <div className="min-w-0 flex-1">
-                      <h5 className="font-serif font-bold text-xs text-[#1B1A18] line-clamp-1">{product.name}</h5>
+                      <h5 className="font-product font-bold text-xs text-[#1B1A18] line-clamp-1">{product.name}</h5>
                       <p className="text-[10px] text-[#6F6A62]">
                         {product.metalPurity} {product.metalType} | {product.netWeightGrams}g
                       </p>

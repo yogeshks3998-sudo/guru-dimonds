@@ -103,7 +103,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                     className="w-20 h-20 object-cover rounded-lg bg-[#FAF8F3] shrink-0"
                   />
                   <div className="flex-1 min-w-0 pr-6">
-                    <h5 className="font-serif font-bold text-xs text-[#1B1A18] line-clamp-1">{item.product.name}</h5>
+                    <h5 className="font-product font-bold text-xs text-[#1B1A18] line-clamp-1">{item.product.name}</h5>
                     <p className="text-[11px] text-[#6F6A62] mt-0.5">
                       {item.product.metalPurity} {item.product.metalType} | Net Wt: {item.product.netWeightGrams}g
                     </p>

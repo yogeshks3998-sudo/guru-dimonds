@@ -26,7 +26,7 @@ export const CustomerLoginPage: React.FC = () => {
     <div className="max-w-md mx-auto px-4 py-16">
       <div className="bg-white border border-[#E7E1D7] rounded-3xl p-8 space-y-6 shadow-xl text-xs">
         <div className="text-center space-y-2">
-          <span className="font-serif text-2xl font-bold tracking-widest text-[#1B1A18] block">GURU DIAMONDS</span>
+          <span className="font-logo text-2xl font-bold text-[#1B1A18] block">GURU DIAMONDS</span>
           <h2 className="font-serif text-xl font-bold text-[#1B1A18]">Customer Sign In</h2>
           <p className="text-[#6F6A62]">Access saved products, order history, and express checkout.</p>
         </div>

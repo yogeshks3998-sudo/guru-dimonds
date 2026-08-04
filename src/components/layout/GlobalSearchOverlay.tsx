@@ -220,7 +220,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
                       }}
                       className="p-3 bg-[#FFFFFF] border border-[#E9D9C5] rounded-xl text-left hover:border-[#B8893D] transition-all group"
                     >
-                      <span className="text-xs font-serif font-bold text-[#281C18] group-hover:text-[#7A1822] block">
+                      <span className="text-xs font-product font-bold text-[#281C18] group-hover:text-[#7A1822] block">
                         {item.name}
                       </span>
                       <span className="text-[10px] text-[#796A65] mt-0.5 block flex items-center gap-1">

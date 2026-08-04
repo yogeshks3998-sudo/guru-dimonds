@@ -130,7 +130,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
             </div>
           </div>
 
-          <h3 className="font-serif font-bold text-base text-[#281C18] line-clamp-2 group-hover:text-[#7A1822] transition-colors leading-snug">
+          <h3 className="font-product font-bold text-base text-[#281C18] line-clamp-2 group-hover:text-[#7A1822] transition-colors leading-snug">
             {product.name}
           </h3>
         </div>

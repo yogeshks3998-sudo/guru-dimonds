@@ -54,7 +54,7 @@ export const HomePage: React.FC = () => {
                 <span>Where Trust Meets Brilliance</span>
               </div>
 
-              <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[#FFF9F0] leading-tight tracking-tight">
+              <h1 className="font-hero text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[#FFF9F0] leading-tight">
                 {hero.title}
               </h1>
 

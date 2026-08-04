@@ -79,7 +79,7 @@ export const OrderConfirmationPage: React.FC = () => {
               <div className="flex items-center gap-3">
                 <ImageWithFallback src={item.image} alt={item.productName} className="w-12 h-12 object-cover rounded-lg bg-[#FAF8F3]" />
                 <div>
-                  <h5 className="font-bold text-[#1B1A18]">{item.productName}</h5>
+                  <h5 className="font-product font-bold text-[#1B1A18]">{item.productName}</h5>
                   <p className="text-[10px] text-[#6F6A62]">Quantity: {item.quantity}</p>
                 </div>
               </div>
