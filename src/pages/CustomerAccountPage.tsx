@@ -29,7 +29,7 @@ export const CustomerAccountPage: React.FC = () => {
   const customerOrders = orders.filter((o) => o.customer.email.toLowerCase() === customer.email.toLowerCase());
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Account Profile Header */}
       <div className="bg-white border border-[#E7E1D7] rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
         <div className="flex items-center gap-4">
@@ -38,7 +38,7 @@ export const CustomerAccountPage: React.FC = () => {
           </div>
           <div>
             <h1 className="font-serif text-2xl font-bold text-[#1B1A18]">{customer.name}</h1>
-            <p className="text-xs text-[#6F6A62]">{customer.email} • {customer.phone}</p>
+            <p className="text-xs text-[#6F6A62]">{customer.email} | {customer.phone}</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-[10px] font-bold uppercase bg-[#FAF3E6] text-[#A67C32] border border-[#D8C29D] px-2 py-0.5 rounded-full">
                 VIP Patron

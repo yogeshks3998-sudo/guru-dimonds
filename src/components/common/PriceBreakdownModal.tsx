@@ -25,7 +25,7 @@ export const PriceBreakdownModal: React.FC<PriceBreakdownModalProps> = ({
           <div>
             <h4 className="font-serif font-bold text-base text-[#1B1A18] line-clamp-1">{productName}</h4>
             <p className="text-xs text-[#6F6A62] mt-0.5">
-              {priceBreakdown.purity} {priceBreakdown.metalType} • Net Weight: {priceBreakdown.netWeightGrams}g
+              {priceBreakdown.purity} {priceBreakdown.metalType} | Net Weight: {priceBreakdown.netWeightGrams}g
             </p>
           </div>
           <div className="text-right">

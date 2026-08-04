@@ -105,7 +105,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                   <div className="flex-1 min-w-0 pr-6">
                     <h5 className="font-serif font-bold text-xs text-[#1B1A18] line-clamp-1">{item.product.name}</h5>
                     <p className="text-[11px] text-[#6F6A62] mt-0.5">
-                      {item.product.metalPurity} {item.product.metalType} • Net Wt: {item.product.netWeightGrams}g
+                      {item.product.metalPurity} {item.product.metalType} | Net Wt: {item.product.netWeightGrams}g
                     </p>
                     {item.selectedVariant && (
                       <p className="text-[10px] text-[#A67C32] font-semibold">

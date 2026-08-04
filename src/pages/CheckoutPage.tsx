@@ -114,7 +114,7 @@ export const CheckoutPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Checkout Steps Progress */}
       <div className="flex items-center justify-between max-w-xl mx-auto border-b border-[#E7E1D7] pb-4 text-xs font-bold uppercase tracking-wider">
         <div className={`flex items-center gap-2 ${step >= 1 ? 'text-[#A67C32]' : 'text-[#6F6A62]'}`}>
@@ -270,7 +270,7 @@ export const CheckoutPage: React.FC = () => {
               <div className="space-y-4 text-xs">
                 <div className="p-3 bg-[#FAF8F3] rounded-xl border border-[#E7E1D7]">
                   <span className="font-bold text-[#1B1A18] block mb-1">Shipping To:</span>
-                  <p>{selectedAddress.fullName} • {selectedAddress.phone}</p>
+                  <p>{selectedAddress.fullName} | {selectedAddress.phone}</p>
                   <p>{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}</p>
                 </div>
 

@@ -143,9 +143,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   const handleCheckPincode = (e: React.FormEvent) => {
     e.preventDefault();
     if (pincode.length === 6) {
-      setPincodeMessage(`✅ Express Insured Delivery available to ${pincode} by BlueDart Air Express within 2-3 business days.`);
+      setPincodeMessage(`Express insured delivery available to ${pincode} by BlueDart Air Express within 2-3 business days.`);
     } else {
-      setPincodeMessage('❌ Please enter a valid 6-digit Indian PIN Code.');
+      setPincodeMessage('Please enter a valid 6-digit Indian PIN Code.');
     }
   };
 
@@ -154,7 +154,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-xs text-[#6F6A62]">
         <button onClick={() => navigateTo('/')} className="hover:text-[#A67C32] transition-colors">Home</button>

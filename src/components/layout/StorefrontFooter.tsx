@@ -11,7 +11,7 @@ export const StorefrontFooter: React.FC = () => {
   return (
     <footer className="bg-[#2D080C] text-[#FFF9F0] pt-16 pb-12 border-t border-[#B8893D]/40">
       {/* Top Value Proposition Badges */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 border-b border-[#B8893D]/20 grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 pb-12 border-b border-[#B8893D]/20 grid grid-cols-2 md:grid-cols-4 gap-6">
         <div className="flex items-center gap-3.5 p-4 rounded-xl bg-[#3D0B10] border border-[#B8893D]/20 shadow-inner">
           <ShieldCheck className="w-8 h-8 text-[#B8893D] shrink-0" />
           <div>
@@ -46,7 +46,7 @@ export const StorefrontFooter: React.FC = () => {
       </div>
 
       {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         {/* Col 1: Brand Info */}
         <div className="lg:col-span-2 space-y-4">
           <button onClick={() => navigateTo('/')} className="inline-flex rounded-lg bg-[#FFF9F0] p-2" aria-label="Guru Diamonds home">
@@ -162,11 +162,11 @@ export const StorefrontFooter: React.FC = () => {
             <button onClick={() => navigateTo('/privacy-policy')} className="hover:underline">
               Privacy
             </button>
-            <span>•</span>
+            <span>|</span>
             <button onClick={() => navigateTo('/terms')} className="hover:underline">
               Terms
             </button>
-            <span>•</span>
+            <span>|</span>
             <button onClick={() => navigateTo('/shipping-policy')} className="hover:underline">
               Shipping
             </button>
@@ -175,15 +175,15 @@ export const StorefrontFooter: React.FC = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-[#B8893D]/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#F4E4C8]/60">
-        <p>© {new Date().getFullYear()} Guru Diamonds. All rights reserved.</p>
+      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-[#B8893D]/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#F4E4C8]/60">
+        <p>Copyright {new Date().getFullYear()} Guru Diamonds. All rights reserved.</p>
         <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-[#B8893D]">
           <span>UPI / GPay</span>
-          <span>•</span>
+          <span>|</span>
           <span>Royal Cards</span>
-          <span>•</span>
+          <span>|</span>
           <span>NetBanking</span>
-          <span>•</span>
+          <span>|</span>
           <span>Insured COD</span>
         </div>
       </div>

@@ -24,7 +24,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ activeMenu, onClose }) => {
       onMouseLeave={onClose}
       className="absolute top-full left-0 w-full bg-[#FFFFFF] border-b border-[#E9D9C5] shadow-2xl z-40 animate-fadeIn transition-all"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeMenu === 'Jewellery' && (
           <div className="grid grid-cols-4 gap-8">
             <div className="space-y-3">

@@ -122,7 +122,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           {/* Metal & Purity tag */}
           <div className="flex items-center justify-between text-[11px] text-[#796A65] font-medium tracking-wider uppercase mb-1">
             <span>
-              {product.metalPurity} {product.metalType} • {product.metalColor}
+              {product.metalPurity} {product.metalType} | {product.metalColor}
             </span>
             <div className="flex items-center gap-1 text-[#B8893D]">
               <Star className="w-3 h-3 fill-current" />

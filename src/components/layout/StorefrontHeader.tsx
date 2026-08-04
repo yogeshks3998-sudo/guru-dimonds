@@ -16,11 +16,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  ShieldAlert,
-  Sparkles,
   PhoneCall,
   LogOut,
-  LayoutDashboard,
 } from 'lucide-react';
 
 interface StorefrontHeaderProps {
@@ -35,13 +32,18 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
 
   const { items } = useCartStore();
   const { wishlistIds } = useWishlistStore();
-  const { customer, isCustomerLoggedIn, logoutCustomer, isAdminLoggedIn } = useAuthStore();
+  const { customer, isCustomerLoggedIn, logoutCustomer, adminUser, isAdminLoggedIn, logoutAdmin } = useAuthStore();
   const { cms } = useCMSStore();
-  const { searchQuery, setSearchQuery, setSelectedCategory, setSelectedGender, setSelectedCollection } =
-    useProductStore();
+  const { setSelectedCategory, setSelectedGender, setSelectedCollection } = useProductStore();
 
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlistIds.length;
+  const accountLabel =
+    isCustomerLoggedIn && customer
+      ? customer.name.split(' ')[0]
+      : isAdminLoggedIn && adminUser
+        ? adminUser.name.split(' ')[0]
+        : 'Login';
 
   const navCategories = [
     { name: 'New Arrivals', action: () => navigateTo('/shop') },
@@ -114,7 +116,6 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
       {/* Announcement Bar */}
       {cms.announcementBar.enabled && (
         <div className="bg-[#7A1822] text-[#FFF9F0] text-[11px] font-medium tracking-wide py-1.5 px-4 text-center flex items-center justify-center gap-2 border-b border-[#B8893D]/30">
-          <Sparkles className="w-3.5 h-3.5 text-[#B8893D]" />
           <span>{cms.announcementBar.text}</span>
           {cms.announcementBar.link && (
             <button
@@ -128,7 +129,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
       )}
 
       {/* Main Navigation Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+      <div className="relative max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
         {/* Left: Mobile menu toggle */}
         <div className="flex items-center gap-3 lg:hidden">
           <button
@@ -153,7 +154,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
             <img
               src={guruDiamondsLogo}
               alt="Guru Diamonds"
-              className="h-12 w-auto max-w-[210px] object-contain transition-transform group-hover:scale-[1.02] sm:h-14 sm:max-w-[260px]"
+              className="h-[53px] w-auto max-w-[231px] object-contain transition-transform group-hover:scale-[1.02] sm:h-[62px] sm:max-w-[286px]"
             />
           </button>
 
@@ -161,29 +162,18 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
           <button
             type="button"
             onClick={() => setSearchOverlayOpen(true)}
-            className="hidden xl:flex items-center relative w-72 bg-[#FFFFFF] border border-[#E9D9C5] rounded-full px-4 py-2 hover:border-[#B8893D] transition-all shadow-xs text-left cursor-pointer group"
+            className="hidden lg:flex items-center absolute left-1/2 top-1/2 w-[min(460px,32vw)] -translate-x-1/2 -translate-y-1/2 bg-[#FFFFFF] border border-[#E9D9C5] rounded-full px-4 py-2.5 hover:border-[#B8893D] transition-all shadow-xs text-left cursor-pointer group"
           >
             <Search className="w-4 h-4 text-[#B8893D] shrink-0 mr-2 group-hover:scale-110 transition-transform" />
             <span className="text-xs text-[#796A65] font-medium truncate">Search diamonds, rubies, emeralds...</span>
             <span className="ml-auto text-[10px] bg-[#F4E4C8] text-[#7A1822] font-bold px-1.5 py-0.5 rounded-md">
-              ⌘K
+              Ctrl K
             </span>
           </button>
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          {/* Admin Switcher Quick Button */}
-          {isAdminLoggedIn && (
-            <button
-              onClick={() => navigateTo('/admin')}
-              className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#7A1822] bg-[#F4E4C8] border border-[#B8893D]/40 px-3 py-1.5 rounded-full hover:bg-[#7A1822] hover:text-[#FFF9F0] transition-all shadow-xs"
-            >
-              <LayoutDashboard className="w-3.5 h-3.5 text-[#B8893D]" />
-              <span>Admin CMS</span>
-            </button>
-          )}
-
+        <div className="flex items-center justify-end gap-3 sm:gap-5">
           {/* User Profile Dropdown */}
           <div className="relative">
             <button
@@ -192,7 +182,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
             >
               <User className="w-5 h-5 text-[#7A1822]" />
               <span className="hidden md:inline text-xs font-semibold">
-                {isCustomerLoggedIn && customer ? customer.name.split(' ')[0] : 'Account'}
+                {accountLabel}
               </span>
               <ChevronDown className="w-3.5 h-3.5 text-[#796A65] hidden md:inline" />
             </button>
@@ -237,6 +227,35 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
                       </button>
                     </div>
                   </>
+                ) : isAdminLoggedIn ? (
+                  <>
+                    <div className="px-4 py-2 bg-[#FFF9F0]">
+                      <p className="font-bold text-[#281C18]">{adminUser?.name}</p>
+                      <p className="text-[10px] text-[#796A65]">{adminUser?.email}</p>
+                    </div>
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          navigateTo('/admin');
+                          setUserDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-[#281C18] hover:bg-[#F4E4C8] hover:text-[#7A1822] transition-colors"
+                      >
+                        Admin Dashboard
+                      </button>
+                    </div>
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          logoutAdmin();
+                          setUserDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-[#7A1822] font-semibold hover:bg-[#F3DDD7] transition-colors flex items-center gap-1.5"
+                      >
+                        <LogOut className="w-3.5 h-3.5" /> Sign Out
+                      </button>
+                    </div>
+                  </>
                 ) : (
                   <div className="py-1">
                     <button
@@ -246,7 +265,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
                       }}
                       className="w-full text-left px-4 py-2 text-[#281C18] font-bold hover:bg-[#F4E4C8] hover:text-[#7A1822] transition-colors"
                     >
-                      Sign In to Account
+                      Login
                     </button>
                     <button
                       onClick={() => {
@@ -296,7 +315,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
         className="hidden lg:block border-t border-[#E9D9C5] bg-[#FFF9F0] relative"
         onMouseLeave={() => setActiveMegaMenu(null)}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
           <ul className="flex items-center justify-between text-xs font-medium text-[#281C18] py-2.5">
             {navCategories.map((cat, idx) => (
               <li key={idx}>
@@ -353,9 +372,9 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
                     setMobileMenuOpen(false);
                     navigateTo('/admin');
                   }}
-                  className="w-full mt-4 text-left p-3 bg-[#F4E4C8] border border-[#B8893D]/40 text-[#7A1822] rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2"
+                  className="w-full mt-4 text-left p-3 bg-[#F4E4C8] border border-[#B8893D]/40 text-[#7A1822] rounded-xl font-bold text-xs uppercase tracking-wider"
                 >
-                  <LayoutDashboard className="w-4 h-4 text-[#B8893D]" /> Guru Diamonds CMS
+                  Admin Dashboard
                 </button>
               )}
             </div>
@@ -364,7 +383,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
               <p className="flex items-center gap-2 font-medium">
                 <PhoneCall className="w-4 h-4 text-[#B8893D]" /> Customer Assistance: +91 78991 25449
               </p>
-              <p>100% genuine products • Premium certified gemstones</p>
+              <p>100% genuine products | Premium certified gemstones</p>
             </div>
           </div>
         </div>

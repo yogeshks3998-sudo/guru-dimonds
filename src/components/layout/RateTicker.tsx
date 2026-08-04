@@ -24,19 +24,19 @@ export const RateTicker: React.FC = () => {
           <span>
             24K Gold: <strong className="text-white font-bold">{formatINR(gold24k)}/g</strong>
           </span>
-          <span className="text-[#B8893D]/50">•</span>
+          <span className="text-[#B8893D]/50">|</span>
           <span>
             22K Gold: <strong className="text-white font-bold">{formatINR(gold22k)}/g</strong>
           </span>
-          <span className="text-[#B8893D]/50">•</span>
+          <span className="text-[#B8893D]/50">|</span>
           <span>
             18K Gold: <strong className="text-white font-bold">{formatINR(gold18k)}/g</strong>
           </span>
-          <span className="text-[#B8893D]/50">•</span>
+          <span className="text-[#B8893D]/50">|</span>
           <span>
             999 Silver: <strong className="text-white font-bold">{formatINR(silver999)}/g</strong>
           </span>
-          <span className="text-[#B8893D]/50">•</span>
+          <span className="text-[#B8893D]/50">|</span>
           <span>
             925 Sterling: <strong className="text-white font-bold">{formatINR(silver925)}/g</strong>
           </span>
@@ -55,4 +55,3 @@ export const RateTicker: React.FC = () => {
     </div>
   );
 };
-

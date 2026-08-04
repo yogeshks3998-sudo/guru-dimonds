@@ -275,7 +275,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
                           />
                           <div className="min-w-0 flex-1">
                             <span className="text-[10px] uppercase tracking-wider font-bold text-[#B8893D] block">
-                              {p.metalPurity} {p.metalType} • {p.category}
+                              {p.metalPurity} {p.metalType} | {p.category}
                             </span>
                             <h4 className="text-xs font-bold text-[#281C18] group-hover:text-[#7A1822] truncate">
                               {p.name}

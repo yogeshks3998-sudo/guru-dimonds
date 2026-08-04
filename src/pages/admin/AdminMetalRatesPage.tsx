@@ -169,7 +169,7 @@ export const AdminMetalRatesPage: React.FC = () => {
                     <div className="min-w-0 flex-1">
                       <h5 className="font-serif font-bold text-xs text-[#1B1A18] line-clamp-1">{product.name}</h5>
                       <p className="text-[10px] text-[#6F6A62]">
-                        {product.metalPurity} {product.metalType} • {product.netWeightGrams}g
+                        {product.metalPurity} {product.metalType} | {product.netWeightGrams}g
                       </p>
                     </div>
                   </div>
