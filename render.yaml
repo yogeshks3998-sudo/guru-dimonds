@@ -3,13 +3,13 @@ services:
     name: guru-diamonds
     env: node
     plan: starter
-    buildCommand: npm ci && npm run db:generate && npm run build:prod
-    startCommand: npm start
+    buildCommand: npm ci && npm run db:generate && npm run db:deploy && npm run build:api
+    startCommand: npm run start:api
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 5000
+        value: 10000
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET

@@ -32,6 +32,12 @@ describe('Catalog APIs', () => {
     expect(Array.isArray(response.body)).toBe(true);
   });
 
+  it('GET /api/products handles special-character searches without server errors', async () => {
+    const response = await api().get('/api/products').query({ search: '@#$%^' }).expect(200);
+
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
   it('POST /api/products creates a product for OWNER', async () => {
     const response = await api().post('/api/products').set(owner).send(product).expect(201);
 
