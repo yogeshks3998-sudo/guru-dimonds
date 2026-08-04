@@ -8,38 +8,45 @@ import { formatINR } from '../../utils/formatters';
 import { navigateTo } from '../../utils/navigation';
 import { useToast } from '../../components/ui/Toast';
 import { ImageWithFallback } from '../../components/ui/ImageWithFallback';
-import { ArrowLeft, Save, Plus, Trash2, Sparkles, Calculator, Image as ImageIcon, CheckCircle, Star } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Calculator, Image as ImageIcon, Star, Upload, RefreshCw } from 'lucide-react';
 
 interface AdminProductFormPageProps {
   productId?: string;
 }
 
-const STUDIO_IMAGE_PRESETS = [
-  {
-    title: 'Gold Ring',
-    url: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title: 'Diamond Necklace',
-    url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title: 'Gold Jhumka',
-    url: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title: 'Emerald Pendant',
-    url: 'https://images.unsplash.com/photo-1611591475281-a120023a105f?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title: 'Gold Bangle Set',
-    url: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title: 'Silver Maala',
-    url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
-  },
-];
+const MAX_PRODUCT_IMAGES = 3;
+const MAX_IMAGE_WIDTH = 1400;
+const IMAGE_QUALITY = 0.82;
+
+function resizeProductImage(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    return Promise.reject(new Error(`${file.name} is not an image file.`));
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`Unable to read ${file.name}.`));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error(`Unable to process ${file.name}.`));
+      image.onload = () => {
+        const scale = Math.min(1, MAX_IMAGE_WIDTH / image.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext('2d');
+        if (!context) {
+          reject(new Error(`Unable to prepare ${file.name}.`));
+          return;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', IMAGE_QUALITY));
+      };
+      image.src = String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ productId }) => {
   const { products, addProduct, updateProduct } = useProductStore();
@@ -52,71 +59,90 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
     existing || {
       name: '',
       slug: '',
-      sku: `VED-${Math.floor(1000 + Math.random() * 9000)}`,
-      shortDescription: 'Carefully crafted jewellery creation by Guru Diamonds artisans.',
-      category: 'Gold rings',
-      subcategory: 'Rings',
-      collection: 'Premium Gemstone Heritage',
-      gender: 'Women',
-      occasion: ['Wedding', 'Festive'],
-      description: 'Carefully crafted jewellery creation by Guru Diamonds artisans.',
-      pricingMode: 'RATE_LINKED',
-      metalType: 'GOLD',
-      metalPurity: '22K',
-      metalColor: 'Yellow',
-      grossWeightGrams: 8.5,
-      netWeightGrams: 8.0,
-      hallmarked: true,
-      certified: true,
-      makingChargeType: 'PER_GRAM',
-      makingChargeValue: 650,
-      wastagePercentage: 2.0,
+      sku: '',
+      shortDescription: '',
+      category: 'Gemstones',
+      subcategory: '',
+      collection: '',
+      gender: 'Unisex',
+      occasion: [],
+      description: '',
+      pricingMode: 'FIXED',
+      fixedPrice: 0,
+      metalType: 'SILVER',
+      metalPurity: '925',
+      metalColor: 'White',
+      grossWeightGrams: 0,
+      netWeightGrams: 0,
+      hallmarked: false,
+      certified: false,
+      makingChargeType: 'FIXED',
+      makingChargeValue: 0,
+      wastagePercentage: 0,
       gemstones: [],
-      certificationCharge: 500,
-      packagingCharge: 300,
+      certificationCharge: 0,
+      packagingCharge: 0,
       gstPercentage: 3,
-      totalStock: 1,
+      totalStock: 0,
       hasVariants: false,
       variantAttributes: [],
       variants: [],
       lowStockThreshold: 1,
-      images: ['https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80'],
+      images: [],
       readyToShip: true,
-      dispatchDays: 2,
+      dispatchDays: 7,
       returnEligible: true,
       returnPolicyDays: 7,
       codAvailable: true,
-      badges: ['HALLMARKED', 'CERTIFIED'],
-      tags: ['gold', 'ring', 'royal'],
-      rating: 5.0,
-      reviewCount: 1,
+      badges: [],
+      tags: [],
+      rating: 0,
+      reviewCount: 0,
       status: 'ACTIVE',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
   );
 
-  const [newImageUrl, setNewImageUrl] = useState('');
+  const [isProcessingImages, setIsProcessingImages] = useState(false);
 
-  const handleAddImage = () => {
-    if (!newImageUrl.trim()) return;
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files?.length) return;
     const currentImages = formData.images || [];
-    setFormData({
-      ...formData,
-      images: [...currentImages, newImageUrl.trim()],
-    });
-    setNewImageUrl('');
-    showToast('Image Added', 'New product image link attached.');
+    const availableSlots = MAX_PRODUCT_IMAGES - currentImages.length;
+    if (availableSlots <= 0) {
+      alert(`Only ${MAX_PRODUCT_IMAGES} images are allowed for one product.`);
+      return;
+    }
+
+    setIsProcessingImages(true);
+    try {
+      const selectedFiles = Array.from(files).slice(0, availableSlots);
+      const resizedImages = await Promise.all(selectedFiles.map((file) => resizeProductImage(file)));
+      setFormData({ ...formData, images: [...currentImages, ...resizedImages] });
+      showToast('Images Uploaded', `${resizedImages.length} product image(s) attached.`);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to upload image.');
+    } finally {
+      setIsProcessingImages(false);
+    }
   };
 
-  const handleAddPresetImage = (url: string) => {
-    const currentImages = formData.images || [];
-    if (!currentImages.includes(url)) {
-      setFormData({
-        ...formData,
-        images: [...currentImages, url],
-      });
-      showToast('Preset Added', 'Studio photography preset linked.');
+  const handleReplaceImage = async (index: number, files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+
+    setIsProcessingImages(true);
+    try {
+      const resizedImage = await resizeProductImage(file);
+      const updated = [...(formData.images || [])];
+      updated[index] = resizedImage;
+      setFormData({ ...formData, images: updated });
+      showToast('Image Updated', 'Product image replaced successfully.');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to replace image.');
+    } finally {
+      setIsProcessingImages(false);
     }
   };
 
@@ -159,6 +185,8 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) return alert('Please enter product name.');
+    if (!formData.sku) return alert('Please enter SKU number.');
+    if (!formData.images?.length) return alert('Please upload at least one product image.');
 
     const finalSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
@@ -225,7 +253,6 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
-                    placeholder="e.g. Royal 22K Peacock Jhumka"
                   />
                 </div>
                 <div>
@@ -248,19 +275,22 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
                   >
-                    <option value="Gold rings">Gold rings</option>
-                    <option value="Maalas">Maalas</option>
                     <option value="Gemstones">Gemstones</option>
+                    <option value="Natural Gemstones">Natural Gemstones</option>
+                    <option value="Gold rings">Gold rings</option>
+                    <option value="Silver rings">Silver rings</option>
+                    <option value="Maalas">Maalas</option>
                     <option value="Earrings">Earrings</option>
                     <option value="Necklaces">Necklaces</option>
                     <option value="Chains">Chains</option>
+                    <option value="Pendants">Pendants</option>
                   </select>
                 </div>
                 <div>
                   <label className="font-bold text-[#1B1A18] block mb-1">Collection</label>
                   <input
                     type="text"
-                    value={formData.collection}
+                    value={formData.collection || ''}
                     onChange={(e) => setFormData({ ...formData, collection: e.target.value })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
                   />
@@ -275,8 +305,62 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                     <option value="Women">Women</option>
                     <option value="Men">Men</option>
                     <option value="Unisex">Unisex</option>
+                    <option value="Kids">Kids</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="font-bold text-[#1B1A18] block mb-1">Subcategory</label>
+                  <input
+                    type="text"
+                    value={formData.subcategory || ''}
+                    onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                    className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-[#1B1A18] block mb-1">Stock Quantity</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.totalStock ?? 0}
+                    onChange={(e) => setFormData({ ...formData, totalStock: Number(e.target.value) })}
+                    className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-[#1B1A18] block mb-1">Status</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as Product['status'] })}
+                    className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="HIDDEN">Hidden</option>
+                    <option value="ARCHIVED">Archived</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-[#1B1A18] block mb-1">Short Description</label>
+                <textarea
+                  value={formData.shortDescription || ''}
+                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                  className="min-h-20 w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-[#1B1A18] block mb-1">Full Description</label>
+                <textarea
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="min-h-28 w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
+                />
               </div>
             </div>
 
@@ -320,7 +404,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                   <label className="font-bold text-[#1B1A18] block mb-1">Metal Color</label>
                   <input
                     type="text"
-                    value={formData.metalColor}
+                    value={formData.metalColor || ''}
                     onChange={(e) => setFormData({ ...formData, metalColor: e.target.value as Product['metalColor'] })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
                   />
@@ -333,7 +417,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                   <input
                     type="number"
                     step="0.01"
-                    value={formData.grossWeightGrams}
+                    value={formData.grossWeightGrams ?? 0}
                     onChange={(e) => setFormData({ ...formData, grossWeightGrams: Number(e.target.value) })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
                   />
@@ -343,7 +427,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                   <input
                     type="number"
                     step="0.01"
-                    value={formData.netWeightGrams}
+                    value={formData.netWeightGrams ?? 0}
                     onChange={(e) => setFormData({ ...formData, netWeightGrams: Number(e.target.value) })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold text-[#A67C32]"
                   />
@@ -385,11 +469,23 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
               </div>
 
               <div className="grid grid-cols-3 gap-4">
+                {formData.pricingMode === 'FIXED' && (
+                  <div>
+                    <label className="font-bold text-[#1B1A18] block mb-1">Fixed Retail Price</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.fixedPrice ?? 0}
+                      onChange={(e) => setFormData({ ...formData, fixedPrice: Number(e.target.value) })}
+                      className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold text-[#A67C32]"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="font-bold text-[#1B1A18] block mb-1">Making Charge Value</label>
                   <input
                     type="number"
-                    value={formData.makingChargeValue}
+                    value={formData.makingChargeValue ?? 0}
                     onChange={(e) => setFormData({ ...formData, makingChargeValue: Number(e.target.value) })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold"
                   />
@@ -399,7 +495,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                   <input
                     type="number"
                     step="0.1"
-                    value={formData.wastagePercentage}
+                    value={formData.wastagePercentage ?? 0}
                     onChange={(e) => setFormData({ ...formData, wastagePercentage: Number(e.target.value) })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
                   />
@@ -408,7 +504,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                   <label className="font-bold text-[#1B1A18] block mb-1">GST %</label>
                   <input
                     type="number"
-                    value={formData.gstPercentage}
+                    value={formData.gstPercentage ?? 3}
                     onChange={(e) => setFormData({ ...formData, gstPercentage: Number(e.target.value) })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-bold text-[#2E7D5B]"
                   />
@@ -427,59 +523,44 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                 </span>
               </div>
 
-              {/* Add Custom Image URL Input */}
-              <div className="space-y-2 bg-[#FAF8F3] p-4 rounded-xl border border-[#E7E1D7]">
-                <label className="font-bold text-[#1B1A18] block">Add Custom Image URL</label>
-                <div className="flex gap-2">
+              <div className="bg-[#FAF8F3] p-4 rounded-xl border border-[#E7E1D7]">
+                <label
+                  className={`flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
+                    (formData.images || []).length >= MAX_PRODUCT_IMAGES
+                      ? 'border-[#D8C29D] bg-[#F4E4C8]/40 text-[#6F6A62] cursor-not-allowed'
+                      : 'border-[#D8C29D] bg-white text-[#1B1A18] hover:border-[#A67C32] hover:bg-[#FFF9F0]'
+                  }`}
+                >
+                  <Upload className="w-7 h-7 text-[#A67C32]" />
+                  <span className="font-bold text-xs uppercase tracking-wider">
+                    {isProcessingImages ? 'Preparing images...' : 'Upload Product Images'}
+                  </span>
+                  <span className="text-[11px] text-[#6F6A62]">
+                    Upload up to {MAX_PRODUCT_IMAGES} local images. They are resized and saved with the product.
+                  </span>
                   <input
-                    type="url"
-                    placeholder="https://images.unsplash.com/photo-... or custom CDN link"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    className="flex-1 bg-white border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#A67C32]"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={isProcessingImages || (formData.images || []).length >= MAX_PRODUCT_IMAGES}
+                    onChange={(e) => {
+                      void handleImageUpload(e.target.files);
+                      e.currentTarget.value = '';
+                    }}
+                    className="sr-only"
                   />
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    className="px-4 py-2 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors"
-                  >
-                    <Plus className="w-4 h-4" /> Add Image
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick preset gemstone and jewellery studio photography presets */}
-              <div className="space-y-2">
-                <span className="font-bold text-[#6F6A62] text-[11px] block">
-                  Quick Attach Studio Presets:
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {STUDIO_IMAGE_PRESETS.map((preset, idx) => {
-                    const isAttached = (formData.images || []).includes(preset.url);
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleAddPresetImage(preset.url)}
-                        disabled={isAttached}
-                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border flex items-center gap-1.5 transition-all ${
-                          isAttached
-                            ? 'bg-[#E6F4EA] text-[#2E7D5B] border-[#2E7D5B]/40 opacity-70 cursor-default'
-                            : 'bg-white text-[#1B1A18] border-[#E7E1D7] hover:border-[#A67C32] hover:text-[#A67C32]'
-                        }`}
-                      >
-                        {isAttached ? <CheckCircle className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-                        <span>{preset.title}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                </label>
               </div>
 
               {/* Attached Images Grid Gallery */}
               <div className="space-y-2 pt-2">
-                <label className="font-bold text-[#1B1A18] block">Attached Gallery Thumbnails</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <label className="font-bold text-[#1B1A18] block">Product Image Preview</label>
+                {(formData.images || []).length === 0 ? (
+                  <div className="rounded-xl border border-[#E7E1D7] bg-[#FAF8F3] p-6 text-center text-xs text-[#6F6A62]">
+                    No images uploaded yet.
+                  </div>
+                ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {(formData.images || []).map((imgUrl, index) => (
                     <div
                       key={index}
@@ -509,18 +590,37 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                           <span className="text-[#2E7D5B] font-bold">Primary</span>
                         )}
 
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="p-1 text-[#B43C3C] hover:bg-[#FFF5F5] rounded-md transition-colors"
-                          title="Remove Image"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <label
+                            className="p-1 text-[#A67C32] hover:bg-[#FAF3E6] rounded-md transition-colors cursor-pointer"
+                            title="Replace image"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              disabled={isProcessingImages}
+                              onChange={(e) => {
+                                void handleReplaceImage(index, e.target.files);
+                                e.currentTarget.value = '';
+                              }}
+                              className="sr-only"
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="p-1 text-[#B43C3C] hover:bg-[#FFF5F5] rounded-md transition-colors"
+                            title="Remove Image"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             </div>
           </form>

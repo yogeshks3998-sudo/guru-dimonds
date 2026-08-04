@@ -18,7 +18,7 @@ import { HttpError } from './utils/http';
 export const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '15mb' }));
 
 app.use('/api/health', healthRouter);
 app.use('/api', authRouter);
