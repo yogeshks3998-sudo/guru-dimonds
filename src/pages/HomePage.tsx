@@ -99,15 +99,14 @@ export const HomePage: React.FC = () => {
                   key={slide.id}
                   src={slide.imageUrl || '/hero/hero.png'}
                   alt={slide.title}
-                  className={`absolute inset-0 w-full h-full object-cover object-center opacity-45 mix-blend-luminosity scale-102 transition-opacity duration-700 ${
-                    index === activeHeroIndex ? 'opacity-45' : 'opacity-0'
+                  className={`absolute inset-0 w-full h-full object-cover object-center scale-102 transition-opacity duration-700 ${
+                    index === activeHeroIndex ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
               ))}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#2D080C] via-[#2D080C]/80 to-transparent" />
             </div>
 
-            <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-16 py-20 space-y-6">
+            <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-16 py-20 space-y-6 drop-shadow-[0_3px_18px_rgba(45,8,12,0.72)]">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#B8893D]/20 border border-[#B8893D]/40 text-[#F4E4C8] text-xs font-semibold uppercase tracking-widest backdrop-blur-sm">
                 <span>{activeHeroSlide.eyebrow}</span>
               </div>
