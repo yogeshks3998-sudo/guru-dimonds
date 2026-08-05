@@ -44,7 +44,18 @@ export const HomePage: React.FC = () => {
       ];
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const activeHeroSlide = heroSlides[activeHeroIndex] || heroSlides[0];
-  const bestSellers = products.filter((p) => p.badges.includes('BEST_SELLER')).slice(0, 4);
+  const activeProducts = products.filter((product) => product.status === 'ACTIVE');
+  const rankedActiveProducts = [...activeProducts].sort((a, b) => {
+    const ratingDifference = (b.rating || 0) - (a.rating || 0);
+    if (ratingDifference !== 0) return ratingDifference;
+
+    return (b.reviewCount || 0) - (a.reviewCount || 0);
+  });
+  const bestSellers = (
+    activeProducts.some((product) => product.badges.includes('BEST_SELLER'))
+      ? activeProducts.filter((product) => product.badges.includes('BEST_SELLER'))
+      : rankedActiveProducts
+  ).slice(0, 4);
   const newArrivals = products.filter((p) => p.badges.includes('NEW')).slice(0, 4);
   const gemstonesList = products.filter((p) => isGemstoneProduct(p) || p.category === 'Maalas').slice(0, 4);
 

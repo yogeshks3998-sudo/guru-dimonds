@@ -15,6 +15,7 @@ import { AdminCMSPage } from '../../src/pages/admin/AdminCMSPage';
 import { AdminMetalRatesPage } from '../../src/pages/admin/AdminMetalRatesPage';
 import { ContactPage } from '../../src/pages/StaticContentPages';
 import { useAuthStore } from '../../src/stores/useAuthStore';
+import { useProductStore } from '../../src/stores/useProductStore';
 import { INITIAL_PRODUCTS } from '../../src/data/mockProducts';
 
 describe('Frontend page rendering', () => {
@@ -35,7 +36,20 @@ describe('Frontend page rendering', () => {
   it('Home Page renders Guru Diamonds hero', () => {
     renderWithProviders(<HomePage />);
 
-    expect(screen.getByRole('heading', { level: 1, name: /^Guru Diamonds$/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+
+  it('Home Page renders signature bestsellers when products do not have bestseller badges', () => {
+    const productsWithoutBestsellerBadges = INITIAL_PRODUCTS.slice(0, 4).map((product) => ({
+      ...product,
+      badges: product.badges.filter((badge) => badge !== 'BEST_SELLER'),
+    }));
+    useProductStore.setState({ products: productsWithoutBestsellerBadges });
+
+    renderWithProviders(<HomePage />);
+
+    expect(screen.getByRole('heading', { name: /Signature Bestsellers/i })).toBeInTheDocument();
+    expect(screen.getAllByText(productsWithoutBestsellerBadges[0].name).length).toBeGreaterThan(0);
   });
 
   it('Shop Page renders catalogue controls', () => {

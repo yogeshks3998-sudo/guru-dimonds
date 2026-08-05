@@ -13,7 +13,7 @@ describe('React component tests', () => {
   it('Navbar renders brand and search trigger', () => {
     renderWithProviders(<StorefrontHeader onOpenCartDrawer={jest.fn()} />);
 
-    expect(screen.getByText(/GURU DIAMONDS/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Guru Diamonds home/i })).toBeInTheDocument();
     expect(screen.getByText(/Search diamonds/i)).toBeInTheDocument();
   });
 
@@ -21,7 +21,7 @@ describe('React component tests', () => {
     renderWithProviders(<StorefrontHeader onOpenCartDrawer={jest.fn()} />);
 
     fireEvent.click(screen.getByLabelText(/Open Mobile Navigation/i));
-    expect(screen.getAllByText(/GURU DIAMONDS/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /Guru Diamonds home/i })).toBeInTheDocument();
   });
 
   it('Footer renders final contact details', () => {

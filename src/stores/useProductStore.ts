@@ -73,7 +73,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const products = await productApi.listProducts();
-      set({ products, loading: false });
+      set({
+        products: products.length ? products : INITIAL_PRODUCTS,
+        loading: false,
+        error: products.length ? null : 'No products returned from API; showing fallback catalogue',
+      });
     } catch (error) {
       set({
         products: get().products.length ? get().products : INITIAL_PRODUCTS,
