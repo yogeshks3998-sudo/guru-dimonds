@@ -112,6 +112,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
   ];
 
   return (
+    <>
     <header className="sticky top-0 z-40 bg-[#FFF9F0]/95 backdrop-blur-md border-b border-[#E9D9C5] transition-all shadow-xs">
       {/* Announcement Bar */}
       {cms.announcementBar.enabled && (
@@ -338,13 +339,15 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
         <MegaMenu activeMenu={activeMegaMenu} onClose={() => setActiveMegaMenu(null)} />
       </div>
 
+    </header>
+
       {/* Global Search Overlay */}
       <GlobalSearchOverlay isOpen={searchOverlayOpen} onClose={() => setSearchOverlayOpen(false)} />
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex">
-          <div className="w-4/5 max-w-sm bg-[#FFF9F0] h-full shadow-2xl flex flex-col p-6 overflow-y-auto border-r border-[#E9D9C5]">
+        <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm flex lg:hidden">
+          <div className="w-[86vw] max-w-sm bg-[#FFF9F0] h-dvh shadow-2xl flex flex-col p-5 overflow-y-auto border-r border-[#E9D9C5]">
             <div className="flex items-center justify-between pb-4 border-b border-[#E9D9C5]">
               <img src={guruDiamondsLogo} alt="Guru Diamonds" className="h-12 w-auto max-w-[220px] object-contain" />
               <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-[#796A65]">
@@ -388,6 +391,6 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 };
