@@ -100,15 +100,15 @@ export const HomePage: React.FC = () => {
   return (
     <div className="bg-[#FFF9F0] text-[#281C18] flex flex-col">
       {/* 1. Hero Campaign Section (Light Ivory Background Container) */}
-      <section className="bg-[#FFF9F0] py-8 sm:py-12">
-        <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden bg-[#2D080C] text-[#FFF9F0] min-h-[500px] lg:min-h-[600px] xl:min-h-[640px] flex items-center border border-[#B8893D]/30 shadow-xl">
+      <section className="bg-[#FFF9F0] py-6 sm:py-12 overflow-hidden">
+        <div className="w-full max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-[#2D080C] text-[#FFF9F0] min-h-[430px] sm:min-h-[500px] lg:min-h-[600px] xl:min-h-[640px] flex items-center border border-[#B8893D]/30 shadow-xl">
             {/* Campaign Image Slider */}
             <div className="absolute inset-0 z-0">
               {heroSlides.map((slide, index) => (
                 <ImageWithFallback
                   key={slide.id}
-                  src={slide.imageUrl || '/hero/hero.png'}
+                  src={slide.mobileImageUrl || slide.imageUrl || '/hero/hero.png'}
                   alt={slide.title}
                   className={`absolute inset-0 w-full h-full object-cover object-center scale-102 transition-opacity duration-700 ${
                     index === activeHeroIndex ? 'opacity-100' : 'opacity-0'
@@ -117,7 +117,7 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
 
-            <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-16 py-20 space-y-6 drop-shadow-[0_3px_18px_rgba(45,8,12,0.72)]">
+            <div className="relative z-10 max-w-2xl px-5 sm:px-12 lg:px-16 py-14 sm:py-20 space-y-5 sm:space-y-6 drop-shadow-[0_3px_18px_rgba(45,8,12,0.72)]">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#B8893D]/20 border border-[#B8893D]/40 text-[#F4E4C8] text-xs font-semibold uppercase tracking-widest backdrop-blur-sm">
                 <span>{activeHeroSlide.eyebrow}</span>
               </div>

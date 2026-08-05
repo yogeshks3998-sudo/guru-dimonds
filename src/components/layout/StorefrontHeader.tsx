@@ -113,15 +113,15 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
 
   return (
     <>
-    <header className="sticky top-0 z-40 bg-[#FFF9F0]/95 backdrop-blur-md border-b border-[#E9D9C5] transition-all shadow-xs">
+    <header className="sticky top-0 z-40 w-full max-w-full overflow-x-clip bg-[#FFF9F0]/95 backdrop-blur-md border-b border-[#E9D9C5] transition-all shadow-xs">
       {/* Announcement Bar */}
       {cms.announcementBar.enabled && (
-        <div className="bg-[#7A1822] text-[#FFF9F0] text-[11px] font-medium tracking-wide py-1.5 px-4 text-center flex items-center justify-center gap-2 border-b border-[#B8893D]/30">
-          <span>{cms.announcementBar.text}</span>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 bg-[#7A1822] text-[#FFF9F0] text-[10px] sm:text-[11px] font-medium tracking-wide py-1.5 px-3 sm:px-4 text-left sm:text-center sm:flex sm:justify-center border-b border-[#B8893D]/30">
+          <span className="min-w-0 leading-snug sm:leading-normal">{cms.announcementBar.text}</span>
           {cms.announcementBar.link && (
             <button
               onClick={() => navigateTo(cms.announcementBar.link!)}
-              className="underline font-bold hover:text-[#F4E4C8] ml-1 transition-colors"
+              className="shrink-0 underline font-bold hover:text-[#F4E4C8] transition-colors"
             >
               Discover Collection
             </button>
@@ -130,32 +130,32 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
       )}
 
       {/* Main Navigation Header */}
-      <div className="relative max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+      <div className="relative w-full max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Mobile menu toggle */}
-        <div className="flex items-center gap-3 lg:hidden">
+        <div className="flex shrink-0 items-center gap-1 lg:hidden">
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="p-2 text-[#281C18] hover:text-[#7A1822] hover:bg-[#E9D9C5]/50 rounded-xl transition-colors"
+            className="p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] hover:bg-[#E9D9C5]/50 rounded-xl transition-colors"
             aria-label="Open Mobile Navigation"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-5 h-5 min-[390px]:w-6 min-[390px]:h-6" />
           </button>
           <button
             onClick={() => setSearchOverlayOpen(true)}
-            className="p-2 text-[#281C18] hover:text-[#7A1822] hover:bg-[#E9D9C5]/50 rounded-xl transition-colors"
+            className="p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] hover:bg-[#E9D9C5]/50 rounded-xl transition-colors"
             aria-label="Open Search"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-4.5 h-4.5 min-[390px]:w-5 min-[390px]:h-5" />
           </button>
         </div>
 
         {/* Center/Left: Brand Logo */}
-        <div className="flex items-center gap-8">
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-8 lg:flex-none lg:justify-start">
           <button onClick={() => navigateTo('/')} className="group flex items-center" aria-label="Guru Diamonds home">
             <img
               src={guruDiamondsLogo}
               alt="Guru Diamonds"
-              className="h-[53px] w-auto max-w-[231px] object-contain transition-transform group-hover:scale-[1.02] sm:h-[62px] sm:max-w-[286px]"
+              className="h-11 w-auto max-w-[118px] object-contain transition-transform group-hover:scale-[1.02] min-[390px]:h-[53px] min-[390px]:max-w-[150px] sm:h-[62px] sm:max-w-[286px]"
             />
           </button>
 
@@ -174,14 +174,14 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center justify-end gap-3 sm:gap-5">
+        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-5">
           {/* User Profile Dropdown */}
           <div className="relative">
             <button
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="flex items-center gap-1.5 p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
+              className="flex items-center gap-1.5 p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
             >
-              <User className="w-5 h-5 text-[#7A1822]" />
+              <User className="w-4.5 h-4.5 min-[390px]:w-5 min-[390px]:h-5 text-[#7A1822]" />
               <span className="hidden md:inline text-xs font-semibold">
                 {accountLabel}
               </span>
@@ -286,10 +286,10 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
           {/* Wishlist Link */}
           <button
             onClick={() => navigateTo('/wishlist')}
-            className="relative p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
+            className="relative p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
             aria-label="Wishlist"
           >
-            <Heart className="w-5 h-5 text-[#7A1822]" />
+            <Heart className="w-4.5 h-4.5 min-[390px]:w-5 min-[390px]:h-5 text-[#7A1822]" />
             {wishlistCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-[#7A1822] text-[#FFF9F0] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#FFF9F0]">
                 {wishlistCount}
@@ -300,11 +300,11 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
           {/* Cart Drawer Button */}
           <button
             onClick={onOpenCartDrawer}
-            className="flex items-center gap-2 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] px-4 py-2 rounded-full transition-all shadow-md group"
+            className="flex items-center gap-1.5 sm:gap-2 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] px-2.5 min-[390px]:px-3 sm:px-4 py-2 rounded-full transition-all shadow-md group"
           >
             <ShoppingBag className="w-4 h-4 text-[#B8893D] group-hover:scale-110 transition-transform" />
-            <span className="text-xs font-bold tracking-wider uppercase">Bag</span>
-            <span className="bg-[#B8893D] text-[#281C18] text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ml-1">
+            <span className="hidden min-[390px]:inline text-xs font-bold tracking-wider uppercase">Bag</span>
+            <span className="bg-[#B8893D] text-[#281C18] text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-[390px]:ml-1">
               {cartCount}
             </span>
           </button>
