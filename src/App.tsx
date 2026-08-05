@@ -165,7 +165,7 @@ export function App() {
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-[#FAF8F3] text-[#1B1A18] font-sans antialiased flex flex-col justify-between selection:bg-[#A67C32] selection:text-white">
+      <div className="min-h-screen w-full max-w-full overflow-x-clip bg-[#FAF8F3] text-[#1B1A18] font-sans antialiased flex flex-col justify-between selection:bg-[#A67C32] selection:text-white">
         <div>
           {!isAdminRoute && (
             <>
@@ -174,7 +174,7 @@ export function App() {
             </>
           )}
 
-          <main>
+          <main className="w-full max-w-full overflow-x-clip">
             <Suspense
               fallback={
                 <div className="min-h-[40vh] flex items-center justify-center text-xs font-bold uppercase tracking-widest text-[#A67C32]">

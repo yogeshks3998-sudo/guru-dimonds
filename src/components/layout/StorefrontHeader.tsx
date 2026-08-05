@@ -130,19 +130,19 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
       )}
 
       {/* Main Navigation Header */}
-      <div className="relative w-full max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="relative w-full max-w-[1536px] mx-auto px-2.5 min-[390px]:px-3 sm:px-6 lg:px-8 py-3 sm:py-3.5 flex items-center justify-between gap-1.5 min-[390px]:gap-2 sm:gap-4">
         {/* Left: Mobile menu toggle */}
         <div className="flex shrink-0 items-center gap-1 lg:hidden">
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] hover:bg-[#E9D9C5]/50 rounded-xl transition-colors"
+            className="p-1 min-[360px]:p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] hover:bg-[#E9D9C5]/50 rounded-xl transition-colors"
             aria-label="Open Mobile Navigation"
           >
             <Menu className="w-5 h-5 min-[390px]:w-6 min-[390px]:h-6" />
           </button>
           <button
             onClick={() => setSearchOverlayOpen(true)}
-            className="p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] hover:bg-[#E9D9C5]/50 rounded-xl transition-colors"
+            className="p-1 min-[360px]:p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] hover:bg-[#E9D9C5]/50 rounded-xl transition-colors"
             aria-label="Open Search"
           >
             <Search className="w-4.5 h-4.5 min-[390px]:w-5 min-[390px]:h-5" />
@@ -155,7 +155,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
             <img
               src={guruDiamondsLogo}
               alt="Guru Diamonds"
-              className="h-11 w-auto max-w-[118px] object-contain transition-transform group-hover:scale-[1.02] min-[390px]:h-[53px] min-[390px]:max-w-[150px] sm:h-[62px] sm:max-w-[286px]"
+              className="h-10 w-auto max-w-[104px] object-contain transition-transform group-hover:scale-[1.02] min-[360px]:h-11 min-[360px]:max-w-[118px] min-[390px]:h-[53px] min-[390px]:max-w-[150px] sm:h-[62px] sm:max-w-[286px]"
             />
           </button>
 
@@ -174,12 +174,12 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
         </div>
 
         {/* Right Actions */}
-        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-5">
+        <div className="flex shrink-0 items-center justify-end gap-0.5 min-[390px]:gap-1 sm:gap-5">
           {/* User Profile Dropdown */}
           <div className="relative">
             <button
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="flex items-center gap-1.5 p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
+              className="flex items-center gap-1.5 p-1 min-[360px]:p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
             >
               <User className="w-4.5 h-4.5 min-[390px]:w-5 min-[390px]:h-5 text-[#7A1822]" />
               <span className="hidden md:inline text-xs font-semibold">
@@ -286,7 +286,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
           {/* Wishlist Link */}
           <button
             onClick={() => navigateTo('/wishlist')}
-            className="relative p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
+            className="relative hidden min-[340px]:inline-flex p-1 min-[360px]:p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
             aria-label="Wishlist"
           >
             <Heart className="w-4.5 h-4.5 min-[390px]:w-5 min-[390px]:h-5 text-[#7A1822]" />
@@ -300,7 +300,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
           {/* Cart Drawer Button */}
           <button
             onClick={onOpenCartDrawer}
-            className="flex items-center gap-1.5 sm:gap-2 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] px-2.5 min-[390px]:px-3 sm:px-4 py-2 rounded-full transition-all shadow-md group"
+            className="flex items-center gap-1 min-[390px]:gap-1.5 sm:gap-2 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] px-2 min-[390px]:px-3 sm:px-4 py-2 rounded-full transition-all shadow-md group"
           >
             <ShoppingBag className="w-4 h-4 text-[#B8893D] group-hover:scale-110 transition-transform" />
             <span className="hidden min-[390px]:inline text-xs font-bold tracking-wider uppercase">Bag</span>

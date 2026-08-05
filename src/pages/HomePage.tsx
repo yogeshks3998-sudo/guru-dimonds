@@ -98,7 +98,7 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#FFF9F0] text-[#281C18] flex flex-col">
+    <div className="w-full max-w-full overflow-x-clip bg-[#FFF9F0] text-[#281C18] flex flex-col">
       {/* 1. Hero Campaign Section (Light Ivory Background Container) */}
       <section className="bg-[#FFF9F0] py-6 sm:py-12 overflow-hidden">
         <div className="w-full max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8">
