@@ -58,52 +58,37 @@ export const CheckoutPage: React.FC = () => {
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     try {
-      const payload = {
+      const order = placeOrder({
+        customer: {
+          id: customer?.id || `cust-${Date.now()}`,
+          name: selectedAddress.fullName,
+          email: selectedAddress.email,
+          phone: selectedAddress.phone,
+        },
         shippingAddress: selectedAddress,
         billingAddress: selectedAddress,
         items: items.map((item) => ({
+          id: item.id,
           productId: item.productId,
           variantId: item.variantId,
-          selectedAttributes: item.selectedAttributes,
+          productName: item.product.name,
+          variantSku: item.selectedVariant?.sku,
+          variantDetails: item.selectedAttributes,
+          image: item.product.images[0],
           quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.unitPrice * item.quantity,
+          priceBreakdownSnapshot: item.priceBreakdown,
           customEngraving: item.customEngraving,
         })),
-        couponCode: useCartStore.getState().appliedCoupon?.code,
+        subtotal: getSubtotal(),
+        discountAmount: getDiscountAmount(),
+        gstTotal: getGSTTotal(),
+        shippingCharge: getShippingCharge(),
+        totalAmount: getTotal(),
         paymentMethod,
         notes: orderNotes,
-        gstNumber: gstInvoiceRequested ? gstNumber : undefined,
-      };
-      const order = isCustomerLoggedIn ? await checkoutApi.createOrder(payload) : placeOrder({
-          customer: {
-            id: customer?.id || `cust-${Date.now()}`,
-            name: selectedAddress.fullName,
-            email: selectedAddress.email,
-            phone: selectedAddress.phone,
-          },
-          shippingAddress: selectedAddress,
-          billingAddress: selectedAddress,
-          items: items.map((item) => ({
-            id: item.id,
-            productId: item.productId,
-            variantId: item.variantId,
-            productName: item.product.name,
-            variantSku: item.selectedVariant?.sku,
-            variantDetails: item.selectedAttributes,
-            image: item.product.images[0],
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice: item.unitPrice * item.quantity,
-            priceBreakdownSnapshot: item.priceBreakdown,
-            customEngraving: item.customEngraving,
-          })),
-          subtotal: getSubtotal(),
-          discountAmount: getDiscountAmount(),
-          gstTotal: getGSTTotal(),
-          shippingCharge: getShippingCharge(),
-          totalAmount: getTotal(),
-          paymentMethod,
-          notes: orderNotes,
-        });
+      });
       clearCart();
       setIsProcessing(false);
       navigateTo(`/checkout/success?orderNumber=${order.orderNumber}`);
@@ -115,7 +100,6 @@ export const CheckoutPage: React.FC = () => {
 
   return (
     <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Checkout Steps Progress */}
       <div className="flex items-center justify-between max-w-xl mx-auto border-b border-[#E7E1D7] pb-4 text-xs font-bold uppercase tracking-wider">
         <div className={`flex items-center gap-2 ${step >= 1 ? 'text-[#A67C32]' : 'text-[#6F6A62]'}`}>
           <span className="w-6 h-6 rounded-full bg-[#FAF3E6] border border-[#D8C29D] flex items-center justify-center">1</span>

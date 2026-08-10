@@ -7,7 +7,7 @@ interface CMSState {
   cms: CMSContent;
   loading: boolean;
   error: string | null;
-  
+
   // Actions
   updateAnnouncement: (enabled: boolean, text: string, link?: string) => void;
   updateHeroBanner: (heroData: Partial<CMSContent['heroBanner']>) => void;
@@ -42,7 +42,7 @@ const isDemoHeroImage = (imageUrl?: string): boolean =>
 const createFallbackHeroSlides = (heroBanner: CMSContent['heroBanner']): CMSHeroSlide[] => {
   const defaultSlides = INITIAL_CMS.heroBanner.slides || [];
   if (defaultSlides.length > 0) {
-    return defaultSlides.slice(0, 4);
+    return defaultSlides.slice(0, 3);
   }
 
   const firstSlide: CMSHeroSlide = {
@@ -54,8 +54,8 @@ const createFallbackHeroSlides = (heroBanner: CMSContent['heroBanner']): CMSHero
     ctaLink: heroBanner.ctaLink || '/shop',
     secondaryCtaLabel: 'Contact Store',
     secondaryCtaLink: '/contact',
-    imageUrl: isDemoHeroImage(heroBanner.imageUrl) ? '/hero/hero.png' : heroBanner.imageUrl,
-    mobileImageUrl: isDemoHeroImage(heroBanner.mobileImageUrl) ? '/hero/hero.png' : heroBanner.mobileImageUrl,
+    imageUrl: isDemoHeroImage(heroBanner.imageUrl) ? '/hero/hero1.png' : heroBanner.imageUrl,
+    mobileImageUrl: isDemoHeroImage(heroBanner.mobileImageUrl) ? '/hero/hero1.png' : heroBanner.mobileImageUrl,
   };
 
   return [firstSlide];
@@ -116,7 +116,7 @@ const getInitialCMS = (): CMSContent => {
 const saveCMS = (cms: CMSContent) => {
   try {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(withBrandFooterContact(cms)));
-  } catch {}
+  } catch { }
 };
 
 export const useCMSStore = create<CMSState>((set, get) => ({

@@ -277,17 +277,17 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs"
+                    className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-semibold"
                   >
-                    <option value="Gemstones">Gemstones</option>
-                    <option value="Natural Gemstones">Natural Gemstones</option>
-                    <option value="Gold rings">Gold rings</option>
-                    <option value="Silver rings">Silver rings</option>
-                    <option value="Maalas">Maalas</option>
+                    <option value="Rings">Rings</option>
                     <option value="Earrings">Earrings</option>
-                    <option value="Necklaces">Necklaces</option>
-                    <option value="Chains">Chains</option>
+                    <option value="Neck Jewellery">Neck Jewellery</option>
                     <option value="Pendants">Pendants</option>
+                    <option value="Bracelets & Bangles">Bracelets & Bangles</option>
+                    <option value="Gemstones">Gemstones</option>
+                    <option value="Spiritual Maalas">Spiritual Maalas</option>
+                    <option value="Rudraksha (1 to 24 Mukhi)">Rudraksha (1 to 24 Mukhi)</option>
+                    <option value="God Small Statues">God Small Statues</option>
                   </select>
                 </div>
                 <div>

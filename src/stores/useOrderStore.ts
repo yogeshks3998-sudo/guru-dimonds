@@ -60,11 +60,17 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   hydrateOrders: async () => {
     set({ loading: true, error: null });
     try {
-      const orders = await orderApi.listOrders();
-      saveOrders(orders);
-      set({ orders, loading: false });
-    } catch (error) {
-      set({ loading: false, error: error instanceof Error ? error.message : 'Unable to load orders from API' });
+      const apiOrders = await orderApi.listOrders();
+      const localOrders = getInitialOrders();
+      const orderMap = new Map<string, Order>();
+      localOrders.forEach((o) => orderMap.set(o.id, o));
+      apiOrders.forEach((o) => orderMap.set(o.id, o));
+      const merged = Array.from(orderMap.values()).sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime());
+      saveOrders(merged);
+      set({ orders: merged, loading: false });
+    } catch {
+      const localOrders = getInitialOrders();
+      set({ orders: localOrders, loading: false });
     }
   },
 

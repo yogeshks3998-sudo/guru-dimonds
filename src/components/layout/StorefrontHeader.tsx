@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/useAuthStore';
 import { useCMSStore } from '../../stores/useCMSStore';
 import { useProductStore } from '../../stores/useProductStore';
 import { GlobalSearchOverlay } from './GlobalSearchOverlay';
+import { InlineSearchInput } from './InlineSearchInput';
 import { MegaMenu } from './MegaMenu';
 import guruDiamondsLogo from '../../../assets/gurudimondslogo.png';
 import {
@@ -48,14 +49,9 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
   const navCategories = [
     { name: 'New Arrivals', action: () => navigateTo('/shop') },
     {
-      name: 'All Jewellery',
-      hasMega: 'Jewellery',
-      action: () => navigateTo('/shop'),
-    },
-    {
       name: 'Rings',
       action: () => {
-        setSelectedCategory('Gold rings');
+        setSelectedCategory('Rings');
         navigateTo('/shop');
       },
     },
@@ -67,16 +63,23 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
       },
     },
     {
-      name: 'Chains',
+      name: 'Neck Jewellery',
       action: () => {
-        setSelectedCategory('Chains');
+        setSelectedCategory('Neck Jewellery');
         navigateTo('/shop');
       },
     },
     {
-      name: 'Maalas',
+      name: 'Pendants',
       action: () => {
-        setSelectedCategory('Maalas');
+        setSelectedCategory('Pendants');
+        navigateTo('/shop');
+      },
+    },
+    {
+      name: 'Bracelets & Bangles',
+      action: () => {
+        setSelectedCategory('Bracelets & Bangles');
         navigateTo('/shop');
       },
     },
@@ -89,23 +92,23 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
       },
     },
     {
-      name: 'Men',
+      name: 'Spiritual Maalas',
       action: () => {
-        setSelectedGender('Men');
+        setSelectedCategory('Spiritual Maalas');
         navigateTo('/shop');
       },
     },
     {
-      name: 'Women',
+      name: 'Rudraksha',
       action: () => {
-        setSelectedGender('Women');
+        setSelectedCategory('Rudraksha (1 to 24 Mukhi)');
         navigateTo('/shop');
       },
     },
     {
-      name: 'Collections',
+      name: 'God Small Statues',
       action: () => {
-        setSelectedCollection('Spiritual Heritage');
+        setSelectedCategory('God Small Statues');
         navigateTo('/shop');
       },
     },
@@ -114,21 +117,6 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
   return (
     <>
     <header className="sticky top-0 z-40 w-full max-w-full overflow-x-clip bg-[#FFF9F0]/95 backdrop-blur-md border-b border-[#E9D9C5] transition-all shadow-xs">
-      {/* Announcement Bar */}
-      {cms.announcementBar.enabled && (
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 bg-[#7A1822] text-[#FFF9F0] text-[10px] sm:text-[11px] font-medium tracking-wide py-1.5 px-3 sm:px-4 text-left sm:text-center sm:flex sm:justify-center border-b border-[#B8893D]/30">
-          <span className="min-w-0 leading-snug sm:leading-normal">{cms.announcementBar.text}</span>
-          {cms.announcementBar.link && (
-            <button
-              onClick={() => navigateTo(cms.announcementBar.link!)}
-              className="shrink-0 underline font-bold hover:text-[#F4E4C8] transition-colors"
-            >
-              Discover Collection
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Main Navigation Header */}
       <div className="relative w-full max-w-[1536px] mx-auto px-2.5 min-[390px]:px-3 sm:px-6 lg:px-8 py-3 sm:py-3.5 flex items-center justify-between gap-1.5 min-[390px]:gap-2 sm:gap-4">
         {/* Left: Mobile menu toggle */}
@@ -159,18 +147,10 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
             />
           </button>
 
-          {/* Desktop Search Trigger */}
-          <button
-            type="button"
-            onClick={() => setSearchOverlayOpen(true)}
-            className="hidden lg:flex items-center absolute left-1/2 top-1/2 w-[min(460px,32vw)] -translate-x-1/2 -translate-y-1/2 bg-[#FFFFFF] border border-[#E9D9C5] rounded-full px-4 py-2.5 hover:border-[#B8893D] transition-all shadow-xs text-left cursor-pointer group"
-          >
-            <Search className="w-4 h-4 text-[#B8893D] shrink-0 mr-2 group-hover:scale-110 transition-transform" />
-            <span className="text-xs text-[#796A65] font-medium truncate">Search diamonds, rubies, emeralds...</span>
-            <span className="ml-auto text-[10px] bg-[#F4E4C8] text-[#7A1822] font-bold px-1.5 py-0.5 rounded-md">
-              Ctrl K
-            </span>
-          </button>
+          {/* Desktop Direct Search Input & Dropdown */}
+          <div className="hidden lg:flex items-center absolute left-1/2 top-1/2 w-[min(460px,32vw)] -translate-x-1/2 -translate-y-1/2 z-30">
+            <InlineSearchInput />
+          </div>
         </div>
 
         {/* Right Actions */}

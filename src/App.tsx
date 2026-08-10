@@ -1,6 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { getCurrentPath } from './utils/navigation';
-import { RateTicker } from './components/layout/RateTicker';
 import { StorefrontHeader } from './components/layout/StorefrontHeader';
 import { StorefrontFooter } from './components/layout/StorefrontFooter';
 import { CartDrawer } from './components/storefront/CartDrawer';
@@ -36,6 +35,7 @@ const CustomerLoginPage = lazy(() =>
 const AdminLoginPage = lazy(() =>
   import('./pages/AdminLoginPage').then((module) => ({ default: module.AdminLoginPage }))
 );
+const ContactPage = lazy(() => import('./pages/ContactPage').then((module) => ({ default: module.ContactPage })));
 const StaticContentPages = lazy(() => import('./pages/StaticContentPages'));
 const AdminDashboardPage = lazy(() =>
   import('./pages/admin/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage }))
@@ -140,7 +140,7 @@ export function App() {
 
     // Static Pages
     if (currentPath === '/about') return <StaticContentPages page="about" />;
-    if (currentPath === '/contact') return <StaticContentPages page="contact" />;
+    if (currentPath === '/contact') return <ContactPage />;
     if (currentPath === '/size-guide') return <StaticContentPages page="size-guide" />;
     if (currentPath === '/privacy-policy')
       return (
@@ -168,10 +168,7 @@ export function App() {
       <div className="min-h-screen w-full max-w-full overflow-x-clip bg-[#FAF8F3] text-[#1B1A18] font-sans antialiased flex flex-col justify-between selection:bg-[#A67C32] selection:text-white">
         <div>
           {!isAdminRoute && (
-            <>
-              <RateTicker />
-              <StorefrontHeader onOpenCartDrawer={() => setCartDrawerOpen(true)} />
-            </>
+            <StorefrontHeader onOpenCartDrawer={() => setCartDrawerOpen(true)} />
           )}
 
           <main className="w-full max-w-full overflow-x-clip">

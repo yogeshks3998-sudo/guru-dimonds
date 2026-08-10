@@ -1,5 +1,7 @@
 import React from 'react';
-import { ShieldCheck, Award, HelpCircle, Phone, Mail, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ContactPage } from './ContactPage';
+
+export { ContactPage };
 
 export const AboutPage: React.FC = () => (
   <div className="max-w-4xl mx-auto px-4 py-12 space-y-8">
@@ -18,32 +20,6 @@ export const AboutPage: React.FC = () => (
       <p>
         Whether you are choosing a gemstone for jewellery, astrology, investment, or gifting, our mission is to provide honest guidance, genuine products, and complete customer satisfaction.
       </p>
-    </div>
-  </div>
-);
-
-export const ContactPage: React.FC = () => (
-  <div className="max-w-4xl mx-auto px-4 py-12 space-y-8">
-    <div className="text-center space-y-3">
-      <h1 className="font-serif text-3xl font-bold text-[#1B1A18]">Contact Guru Diamonds</h1>
-      <p className="text-xs text-[#6F6A62]">Our gemstone specialists are available Monday to Saturday.</p>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
-      <div className="bg-white border border-[#E7E1D7] p-6 rounded-2xl space-y-2">
-        <Phone className="w-6 h-6 text-[#A67C32]" />
-        <h4 className="font-serif font-bold text-sm">Phone</h4>
-        <p className="text-[#6F6A62]">+91 78991 25449</p>
-      </div>
-      <div className="bg-white border border-[#E7E1D7] p-6 rounded-2xl space-y-2">
-        <Mail className="w-6 h-6 text-[#A67C32]" />
-        <h4 className="font-serif font-bold text-sm">Email</h4>
-        <p className="text-[#6F6A62]">info@gurudimonds.in</p>
-      </div>
-      <div className="bg-white border border-[#E7E1D7] p-6 rounded-2xl space-y-2">
-        <MapPin className="w-6 h-6 text-[#A67C32]" />
-        <h4 className="font-serif font-bold text-sm">Store</h4>
-        <p className="text-[#6F6A62]">No. 1108, 1st Cross, Kurubageri, Lashkar Mohalla, Mysuru - 570001</p>
-      </div>
     </div>
   </div>
 );

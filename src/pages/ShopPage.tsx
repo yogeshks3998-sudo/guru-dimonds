@@ -23,7 +23,6 @@ export const ShopPage: React.FC = () => {
     selectedGender,
     setSelectedGender,
     priceRange,
-    setPriceRange,
     sortBy,
     setSortBy,
     resetFilters,
@@ -113,7 +112,7 @@ export const ShopPage: React.FC = () => {
     if (sortBy === 'NEWEST') {
       list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } else if (sortBy === 'PRICE_LOW_HIGH') {
-      list.sort((a, b) => a.grossWeightGrams - b.grossWeightGrams); // Approx price sort
+      list.sort((a, b) => a.grossWeightGrams - b.grossWeightGrams);
     } else if (sortBy === 'PRICE_HIGH_LOW') {
       list.sort((a, b) => b.grossWeightGrams - a.grossWeightGrams);
     } else if (sortBy === 'RATING') {
@@ -135,9 +134,9 @@ export const ShopPage: React.FC = () => {
     <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header & Title */}
       <div className="space-y-2 border-b border-[#E7E1D7] pb-6">
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1B1A18]">Gemstones & Jewellery Catalogue</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1B1A18]">Gemstones & Silver Jewellery Catalogue</h1>
         <p className="text-xs sm:text-sm text-[#6F6A62]">
-          Browse 100% BIS Hallmarked 22K/18K Gold, 925 Sterling Silver, and certified Gemstones.
+          Browse 100% BIS Hallmarked 925 Sterling Silver, Certified Gemstones, 1-24 Mukhi Rudrakshas, and Devotional Silver Idols.
         </p>
       </div>
 
@@ -168,7 +167,7 @@ export const ShopPage: React.FC = () => {
           <Search className="w-4 h-4 text-[#6F6A62] absolute left-3 top-2.5" />
           <input
             type="text"
-            placeholder="Search gold rings, maalas, gemstones..."
+            placeholder="Search silver rings, maalas, gemstones, rudrakshas..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1B1A18] focus:outline-none focus:border-[#A67C32]"
@@ -285,7 +284,7 @@ export const ShopPage: React.FC = () => {
                 {INITIAL_CATEGORIES.map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => setSelectedCategory(cat.name)}
+                    onClick={() => setSelectedCategory(selectedCategory === cat.name ? null : cat.name)}
                     className={`block w-full text-left py-1 px-2 rounded-lg transition-colors ${
                       selectedCategory === cat.name
                         ? 'bg-[#FAF3E6] font-bold text-[#A67C32]'
@@ -301,8 +300,8 @@ export const ShopPage: React.FC = () => {
             {/* Metal Type Filter */}
             <div className="space-y-2 pt-4 border-t border-[#E7E1D7]">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#1B1A18]">Metal Type</h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {['Gold', 'Silver', 'Platinum'].map((metal) => (
+              <div className="grid grid-cols-1 gap-2 text-xs">
+                {['Silver'].map((metal) => (
                   <button
                     key={metal}
                     onClick={() => setSelectedMetal(selectedMetal === metal ? null : metal)}
@@ -312,7 +311,7 @@ export const ShopPage: React.FC = () => {
                         : 'bg-[#FAF8F3] text-[#1B1A18] border-[#E7E1D7] hover:border-[#A67C32]'
                     }`}
                   >
-                    {metal}
+                    925 Sterling Silver
                   </button>
                 ))}
               </div>
