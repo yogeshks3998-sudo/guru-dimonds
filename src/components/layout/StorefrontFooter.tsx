@@ -122,7 +122,7 @@ export const StorefrontFooter: React.FC = () => {
           </div>
 
           {/* Column 3: Customer Care & Legal */}
-          <div className="md:col-span-3 md:pl-4">
+          <div className="md:col-span-3 md:pl-4 space-y-6">
             <div className="footer-menu">
               <h2 className="footer-menu-name">Customer Care</h2>
               <ul className="footer-menu-list">
@@ -138,11 +138,20 @@ export const StorefrontFooter: React.FC = () => {
                 <li>
                   <button onClick={() => navigateTo('/size-guide')}>Ring Size Guide</button>
                 </li>
+              </ul>
+            </div>
+
+            <div className="footer-menu">
+              <h2 className="footer-menu-name">Legal</h2>
+              <ul className="footer-menu-list">
                 <li>
-                  <button onClick={() => navigateTo('/privacy-policy')}>Privacy Policy</button>
+                  <button onClick={() => navigateTo('/privacy-policy')}>Privacy & Cookies</button>
                 </li>
                 <li>
-                  <button onClick={() => navigateTo('/terms')}>Terms & Conditions</button>
+                  <button onClick={() => navigateTo('/terms-and-policies')}>Terms & Policies</button>
+                </li>
+                <li>
+                  <button onClick={() => navigateTo('/disclaimer-grievance')}>Disclaimer & Grievance</button>
                 </li>
               </ul>
             </div>

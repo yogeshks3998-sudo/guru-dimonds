@@ -36,6 +36,15 @@ const AdminLoginPage = lazy(() =>
   import('./pages/AdminLoginPage').then((module) => ({ default: module.AdminLoginPage }))
 );
 const ContactPage = lazy(() => import('./pages/ContactPage').then((module) => ({ default: module.ContactPage })));
+const PrivacyCookiesPage = lazy(() =>
+  import('./pages/PrivacyCookiesPage').then((module) => ({ default: module.PrivacyCookiesPage }))
+);
+const TermsPoliciesPage = lazy(() =>
+  import('./pages/TermsPoliciesPage').then((module) => ({ default: module.TermsPoliciesPage }))
+);
+const DisclaimerGrievancePage = lazy(() =>
+  import('./pages/DisclaimerGrievancePage').then((module) => ({ default: module.DisclaimerGrievancePage }))
+);
 const StaticContentPages = lazy(() => import('./pages/StaticContentPages'));
 const AdminDashboardPage = lazy(() =>
   import('./pages/admin/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage }))
@@ -138,26 +147,13 @@ export function App() {
     if (currentPath === '/track-order') return <TrackOrderPage />;
     if (currentPath === '/login') return <CustomerLoginPage />;
 
-    // Static Pages
+    // Static & Legal Pages
     if (currentPath === '/about') return <StaticContentPages page="about" />;
     if (currentPath === '/contact') return <ContactPage />;
     if (currentPath === '/size-guide') return <StaticContentPages page="size-guide" />;
-    if (currentPath === '/privacy-policy')
-      return (
-        <StaticContentPages
-          page="privacy-policy"
-          title="Privacy Policy"
-          content="Guru Diamonds values your privacy. Payment tokens, delivery addresses, and personal contact information are handled with secure encryption and used only for order, support, and service purposes."
-        />
-      );
-    if (currentPath === '/terms')
-      return (
-        <StaticContentPages
-          page="terms"
-          title="Terms & Conditions"
-          content="All gemstones, precious stones, silver jewellery, and jewellery accessories sold by Guru Diamonds are selected with care and verified for authenticity, quality, and fair pricing."
-        />
-      );
+    if (currentPath === '/privacy-policy') return <PrivacyCookiesPage />;
+    if (currentPath === '/terms-and-policies' || currentPath === '/terms') return <TermsPoliciesPage />;
+    if (currentPath === '/disclaimer-grievance') return <DisclaimerGrievancePage />;
 
     // Default Fallback
     return <HomePage />;
