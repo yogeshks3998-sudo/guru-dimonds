@@ -29,6 +29,7 @@ interface OrderState {
   cancelOrder: (orderId: string, reason: string) => void;
   requestReturn: (orderId: string, reason: string) => void;
   hydrateOrders: () => Promise<void>;
+  recordOrder: (order: Order) => void;
 }
 
 const LOCAL_KEY = 'guru_diamonds_orders_v1';
@@ -72,6 +73,14 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       const localOrders = getInitialOrders();
       set({ orders: localOrders, loading: false });
     }
+  },
+
+  recordOrder: (order) => {
+    const updated = [order, ...get().orders.filter((entry) => entry.id !== order.id)].sort(
+      (a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()
+    );
+    saveOrders(updated);
+    set({ orders: updated, error: null });
   },
 
   placeOrder: (params) => {

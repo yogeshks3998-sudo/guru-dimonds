@@ -298,12 +298,14 @@ model Payment {
   status            String
   method            String?
   rawPayload        Json?
+  paidAt            DateTime?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   order             Order?   @relation(fields: [orderId], references: [id])
 
   @@index([orderId])
   @@index([providerOrderId])
+  @@unique([providerPaymentId])
 }
 
 model Invoice {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useCartStore } from '../stores/useCartStore';
 import { useAuthStore } from '../stores/useAuthStore';
 import { useOrderStore } from '../stores/useOrderStore';
@@ -6,14 +6,38 @@ import { formatINR } from '../utils/formatters';
 import { navigateTo } from '../utils/navigation';
 import { Address } from '../types';
 import { checkoutApi } from '../services/checkoutApi';
+import { paymentApi, RazorpayOrderResponse } from '../services/paymentApi';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { ShieldCheck, CheckCircle2, Lock, ArrowLeft, CreditCard, QrCode, Building, Banknote } from 'lucide-react';
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => {
+      open: () => void;
+      on: (event: string, handler: (response: any) => void) => void;
+    };
+  }
+}
+
+const loadRazorpayCheckout = () =>
+  new Promise<void>((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Unable to load Razorpay Checkout. Please try again.'));
+    document.body.appendChild(script);
+  });
 
 export const CheckoutPage: React.FC = () => {
   const { items, getSubtotal, getDiscountAmount, getGSTTotal, getShippingCharge, getTotal, clearCart } =
     useCartStore();
   const { customer, isCustomerLoggedIn } = useAuthStore();
-  const { placeOrder } = useOrderStore();
+  const { recordOrder } = useOrderStore();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -39,6 +63,8 @@ export const CheckoutPage: React.FC = () => {
   const [gstNumber, setGstNumber] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const paymentRequestIdRef = useRef(`checkout-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
 
   if (items.length === 0) {
     return (
@@ -56,45 +82,95 @@ export const CheckoutPage: React.FC = () => {
   }
 
   const handlePlaceOrder = async () => {
+    if (isProcessing) return;
     setIsProcessing(true);
+    setPaymentError(null);
     try {
-      const order = placeOrder({
-        customer: {
-          id: customer?.id || `cust-${Date.now()}`,
-          name: selectedAddress.fullName,
-          email: selectedAddress.email,
-          phone: selectedAddress.phone,
-        },
+      if (!isCustomerLoggedIn) {
+        throw new Error('Please sign in before completing checkout.');
+      }
+
+      const payload = {
         shippingAddress: selectedAddress,
         billingAddress: selectedAddress,
         items: items.map((item) => ({
-          id: item.id,
           productId: item.productId,
           variantId: item.variantId,
-          productName: item.product.name,
-          variantSku: item.selectedVariant?.sku,
-          variantDetails: item.selectedAttributes,
-          image: item.product.images[0],
+          selectedAttributes: item.selectedAttributes,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.unitPrice * item.quantity,
-          priceBreakdownSnapshot: item.priceBreakdown,
           customEngraving: item.customEngraving,
         })),
-        subtotal: getSubtotal(),
-        discountAmount: getDiscountAmount(),
-        gstTotal: getGSTTotal(),
-        shippingCharge: getShippingCharge(),
-        totalAmount: getTotal(),
+        couponCode: useCartStore.getState().appliedCoupon?.code,
         paymentMethod,
         notes: orderNotes,
+        gstNumber: gstInvoiceRequested ? gstNumber : undefined,
+        clientRequestId: paymentRequestIdRef.current,
+      };
+
+      if (paymentMethod === 'COD') {
+        const order = await checkoutApi.createOrder(payload);
+        recordOrder(order);
+        clearCart();
+        navigateTo(`/checkout/success?orderNumber=${order.orderNumber}`);
+        return;
+      }
+
+      await loadRazorpayCheckout();
+      const razorpayOrder: RazorpayOrderResponse = await paymentApi.createRazorpayOrder(payload);
+      if (!razorpayOrder.keyId) throw new Error('Razorpay public key is not configured.');
+
+      await new Promise<void>((resolve, reject) => {
+        const checkout = new window.Razorpay!({
+          key: razorpayOrder.keyId,
+          amount: razorpayOrder.amount,
+          currency: razorpayOrder.currency,
+          order_id: razorpayOrder.razorpayOrderId,
+          name: 'Guru Diamonds',
+          description: razorpayOrder.description,
+          prefill: {
+            name: selectedAddress.fullName || razorpayOrder.customer.name,
+            email: selectedAddress.email || razorpayOrder.customer.email,
+            contact: selectedAddress.phone || razorpayOrder.customer.phone,
+          },
+          notes: {
+            orderId: razorpayOrder.orderId,
+            orderNumber: razorpayOrder.orderNumber,
+          },
+          theme: {
+            color: '#A67C32',
+          },
+          handler: async (response: any) => {
+            try {
+              const verified = await paymentApi.verifyRazorpayPayment({
+                orderId: razorpayOrder.orderId,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                method: paymentMethod,
+              });
+              recordOrder(verified.order);
+              clearCart();
+              navigateTo(`/checkout/success?orderNumber=${verified.order.orderNumber}`);
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          },
+          modal: {
+            ondismiss: () => reject(new Error('Payment was cancelled before completion.')),
+          },
+        });
+        checkout.on('payment.failed', (response: any) => {
+          reject(new Error(response?.error?.description || 'Razorpay payment failed. Please try again.'));
+        });
+        checkout.open();
       });
-      clearCart();
-      setIsProcessing(false);
-      navigateTo(`/checkout/success?orderNumber=${order.orderNumber}`);
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to place order';
+      setPaymentError(message);
+      alert(message);
+    } finally {
       setIsProcessing(false);
-      alert(error instanceof Error ? error.message : 'Unable to place order');
     }
   };
 
@@ -209,9 +285,9 @@ export const CheckoutPage: React.FC = () => {
 
               <div className="space-y-3 text-xs">
                 {[
-                  { id: 'UPI', label: 'Mock UPI / QR (GPay, PhonePe, Paytm)', icon: QrCode },
-                  { id: 'CARD', label: 'Mock Credit / Debit Card', icon: CreditCard },
-                  { id: 'NET_BANKING', label: 'Mock Net Banking (HDFC, ICICI, SBI)', icon: Building },
+                  { id: 'UPI', label: 'Razorpay UPI / QR (GPay, PhonePe, Paytm)', icon: QrCode },
+                  { id: 'CARD', label: 'Razorpay Credit / Debit Card', icon: CreditCard },
+                  { id: 'NET_BANKING', label: 'Razorpay Net Banking (HDFC, ICICI, SBI)', icon: Building },
                   { id: 'COD', label: 'Cash on Delivery (COD Verified)', icon: Banknote },
                 ].map((option) => (
                   <label
@@ -260,8 +336,16 @@ export const CheckoutPage: React.FC = () => {
 
                 <div className="p-3 bg-[#FAF8F3] rounded-xl border border-[#E7E1D7]">
                   <span className="font-bold text-[#1B1A18] block mb-1">Payment Method Selected:</span>
-                  <p className="font-bold text-[#A67C32]">{paymentMethod} (Mock Payment Simulation)</p>
+                  <p className="font-bold text-[#A67C32]">
+                    {paymentMethod === 'COD' ? 'Cash on Delivery' : `${paymentMethod} via Razorpay Test Mode`}
+                  </p>
                 </div>
+
+                {paymentError && (
+                  <div className="p-3 bg-[#FFF4F2] rounded-xl border border-[#E5A092] text-[#9B2C1F] font-semibold">
+                    {paymentError}
+                  </div>
+                )}
               </div>
 
               <button
