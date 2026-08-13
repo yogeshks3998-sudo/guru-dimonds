@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../config/db';
 import { requireCustomer } from '../middleware/auth';
 import { asyncHandler, HttpError } from '../utils/http';
-import { buildOrderFromCheckout, calculateCheckout, CheckoutInput } from '../utils/checkout';
+import { buildCheckoutInputFromCart, buildOrderFromCheckout, calculateCheckout, CheckoutInput } from '../utils/checkout';
 import { toAddressData, toOrderCreateData, toOrderResponse } from '../utils/serializers';
 import type { Order } from '../../../src/types';
 
@@ -15,7 +15,7 @@ const orderInclude = {
   invoice: true,
 };
 
-const decrementInventory = async (tx: any, order: Order) => {
+export const decrementInventory = async (tx: any, order: Order) => {
   for (const item of order.items) {
     if (item.variantId) {
       const variant = await tx.productVariant.findUnique({ where: { id: item.variantId } });
@@ -32,7 +32,7 @@ const decrementInventory = async (tx: any, order: Order) => {
   }
 };
 
-const createInvoiceAndEmailLog = async (tx: any, order: Order, gstNumber?: string) => {
+export const createInvoiceAndEmailLog = async (tx: any, order: Order, gstNumber?: string) => {
   await tx.invoice.create({
     data: {
       orderId: order.id,
@@ -71,10 +71,14 @@ checkoutRouter.post(
     const saved = await prisma.$transaction(async (tx: any) => {
       const customer = await tx.customer.findUnique({ where: { id: req.auth!.sub }, include: { addresses: true } });
       if (!customer || customer.status !== 'ACTIVE') throw new HttpError(403, 'Customer account is not active');
-      const totals = await calculateCheckout(tx, input);
+      const trustedInput = await buildCheckoutInputFromCart(tx, customer.id, input);
+      if (trustedInput.paymentMethod !== 'COD') {
+        throw new HttpError(400, 'Use Razorpay payment order endpoint for prepaid checkout');
+      }
+      const totals = await calculateCheckout(tx, trustedInput);
       const order = buildOrderFromCheckout(
         { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone },
-        input,
+        trustedInput,
         totals
       );
 
@@ -105,10 +109,10 @@ checkoutRouter.post(
           },
           payments: {
             create: {
-              provider: input.paymentMethod === 'COD' ? 'COD' : 'RAZORPAY',
+              provider: trustedInput.paymentMethod === 'COD' ? 'COD' : 'RAZORPAY',
               amount: order.totalAmount,
-              status: input.paymentMethod === 'COD' ? 'PENDING' : 'CREATED',
-              method: input.paymentMethod,
+              status: trustedInput.paymentMethod === 'COD' ? 'PENDING' : 'CREATED',
+              method: trustedInput.paymentMethod,
               rawPayload: { scaffold: true },
             },
           },

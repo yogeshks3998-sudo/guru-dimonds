@@ -15,6 +15,7 @@ export interface CheckoutPayload {
   paymentMethod: 'UPI' | 'CARD' | 'NET_BANKING' | 'COD';
   notes?: string;
   gstNumber?: string;
+  clientRequestId?: string;
 }
 
 export const checkoutApi = {

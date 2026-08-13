@@ -22,6 +22,34 @@ export type CheckoutInput = {
   gstNumber?: string;
 };
 
+export const buildCheckoutInputFromCart = async (
+  tx: any,
+  customerId: string,
+  input: CheckoutInput
+): Promise<CheckoutInput> => {
+  const cart = await tx.cart.findUnique({
+    where: { customerId },
+    include: { items: { orderBy: { addedAt: 'asc' as const } } },
+  });
+  if (!cart || cart.items.length === 0) throw new HttpError(400, 'Cart is empty');
+
+  return {
+    shippingAddress: input.shippingAddress,
+    billingAddress: input.billingAddress || input.shippingAddress,
+    couponCode: cart.couponCode || input.couponCode,
+    paymentMethod: input.paymentMethod,
+    notes: input.notes,
+    gstNumber: input.gstNumber,
+    items: cart.items.map((item: any) => ({
+      productId: item.productId,
+      variantId: item.variantId || undefined,
+      selectedAttributes: item.selectedAttributes || {},
+      quantity: item.quantity,
+      customEngraving: item.customEngraving || undefined,
+    })),
+  };
+};
+
 const validPincode = (value: string) => /^\d{6}$/.test(value);
 const validPhone = (value: string) => value.replace(/\D/g, '').length >= 10;
 

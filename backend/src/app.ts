@@ -18,6 +18,7 @@ import { HttpError } from './utils/http';
 export const app = express();
 
 app.use(cors());
+app.use('/api/payments/webhook/razorpay', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
 
 app.use('/api/health', healthRouter);
