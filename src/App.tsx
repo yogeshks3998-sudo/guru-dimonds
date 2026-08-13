@@ -106,7 +106,7 @@ export function App() {
 
   const renderContent = () => {
     // Admin Routes
-    if (currentPath === '/admin/login') return <AdminLoginPage />;
+    if (currentPath === '/adminlogin' || currentPath === '/admin/login') return <AdminLoginPage />;
     if (isAdminRoute && !isAdminLoggedIn) return <AdminLoginPage />;
     const exactAdminPath = currentPath.startsWith('/admin/products/edit/') ? '/admin/products' : currentPath;
     const allowedRoles = routePermissions[exactAdminPath];

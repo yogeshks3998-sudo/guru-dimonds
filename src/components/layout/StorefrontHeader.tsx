@@ -155,20 +155,28 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
 
         {/* Right Actions */}
         <div className="flex shrink-0 items-center justify-end gap-0.5 min-[390px]:gap-1 sm:gap-5">
-          {/* User Profile Dropdown */}
+          {/* User Profile Action */}
           <div className="relative">
             <button
-              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              onClick={() => {
+                if (isCustomerLoggedIn || isAdminLoggedIn) {
+                  setUserDropdownOpen(!userDropdownOpen);
+                } else {
+                  navigateTo('/login');
+                }
+              }}
               className="flex items-center gap-1.5 p-1 min-[360px]:p-1.5 min-[390px]:p-2 text-[#281C18] hover:text-[#7A1822] transition-colors"
             >
               <User className="w-4.5 h-4.5 min-[390px]:w-5 min-[390px]:h-5 text-[#7A1822]" />
               <span className="hidden md:inline text-xs font-semibold">
                 {accountLabel}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#796A65] hidden md:inline" />
+              {(isCustomerLoggedIn || isAdminLoggedIn) && (
+                <ChevronDown className="w-3.5 h-3.5 text-[#796A65] hidden md:inline" />
+              )}
             </button>
 
-            {userDropdownOpen && (
+            {userDropdownOpen && (isCustomerLoggedIn || isAdminLoggedIn) && (
               <div className="absolute right-0 mt-2 w-52 bg-[#FFFFFF] border border-[#E9D9C5] rounded-2xl shadow-xl py-2 z-50 text-xs divide-y divide-[#E9D9C5]">
                 {isCustomerLoggedIn ? (
                   <>
@@ -208,7 +216,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
                       </button>
                     </div>
                   </>
-                ) : isAdminLoggedIn ? (
+                ) : (
                   <>
                     <div className="px-4 py-2 bg-[#FFF9F0]">
                       <p className="font-bold text-[#281C18]">{adminUser?.name}</p>
@@ -237,27 +245,6 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
                       </button>
                     </div>
                   </>
-                ) : (
-                  <div className="py-1">
-                    <button
-                      onClick={() => {
-                        navigateTo('/login');
-                        setUserDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-[#281C18] font-bold hover:bg-[#F4E4C8] hover:text-[#7A1822] transition-colors"
-                    >
-                      Login
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigateTo('/admin/login');
-                        setUserDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-[#796A65] hover:bg-[#FFF9F0] hover:text-[#281C18] transition-colors"
-                    >
-                      Admin / Manager Portal
-                    </button>
-                  </div>
                 )}
               </div>
             )}
