@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Send, CheckCircle2, Sparkles, Clock, ShieldCheck } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';
+import { useInquiryStore } from '../stores/useInquiryStore';
 
 export const ContactPage: React.FC = () => {
   const { showToast } = useToast();
+  const { addInquiry } = useInquiryStore();
   const [formData, setFormData] = useState({
     name: '',
     contactNumber: '',
@@ -46,10 +48,22 @@ export const ContactPage: React.FC = () => {
 
     setIsSubmitting(true);
 
+    try {
+      addInquiry({
+        name: formData.name.trim(),
+        contactNumber: formData.contactNumber.trim(),
+        gmail: formData.gmail.trim(),
+        requirement: formData.requirement,
+        message: formData.message.trim(),
+      });
+    } catch {
+      // fallback safe
+    }
+
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
-      showToast('Inquiry submitted successfully! We will contact you soon.', 'success');
+      showToast('Inquiry submitted successfully! Our team will reach out soon.', 'success');
       setFormData({
         name: '',
         contactNumber: '',
@@ -57,7 +71,7 @@ export const ContactPage: React.FC = () => {
         requirement: 'Silver Rings',
         message: '',
       });
-    }, 1000);
+    }, 600);
   };
 
   return (

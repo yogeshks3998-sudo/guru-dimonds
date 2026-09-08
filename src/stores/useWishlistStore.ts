@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Product } from '../types';
 import { wishlistApi } from '../services/wishlistApi';
-import { useAuthStore } from './useAuthStore';
+import { hasCustomerApiSession } from './useAuthStore';
 
 interface WishlistState {
   wishlistIds: string[];
@@ -33,7 +33,7 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
   syncError: null,
 
   hydrateWishlist: async () => {
-    if (!useAuthStore.getState().isCustomerLoggedIn) return;
+    if (!hasCustomerApiSession()) return;
     try {
       const wishlist = await wishlistApi.getWishlist();
       localStorage.setItem(LOCAL_KEY, JSON.stringify(wishlist.productIds));
@@ -44,7 +44,7 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
   },
 
   mergeGuestWishlistToCustomer: async () => {
-    if (!useAuthStore.getState().isCustomerLoggedIn) return;
+    if (!hasCustomerApiSession()) return;
     try {
       for (const productId of get().wishlistIds) {
         await wishlistApi.addItem(productId);
@@ -65,7 +65,7 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
     } catch {}
     set({ wishlistIds: updated });
-    if (useAuthStore.getState().isCustomerLoggedIn) {
+    if (hasCustomerApiSession()) {
       const action = exists ? wishlistApi.removeItem(productId) : wishlistApi.addItem(productId);
       void action
         .then((wishlist) => {
@@ -87,7 +87,7 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
       localStorage.removeItem(LOCAL_KEY);
     } catch {}
     set({ wishlistIds: [] });
-    if (useAuthStore.getState().isCustomerLoggedIn) {
+    if (hasCustomerApiSession()) {
       void wishlistApi.clearWishlist().catch((error) => {
         set({ syncError: error instanceof Error ? error.message : 'Unable to clear synced wishlist' });
       });

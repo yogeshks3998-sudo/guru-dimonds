@@ -13,6 +13,7 @@ export const routePermissions: Record<string, AdminRole[]> = {
   '/admin/products/new': ['OWNER', 'PRODUCT_MANAGER'],
   '/admin/orders': ['OWNER', 'ORDER_MANAGER', 'FINANCE'],
   '/admin/customers': ['OWNER', 'ORDER_MANAGER'],
+  '/admin/inquiries': ['OWNER', 'STAFF', 'PRODUCT_MANAGER', 'ORDER_MANAGER', 'CONTENT_MANAGER', 'FINANCE'],
   '/admin/cms': ['OWNER', 'CONTENT_MANAGER'],
 };
 

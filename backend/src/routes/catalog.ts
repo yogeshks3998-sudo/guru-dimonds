@@ -114,26 +114,23 @@ catalogRouter.post(
   requireRole('OWNER', 'PRODUCT_MANAGER'),
   asyncHandler(async (req, res) => {
     const product = req.body as Product;
-    const saved = await prisma.$transaction(async (tx) => {
-      const created = await tx.product.create({
-        data: {
-          ...toProductCreateData(product),
-          variants: { create: (product.variants || []).map(toVariantCreateData) },
-          media: {
-            create: product.images.map((url, position) => ({ url, position })),
-          },
-          inventoryItems: {
-            create: [
-              {
-                sku: product.sku,
-                quantity: product.totalStock,
-              },
-            ],
-          },
+    const saved = await prisma.product.create({
+      data: {
+        ...toProductCreateData(product),
+        variants: { create: (product.variants || []).map(toVariantCreateData) },
+        media: {
+          create: product.images.map((url, position) => ({ url, position })),
         },
-        include: { variants: true },
-      });
-      return created;
+        inventoryItems: {
+          create: [
+            {
+              sku: product.sku,
+              quantity: product.totalStock,
+            },
+          ],
+        },
+      },
+      include: { variants: true },
     });
     res.status(201).json(toProductResponse(saved as unknown as Product));
   })
@@ -145,29 +142,26 @@ catalogRouter.put(
   asyncHandler(async (req, res) => {
     const id = String(req.params.id);
     const product = { ...(req.body as Product), id };
-    const saved = await prisma.$transaction(async (tx) => {
-      await tx.productVariant.deleteMany({ where: { productId: id } });
-      await tx.productMedia.deleteMany({ where: { productId: id } });
-      await tx.inventoryItem.deleteMany({ where: { productId: id } });
-      return tx.product.update({
-        where: { id },
-        data: {
-          ...toProductCreateData(product),
-          variants: { create: (product.variants || []).map(toVariantCreateData) },
-          media: {
-            create: product.images.map((url, position) => ({ url, position })),
-          },
-          inventoryItems: {
-            create: [
-              {
-                sku: product.sku,
-                quantity: product.totalStock,
-              },
-            ],
-          },
+    const saved = await prisma.product.update({
+      where: { id },
+      data: {
+        ...toProductCreateData(product),
+        variants: { deleteMany: {}, create: (product.variants || []).map(toVariantCreateData) },
+        media: {
+          deleteMany: {},
+          create: product.images.map((url, position) => ({ url, position })),
         },
-        include: { variants: true },
-      });
+        inventoryItems: {
+          deleteMany: {},
+          create: [
+            {
+              sku: product.sku,
+              quantity: product.totalStock,
+            },
+          ],
+        },
+      },
+      include: { variants: true },
     });
     res.json(toProductResponse(saved as unknown as Product));
   })

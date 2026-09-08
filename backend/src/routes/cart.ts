@@ -37,27 +37,25 @@ cartRouter.post(
       throw new HttpError(400, 'Selected variant is not available');
     }
 
-    const cart = await prisma.$transaction(async (tx: any) => {
-      const currentCart = await getOrCreateCart(tx, customerId);
-      const existing = currentCart.items.find((item: any) => item.productId === productId && item.variantId === variantId);
-      if (existing) {
-        await tx.cartItem.update({ where: { id: existing.id }, data: { quantity: existing.quantity + quantity } });
-      } else {
-        await tx.cartItem.create({
-          data: {
-            cartId: currentCart.id,
-            productId,
-            variantId,
-            quantity,
-            selectedAttributes: req.body.selectedAttributes || {},
-            customEngraving: req.body.customEngraving || null,
-            giftWrap: Boolean(req.body.giftWrap),
-            giftMessage: req.body.giftMessage || null,
-          },
-        });
-      }
-      return tx.cart.findUnique({ where: { id: currentCart.id }, include: cartInclude });
-    });
+    const currentCart = await getOrCreateCart(prisma, customerId);
+    const existing = currentCart.items.find((item: any) => item.productId === productId && item.variantId === variantId);
+    if (existing) {
+      await prisma.cartItem.update({ where: { id: existing.id }, data: { quantity: existing.quantity + quantity } });
+    } else {
+      await prisma.cartItem.create({
+        data: {
+          cartId: currentCart.id,
+          productId,
+          variantId,
+          quantity,
+          selectedAttributes: req.body.selectedAttributes || {},
+          customEngraving: req.body.customEngraving || null,
+          giftWrap: Boolean(req.body.giftWrap),
+          giftMessage: req.body.giftMessage || null,
+        },
+      });
+    }
+    const cart = await prisma.cart.findUnique({ where: { id: currentCart.id }, include: cartInclude });
 
     res.status(201).json(await toCartResponse(prisma, cart));
   })

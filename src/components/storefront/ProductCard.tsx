@@ -53,6 +53,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
     showToast('Added to Cart', `${product.name} added to your shopping bag.`);
   };
 
+  // Single most relevant badge to keep card clean and uncluttered
+  const primaryBadge = (() => {
+    if (product.badges?.includes('BEST_SELLER')) {
+      return { label: 'BEST SELLER', variant: 'gold' as const };
+    }
+    if (discountPercent > 0) {
+      return { label: `${discountPercent}% OFF`, variant: 'ruby' as const };
+    }
+    if (product.badges?.includes('NEW')) {
+      return { label: 'NEW', variant: 'dark' as const };
+    }
+    if (product.badges?.includes('CERTIFIED')) {
+      return { label: 'CERTIFIED', variant: 'emerald' as const };
+    }
+    if (product.badges?.includes('HALLMARKED')) {
+      return { label: 'HALLMARKED', variant: 'gold' as const };
+    }
+    if (product.badges && product.badges.length > 0) {
+      const first = product.badges[0];
+      return {
+        label: first.replace('_', ' '),
+        variant: 'gold' as const,
+      };
+    }
+    return null;
+  })();
+
   const primaryImg = product.images[0] || 'https://images.unsplash.com/photo-1611591475281-a120023a105f?auto=format&fit=crop&w=600&q=80';
   const secondaryImg = product.images[1] || primaryImg;
 
@@ -73,17 +100,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           loading="lazy"
         />
 
-        {/* Top Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
-          {product.badges?.map((badge, idx) => (
+        {/* Single Primary Badge */}
+        {primaryBadge && (
+          <div className="absolute top-3 left-3 z-10">
             <Badge
-              key={idx}
-              label={badge.replace('_', ' ')}
-              variant={badge === 'BEST_SELLER' ? 'gold' : badge === 'CERTIFIED' ? 'emerald' : 'dark'}
+              label={primaryBadge.label}
+              variant={primaryBadge.variant}
+              className="shadow-sm font-bold text-[10px] px-2.5 py-0.5 rounded-md"
             />
-          ))}
-          {discountPercent > 0 && <Badge label={`${discountPercent}% OFF`} variant="ruby" />}
-        </div>
+          </div>
+        )}
 
         {/* Wishlist Button */}
         <button
@@ -117,43 +143,43 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
       </div>
 
       {/* Product Details Area */}
-      <div className="p-4 flex-1 flex flex-col justify-between bg-white">
+      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between bg-white">
         <div>
           {/* Metal & Purity tag */}
-          <div className="flex items-center justify-between text-[11px] text-[#796A65] font-medium tracking-wider uppercase mb-1">
-            <span>
-              {product.metalPurity} {product.metalType} | {product.metalColor}
+          <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-[#796A65] font-medium tracking-wider uppercase mb-1">
+            <span className="truncate max-w-[75%]">
+              {product.metalPurity} {product.metalType}
             </span>
-            <div className="flex items-center gap-1 text-[#B8893D]">
-              <Star className="w-3 h-3 fill-current" />
+            <div className="flex items-center gap-0.5 sm:gap-1 text-[#B8893D] shrink-0">
+              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
               <span className="font-bold text-[#281C18]">{product.rating}</span>
             </div>
           </div>
 
-          <h3 className="font-product font-bold text-base text-[#281C18] line-clamp-2 group-hover:text-[#7A1822] transition-colors leading-snug">
+          <h3 className="font-product font-bold text-xs sm:text-base text-[#281C18] line-clamp-2 group-hover:text-[#7A1822] transition-colors leading-snug">
             {product.name}
           </h3>
         </div>
 
         {/* Price & Action */}
-        <div className="mt-3 pt-3 border-t border-[#E9D9C5] flex items-center justify-between">
-          <div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-bold text-[#7A1822]">{formatINR(finalPrice)}</span>
+        <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-[#E9D9C5] flex items-center justify-between gap-1">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
+              <span className="text-xs sm:text-base font-bold text-[#7A1822]">{formatINR(finalPrice)}</span>
               {compareAt && compareAt > finalPrice && (
-                <span className="text-xs text-[#796A65] line-through">{formatINR(compareAt)}</span>
+                <span className="text-[10px] sm:text-xs text-[#796A65] line-through">{formatINR(compareAt)}</span>
               )}
             </div>
-            <span className="text-[10px] text-[#2E7D5B] font-semibold block">Formula Price (3% GST Included)</span>
+            <span className="text-[9px] sm:text-[10px] text-[#2E7D5B] font-semibold block truncate">3% GST Included</span>
           </div>
 
           <button
             onClick={handleAddToCart}
-            className="p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-xl transition-all shadow-xs"
+            className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0"
             aria-label="Add to cart"
             title="Add to shopping bag"
           >
-            <ShoppingBag className="w-4 h-4" />
+            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>

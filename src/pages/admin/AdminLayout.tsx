@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { useInquiryStore } from '../../stores/useInquiryStore';
 import { navigateTo } from '../../utils/navigation';
 import { roleCan } from '../../utils/permissions';
 import { AdminRole } from '../../types';
@@ -10,6 +11,7 @@ import {
   ShoppingBag,
   Users,
   FileText,
+  MessageSquare,
   LogOut,
   ChevronRight,
   Flame,
@@ -37,7 +39,10 @@ const ROLE_LABELS: Record<AdminRole, string> = {
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab }) => {
   const { adminUser, isAdminLoggedIn, logoutAdmin } = useAuthStore();
+  const { inquiries } = useInquiryStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const newInquiriesCount = inquiries.filter((i) => i.status === 'NEW').length;
 
   if (!isAdminLoggedIn) {
     return (
@@ -65,6 +70,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
     { id: 'products', label: 'Jewellery Products', icon: Package, path: '/admin/products', roles: ['PRODUCT_MANAGER'] },
     { id: 'orders', label: 'Customer Orders', icon: ShoppingBag, path: '/admin/orders', roles: ['ORDER_MANAGER', 'FINANCE'] },
     { id: 'customers', label: 'Patrons & Clients', icon: Users, path: '/admin/customers', roles: ['ORDER_MANAGER'] },
+    {
+      id: 'inquiries',
+      label: 'Contact Inquiries',
+      icon: MessageSquare,
+      path: '/admin/inquiries',
+      roles: ['STAFF', 'PRODUCT_MANAGER', 'ORDER_MANAGER', 'CONTENT_MANAGER', 'FINANCE'],
+      badge: newInquiriesCount > 0 ? newInquiriesCount : undefined,
+    },
     { id: 'cms', label: 'CMS & Banners', icon: FileText, path: '/admin/cms', roles: ['CONTENT_MANAGER'] },
   ].filter((item) => roleCan(adminUser?.role, ...(item.roles as any)));
 
@@ -83,12 +96,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
         <div className="space-y-6">
           {/* Header Branding */}
           <div className="flex items-center gap-3 border-b border-[#2D2A26] pb-5">
-            <div className="w-9 h-9 rounded-xl bg-[#A67C32]/20 border border-[#A67C32]/50 flex items-center justify-center text-[#D8C29D] shrink-0">
-              <Flame className="w-5 h-5 text-[#A67C32]" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Guru Diamonds"
+              className="h-10 w-auto max-w-[140px] object-contain rounded-lg bg-white/95 p-1 shrink-0"
+            />
             <div className="min-w-0">
-              <span className="font-logo text-sm font-bold text-white block tracking-wider truncate">GURU DIAMONDS</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#A67C32]">
+              <span className="font-logo text-xs font-bold text-white block tracking-wider truncate">GURU DIAMONDS</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[#A67C32]">
                 CMS Portal
               </span>
             </div>
@@ -117,7 +132,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
                       <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[#A67C32]'}`} />
                       <span className="truncate">{item.label}</span>
                     </div>
-                    {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-80 shrink-0" />}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {item.badge !== undefined && (
+                        <span className="bg-[#D4AF37] text-[#2D080C] text-[10px] font-extrabold px-1.5 py-0.2 rounded-full shadow-2xs">
+                          {item.badge}
+                        </span>
+                      )}
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-80" />}
+                    </div>
                   </button>
                 );
               })}
@@ -238,7 +260,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
                         <Icon className="w-4 h-4 text-[#A67C32]" />
                         <span>{item.label}</span>
                       </div>
-                      {isActive && <ChevronRight className="w-3.5 h-3.5" />}
+                      <div className="flex items-center gap-1.5">
+                        {item.badge !== undefined && (
+                          <span className="bg-[#D4AF37] text-[#2D080C] text-[10px] font-extrabold px-1.5 py-0.2 rounded-full">
+                            {item.badge}
+                          </span>
+                        )}
+                        {isActive && <ChevronRight className="w-3.5 h-3.5" />}
+                      </div>
                     </button>
                   );
                 })}

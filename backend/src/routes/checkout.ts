@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { prisma } from '../config/db';
+import { prisma, transactionOptions } from '../config/db';
 import { requireCustomer } from '../middleware/auth';
 import { asyncHandler, HttpError } from '../utils/http';
 import { buildCheckoutInputFromCart, buildOrderFromCheckout, calculateCheckout, CheckoutInput } from '../utils/checkout';
 import { toAddressData, toOrderCreateData, toOrderResponse } from '../utils/serializers';
+import { sendOrderConfirmationEmail } from '../utils/mailer';
 import type { Order } from '../../../src/types';
 
 export const checkoutRouter = Router();
@@ -18,15 +19,21 @@ const orderInclude = {
 export const decrementInventory = async (tx: any, order: Order) => {
   for (const item of order.items) {
     if (item.variantId) {
-      const variant = await tx.productVariant.findUnique({ where: { id: item.variantId } });
-      if (!variant || variant.stock < item.quantity) throw new HttpError(409, `Insufficient stock for ${item.productName}`);
-      await tx.productVariant.update({ where: { id: item.variantId }, data: { stock: { decrement: item.quantity } } });
+      const variantUpdate = await tx.productVariant.updateMany({
+        where: { id: item.variantId, stock: { gte: item.quantity } },
+        data: { stock: { decrement: item.quantity } },
+      });
+      if (variantUpdate.count !== 1) throw new HttpError(409, `Insufficient stock for ${item.productName}`);
     }
-    const product = await tx.product.findUnique({ where: { id: item.productId } });
-    if (!product || product.totalStock < item.quantity) throw new HttpError(409, `Insufficient stock for ${item.productName}`);
-    await tx.product.update({ where: { id: item.productId }, data: { totalStock: { decrement: item.quantity } } });
+
+    const productUpdate = await tx.product.updateMany({
+      where: { id: item.productId, totalStock: { gte: item.quantity } },
+      data: { totalStock: { decrement: item.quantity } },
+    });
+    if (productUpdate.count !== 1) throw new HttpError(409, `Insufficient stock for ${item.productName}`);
+
     await tx.inventoryItem.updateMany({
-      where: { productId: item.productId, ...(item.variantId ? { variantId: item.variantId } : {}) },
+      where: { productId: item.productId, ...(item.variantId ? { variantId: item.variantId } : {}), quantity: { gte: item.quantity } },
       data: { quantity: { decrement: item.quantity } },
     });
   }
@@ -41,16 +48,10 @@ export const createInvoiceAndEmailLog = async (tx: any, order: Order, gstNumber?
       invoiceData: order as any,
     },
   });
-  await tx.emailLog.create({
-    data: {
-      orderId: order.id,
-      recipient: order.customer.email,
-      subject: `Guru Diamonds order ${order.orderNumber} received`,
-      template: 'order_confirmation',
-      status: 'QUEUED',
-      provider: process.env.EMAIL_PROVIDER || 'log',
-      payload: { orderNumber: order.orderNumber, totalAmount: order.totalAmount },
-    },
+
+  // Dispatch real luxury HTML order confirmation email asynchronously
+  void sendOrderConfirmationEmail(order).catch((err) => {
+    console.error(`Order confirmation email failed for #${order.orderNumber}:`, err);
   });
 };
 
@@ -63,24 +64,30 @@ checkoutRouter.post(
   })
 );
 
+
 checkoutRouter.post(
   '/checkout/create-order',
   requireCustomer,
   asyncHandler(async (req, res) => {
     const input = req.body as CheckoutInput;
+    const customer = await prisma.customer.findUnique({ where: { id: req.auth!.sub }, include: { addresses: true } });
+    if (!customer || customer.status !== 'ACTIVE') throw new HttpError(403, 'Customer account is not active');
+
+    const trustedInput = await buildCheckoutInputFromCart(prisma, customer.id, input);
+    if (trustedInput.paymentMethod !== 'COD') {
+      throw new HttpError(400, 'Use Razorpay payment order endpoint for prepaid checkout');
+    }
+    const totals = await calculateCheckout(prisma, trustedInput);
+    const order = buildOrderFromCheckout(
+      { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone },
+      trustedInput,
+      totals
+    );
+
     const saved = await prisma.$transaction(async (tx: any) => {
-      const customer = await tx.customer.findUnique({ where: { id: req.auth!.sub }, include: { addresses: true } });
-      if (!customer || customer.status !== 'ACTIVE') throw new HttpError(403, 'Customer account is not active');
-      const trustedInput = await buildCheckoutInputFromCart(tx, customer.id, input);
-      if (trustedInput.paymentMethod !== 'COD') {
-        throw new HttpError(400, 'Use Razorpay payment order endpoint for prepaid checkout');
-      }
-      const totals = await calculateCheckout(tx, trustedInput);
-      const order = buildOrderFromCheckout(
-        { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone },
-        trustedInput,
-        totals
-      );
+      const currentCustomer = await tx.customer.findUnique({ where: { id: customer.id }, include: { addresses: true } });
+      const customerAddresses = currentCustomer?.addresses || customer.addresses || [];
+      if (!currentCustomer || currentCustomer.status !== 'ACTIVE') throw new HttpError(403, 'Customer account is not active');
 
       await decrementInventory(tx, order);
       await tx.customer.update({
@@ -89,7 +96,7 @@ checkoutRouter.post(
           totalOrders: { increment: 1 },
           totalSpent: { increment: order.totalAmount },
           lastOrderAt: new Date(order.placedAt),
-          addresses: customer.addresses.some((address: any) => address.id === order.shippingAddress.id)
+          addresses: customerAddresses.some((address: any) => address.id === order.shippingAddress.id)
             ? undefined
             : { create: [toAddressData(order.shippingAddress)] },
         },
@@ -124,7 +131,7 @@ checkoutRouter.post(
       const cart = await tx.cart.findUnique({ where: { customerId: customer.id } });
       if (cart) await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
       return created;
-    });
+    }, transactionOptions);
 
     res.status(201).json(toOrderResponse(saved));
   })

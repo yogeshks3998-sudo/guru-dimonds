@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { Router } from 'express';
 import Razorpay from 'razorpay';
 import { env } from '../config/env';
-import { prisma } from '../config/db';
+import { prisma, transactionOptions } from '../config/db';
 import { requireCustomer } from '../middleware/auth';
 import { asyncHandler, HttpError } from '../utils/http';
 import { toOrderCreateData, toOrderResponse } from '../utils/serializers';
@@ -111,111 +111,60 @@ paymentsRouter.post(
     const clientRequestId = String((req.body as any).clientRequestId || '');
     if (input.paymentMethod === 'COD') throw new HttpError(400, 'COD orders do not use Razorpay');
 
-    const prepared = await prisma.$transaction(async (tx: any) => {
-      const customer = await tx.customer.findUnique({ where: { id: req.auth!.sub }, include: { addresses: true } });
-      if (!customer || customer.status !== 'ACTIVE') throw new HttpError(403, 'Customer account is not active');
+    const customer = await prisma.customer.findUnique({ where: { id: req.auth!.sub }, include: { addresses: true } });
+    if (!customer || customer.status !== 'ACTIVE') throw new HttpError(403, 'Customer account is not active');
 
-      const trustedInput = await buildCheckoutInputFromCart(tx, customer.id, input);
-      const totals = await calculateCheckout(tx, trustedInput);
-      const order = buildOrderFromCheckout(
-        { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone },
-        trustedInput,
-        totals
-      );
-
-      const pendingOrders = await tx.order.findMany({
-        where: {
-          customerId: customer.id,
-          paymentStatus: 'PENDING',
-          orderStatus: 'PENDING_PAYMENT',
-          payments: { some: { provider: 'RAZORPAY', status: 'CREATED' } },
-        },
-        include: orderInclude,
-        orderBy: { placedAt: 'desc' },
-        take: 10,
-      });
-      const existingPending = clientRequestId
-        ? pendingOrders.find((entry: any) =>
-            entry.payments.some(
-              (payment: any) =>
-                payment.provider === 'RAZORPAY' &&
-                payment.status === 'CREATED' &&
-                payment.rawPayload?.clientRequestId === clientRequestId
-            )
-          )
-        : null;
-      if (existingPending) {
-        return { customer, input: trustedInput, totals, existingOrder: existingPending };
-      }
-
-      return { customer, input: trustedInput, totals, order, clientRequestId };
-    });
-
-    if (prepared.existingOrder) {
-      const payment = prepared.existingOrder.payments.find(
-        (entry: any) => entry.provider === 'RAZORPAY' && entry.status === 'CREATED' && entry.providerOrderId
-      );
-      if (payment) {
-        res.json({
-          keyId: env.razorpayKeyId,
-          orderId: prepared.existingOrder.id,
-          orderNumber: prepared.existingOrder.orderNumber,
-          razorpayOrderId: payment.providerOrderId,
-          amount: toPaise(prepared.existingOrder.totalAmount),
-          displayAmount: prepared.existingOrder.totalAmount,
-          currency: payment.currency,
-          customer: prepared.existingOrder.customerSnapshot,
-          description: `Guru Diamonds order ${prepared.existingOrder.orderNumber}`,
-        });
-        return;
-      }
-    }
+    const trustedInput = await buildCheckoutInputFromCart(prisma, customer.id, input);
+    const totals = await calculateCheckout(prisma, trustedInput);
+    const order = buildOrderFromCheckout(
+      { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone },
+      trustedInput,
+      totals
+    );
 
     const razorpay = getRazorpayClient();
-    const amount = toPaise(prepared.totals.totalAmount);
+    const amount = toPaise(totals.totalAmount);
     const razorpayOrder = await razorpay.orders.create({
       amount,
       currency: 'INR',
-      receipt: prepared.order!.orderNumber,
+      receipt: order.orderNumber,
       notes: {
-        internalOrderId: prepared.order!.id,
-        customerId: prepared.customer.id,
+        internalOrderId: order.id,
+        customerId: customer.id,
       },
     });
 
-    const saved = await prisma.$transaction(async (tx: any) =>
-      tx.order.create({
-        data: {
-          ...toOrderCreateData(prepared.order!),
-          items: { create: prepared.order!.items as any },
-          history: {
-            create: prepared.order!.history.map((step) => ({
-              status: step.status,
-              timestamp: new Date(step.timestamp),
-              note: step.note,
-              updatedBy: step.updatedBy,
-            })),
-          },
-          payments: {
-            create: {
-              provider: 'RAZORPAY',
-              providerOrderId: razorpayOrder.id,
-              amount: prepared.order!.totalAmount,
+    const saved = await prisma.order.create({
+      data: {
+        ...toOrderCreateData(order),
+        items: { create: order.items as any },
+        history: {
+          create: order.history.map((step) => ({
+            status: step.status,
+            timestamp: new Date(step.timestamp),
+            note: step.note,
+            updatedBy: step.updatedBy,
+          })),
+        },
+        payments: {
+          create: {
+            provider: 'RAZORPAY',
+            providerOrderId: razorpayOrder.id,
+            amount: order.totalAmount,
+            currency: 'INR',
+            status: 'CREATED',
+            method: trustedInput.paymentMethod,
+            rawPayload: {
+              razorpayOrderId: razorpayOrder.id,
+              amount,
               currency: 'INR',
-              status: 'CREATED',
-              method: prepared.input.paymentMethod,
-              rawPayload: {
-                razorpayOrderId: razorpayOrder.id,
-                amount,
-                currency: 'INR',
-                clientRequestId: prepared.clientRequestId,
-              },
+              clientRequestId,
             },
           },
         },
-        include: orderInclude,
-      })
-    );
+      },
+      include: orderInclude,
+    });
 
     res.status(201).json({
       keyId: env.razorpayKeyId,
@@ -283,7 +232,7 @@ paymentsRouter.post(
         rawPayload: req.body,
         method: req.body.method ? String(req.body.method) : undefined,
       });
-    });
+    }, transactionOptions);
 
     res.json({ success: true, order: toOrderResponse(saved) });
   })
@@ -324,7 +273,7 @@ paymentsRouter.post(
             },
           });
         }
-      });
+      }, transactionOptions);
     }
 
     await prisma.emailLog.create({

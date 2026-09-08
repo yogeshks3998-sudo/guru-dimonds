@@ -1,14 +1,54 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCartStore } from '../stores/useCartStore';
-import { useAuthStore } from '../stores/useAuthStore';
+import { hasCustomerApiSession, useAuthStore } from '../stores/useAuthStore';
 import { useOrderStore } from '../stores/useOrderStore';
 import { formatINR } from '../utils/formatters';
 import { navigateTo } from '../utils/navigation';
 import { Address } from '../types';
 import { checkoutApi } from '../services/checkoutApi';
 import { paymentApi, RazorpayOrderResponse } from '../services/paymentApi';
+import { cartApi } from '../services/cartApi';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { ShieldCheck, CheckCircle2, Lock, ArrowLeft, CreditCard, QrCode, Building, Banknote } from 'lucide-react';
+
+const toCheckoutItems = (items: ReturnType<typeof useCartStore.getState>['items']) =>
+  items
+    .map((item) => ({
+      productId: item.productId || item.product?.id,
+      variantId: item.variantId || item.selectedVariant?.id,
+      selectedAttributes: item.selectedAttributes || item.selectedVariant?.attributes || {},
+      quantity: Math.max(1, Number(item.quantity || 1)),
+      customEngraving: item.customEngraving,
+    }))
+    .filter((item) => Boolean(item.productId));
+
+const stableItemKey = (item: ReturnType<typeof toCheckoutItems>[number]) =>
+  JSON.stringify({
+    productId: item.productId,
+    variantId: item.variantId || null,
+    selectedAttributes: item.selectedAttributes || {},
+    quantity: item.quantity,
+    customEngraving: item.customEngraving || null,
+  });
+
+const cartSnapshotsMatch = (
+  localItems: ReturnType<typeof toCheckoutItems>,
+  serverItems: ReturnType<typeof useCartStore.getState>['items']
+) => {
+  const localKeys = localItems.map(stableItemKey).sort();
+  const serverKeys = toCheckoutItems(serverItems).map(stableItemKey).sort();
+  return localKeys.length === serverKeys.length && localKeys.every((key, index) => key === serverKeys[index]);
+};
+
+const syncCheckoutCartToServer = async (checkoutItems: ReturnType<typeof toCheckoutItems>) => {
+  const serverCart = await cartApi.getCart();
+  if (cartSnapshotsMatch(checkoutItems, serverCart.items)) return;
+
+  await cartApi.clearCart();
+  for (const item of checkoutItems) {
+    await cartApi.addItem(item);
+  }
+};
 
 declare global {
   interface Window {
@@ -65,8 +105,13 @@ export const CheckoutPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const paymentRequestIdRef = useRef(`checkout-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
+  const checkoutItems = toCheckoutItems(items);
 
-  if (items.length === 0) {
+  useEffect(() => {
+    setPaymentError(null);
+  }, [checkoutItems.length, paymentMethod, step]);
+
+  if (checkoutItems.length === 0) {
     return (
       <div className="max-w-xl mx-auto py-20 px-4 text-center space-y-4">
         <h2 className="font-serif text-2xl font-bold text-[#1B1A18]">Your Shopping Bag is Empty</h2>
@@ -86,20 +131,20 @@ export const CheckoutPage: React.FC = () => {
     setIsProcessing(true);
     setPaymentError(null);
     try {
-      if (!isCustomerLoggedIn) {
-        throw new Error('Please sign in before completing checkout.');
+      if (!isCustomerLoggedIn || !hasCustomerApiSession()) {
+        throw new Error('Please sign in with a customer account before completing checkout.');
       }
+
+      const latestCheckoutItems = toCheckoutItems(useCartStore.getState().items);
+      if (!latestCheckoutItems.length) {
+        throw new Error('Cart is empty');
+      }
+      await syncCheckoutCartToServer(latestCheckoutItems);
 
       const payload = {
         shippingAddress: selectedAddress,
         billingAddress: selectedAddress,
-        items: items.map((item) => ({
-          productId: item.productId,
-          variantId: item.variantId,
-          selectedAttributes: item.selectedAttributes,
-          quantity: item.quantity,
-          customEngraving: item.customEngraving,
-        })),
+        items: latestCheckoutItems,
         couponCode: useCartStore.getState().appliedCoupon?.code,
         paymentMethod,
         notes: orderNotes,
@@ -118,6 +163,8 @@ export const CheckoutPage: React.FC = () => {
       await loadRazorpayCheckout();
       const razorpayOrder: RazorpayOrderResponse = await paymentApi.createRazorpayOrder(payload);
       if (!razorpayOrder.keyId) throw new Error('Razorpay public key is not configured.');
+
+      alert(`Order ${razorpayOrder.orderNumber} created. Opening Razorpay payment window.`);
 
       await new Promise<void>((resolve, reject) => {
         const checkout = new window.Razorpay!({

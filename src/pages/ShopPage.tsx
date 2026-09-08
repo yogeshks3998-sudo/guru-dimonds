@@ -110,7 +110,11 @@ export const ShopPage: React.FC = () => {
   const sortedProducts = useMemo(() => {
     const list = [...filteredProducts];
     if (sortBy === 'NEWEST') {
-      list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      list.sort((a, b) => {
+        if (a.isNew && !b.isNew) return -1;
+        if (!a.isNew && b.isNew) return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
     } else if (sortBy === 'PRICE_LOW_HIGH') {
       list.sort((a, b) => a.grossWeightGrams - b.grossWeightGrams);
     } else if (sortBy === 'PRICE_HIGH_LOW') {
@@ -256,17 +260,33 @@ export const ShopPage: React.FC = () => {
       )}
 
       {/* Main Grid + Filter Sidebar Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Filter Sidebar (Desktop) / Drawer toggleable */}
-        <div className={`${filterDrawerOpen ? 'block' : 'hidden lg:block'} space-y-6 lg:col-span-1`}>
-          <div className="bg-white p-5 border border-[#E7E1D7] rounded-2xl space-y-6 shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start relative">
+        {/* Filter Sidebar (Desktop Sticky / Mobile toggleable) */}
+        <aside
+          className={`${
+            filterDrawerOpen
+              ? 'fixed inset-x-4 top-24 z-50 max-h-[80vh] overflow-y-auto lg:static lg:inset-auto lg:top-auto lg:z-auto lg:max-h-none'
+              : 'hidden lg:block'
+          } lg:col-span-1 lg:sticky lg:top-28 self-start`}
+        >
+          <div className="bg-white p-5 sm:p-6 border border-[#E7E1D7] rounded-2xl space-y-6 shadow-sm max-h-[calc(100vh-8rem)] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E1D7]">
               <h3 className="font-serif font-bold text-base text-[#1B1A18]">Filter By</h3>
-              {activeFiltersCount > 0 && (
-                <button onClick={resetFilters} className="text-xs text-[#A67C32] font-semibold hover:underline">
-                  Clear
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {activeFiltersCount > 0 && (
+                  <button onClick={resetFilters} className="text-xs text-[#A67C32] font-semibold hover:underline">
+                    Clear All
+                  </button>
+                )}
+                {filterDrawerOpen && (
+                  <button
+                    onClick={() => setFilterDrawerOpen(false)}
+                    className="lg:hidden p-1 rounded-lg hover:bg-gray-100 text-[#6F6A62]"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Category Filter */}
@@ -337,7 +357,7 @@ export const ShopPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </aside>
 
         {/* Product Cards Listing */}
         <div className="lg:col-span-3">
@@ -357,8 +377,8 @@ export const ShopPage: React.FC = () => {
             </div>
           ) : (
             <div
-              className={`grid gap-6 ${
-                viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+              className={`grid gap-3 sm:gap-6 ${
+                viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
               }`}
             >
               {sortedProducts.map((product) => (

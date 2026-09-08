@@ -37,4 +37,4 @@ npm run preview
 npm run clean
 ```
 
-See [Environment Configuration](docs/ENVIRONMENT.md) and [Deployment](docs/DEPLOYMENT.md) for production setup notes.
+See [Project Structure & Architecture](docs/PROJECT_STRUCTURE.md), [Environment Configuration](docs/ENVIRONMENT.md), and [Deployment](docs/DEPLOYMENT.md) for architecture and production setup notes.

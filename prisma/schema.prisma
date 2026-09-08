@@ -156,6 +156,25 @@ model Customer {
   wishlistItems     WishlistItem[]
 }
 
+model PendingRegistration {
+  id                String   @id @default(cuid())
+  email             String
+  name              String
+  phone             String   @unique
+  passwordHash      String
+  otpHash           String
+  expiresAt         DateTime
+  attempts          Int      @default(0)
+  resendCount       Int      @default(0)
+  resendWindowStart DateTime @default(now())
+  lastSentAt        DateTime
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
 model Address {
   id          String    @id
   customerId  String?

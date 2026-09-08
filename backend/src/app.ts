@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
+import path from 'node:path';
 import { authRouter } from './routes/auth';
 import { cartRouter } from './routes/cart';
 import { catalogRouter } from './routes/catalog';
@@ -18,9 +19,10 @@ import { HttpError } from './utils/http';
 export const app = express();
 
 app.use(cors());
+app.use('/products', express.static(path.resolve('public/products')));
+app.use('/categories', express.static(path.resolve('public/categories')));
 app.use('/api/payments/webhook/razorpay', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
-
 app.use('/api/health', healthRouter);
 app.use('/api', authRouter);
 app.use('/api', cartRouter);
@@ -46,7 +48,10 @@ app.use((req, _res, next) => {
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   const status = err instanceof HttpError ? err.status : 500;
+  const message =
+    err instanceof HttpError ? err.message : process.env.NODE_ENV === 'test' ? err.message : 'Unexpected server error';
+
   res.status(status).json({
-    message: err.message || 'Unexpected server error',
+    message,
   });
 });

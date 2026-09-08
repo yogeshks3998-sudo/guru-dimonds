@@ -5,7 +5,7 @@ import { useMetalRateStore } from './useMetalRateStore';
 import { INITIAL_COUPONS } from '../data/mockData';
 import { couponApi } from '../services/couponApi';
 import { cartApi } from '../services/cartApi';
-import { useAuthStore } from './useAuthStore';
+import { hasCustomerApiSession } from './useAuthStore';
 
 interface CartState {
   items: CartItem[];
@@ -85,7 +85,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   hydrateCart: async () => {
-    if (!useAuthStore.getState().isCustomerLoggedIn) return;
+    if (!hasCustomerApiSession()) return;
     try {
       const cart = await cartApi.getCart();
       saveItems(cart.items);
@@ -96,13 +96,19 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   mergeGuestCartToCustomer: async () => {
-    if (!useAuthStore.getState().isCustomerLoggedIn) return;
-    const guestItems = get().items;
+    if (!hasCustomerApiSession()) return;
+    const guestItems = get().items.filter((item) => item.id.startsWith('cart-'));
+    if (!guestItems.length) {
+      await get().hydrateCart();
+      return;
+    }
     try {
       for (const item of guestItems) {
+        const productId = item.productId || item.product?.id;
+        if (!productId) continue;
         await cartApi.addItem({
-          productId: item.productId,
-          variantId: item.variantId,
+          productId,
+          variantId: item.variantId || item.selectedVariant?.id,
           selectedAttributes: item.selectedAttributes,
           quantity: item.quantity,
           customEngraving: item.customEngraving,
@@ -173,7 +179,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       items: updatedItems,
       priceLockExpiresAt: Date.now() + 15 * 60 * 1000,
     });
-    if (useAuthStore.getState().isCustomerLoggedIn) {
+    if (hasCustomerApiSession()) {
       void cartApi
         .addItem({
           productId: product.id,
@@ -198,7 +204,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     const filtered = get().items.filter((item) => item.id !== id);
     saveItems(filtered);
     set({ items: filtered });
-    if (useAuthStore.getState().isCustomerLoggedIn) {
+    if (hasCustomerApiSession()) {
       void cartApi.removeItem(id).catch((error) => {
         set({ syncError: error instanceof Error ? error.message : 'Unable to remove synced cart item' });
       });
@@ -213,7 +219,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     const updated = get().items.map((item) => (item.id === id ? { ...item, quantity } : item));
     saveItems(updated);
     set({ items: updated });
-    if (useAuthStore.getState().isCustomerLoggedIn) {
+    if (hasCustomerApiSession()) {
       void cartApi.updateItem(id, { quantity }).catch((error) => {
         set({ syncError: error instanceof Error ? error.message : 'Unable to update synced cart item' });
       });
@@ -224,7 +230,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     const updated = get().items.map((item) => (item.id === id ? { ...item, giftWrap, giftMessage } : item));
     saveItems(updated);
     set({ items: updated });
-    if (useAuthStore.getState().isCustomerLoggedIn) {
+    if (hasCustomerApiSession()) {
       void cartApi.updateItem(id, { giftWrap, giftMessage }).catch((error) => {
         set({ syncError: error instanceof Error ? error.message : 'Unable to update gift wrap' });
       });
@@ -261,7 +267,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   clearCart: () => {
     saveItems([]);
     set({ items: [], appliedCoupon: null });
-    if (useAuthStore.getState().isCustomerLoggedIn) {
+    if (hasCustomerApiSession()) {
       void cartApi.clearCart().catch((error) => {
         set({ syncError: error instanceof Error ? error.message : 'Unable to clear synced cart' });
       });

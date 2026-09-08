@@ -7,6 +7,8 @@ import { requireRole } from '../middleware/auth';
 import { canTransitionOrderStatus } from '../../../src/utils/orderLifecycle';
 import type { OrderStatus } from '../../../src/types';
 
+import { sendOrderStatusEmail } from '../utils/mailer';
+
 export const ordersRouter = Router();
 
 const orderInclude = {
@@ -43,57 +45,55 @@ ordersRouter.post(
   '/orders',
   asyncHandler(async (req, res) => {
     const order = req.body as Order;
-    const saved = await prisma.$transaction(async (tx) => {
-      const customer: Customer = {
-        id: order.customer.id,
-        name: order.customer.name,
-        email: order.customer.email,
-        phone: order.customer.phone,
-        addresses: [order.shippingAddress],
-        totalOrders: 0,
-        totalSpent: 0,
-        averageOrderValue: 0,
-        createdAt: order.placedAt,
-        tags: [],
-        marketingConsent: true,
-        status: 'ACTIVE',
-      };
+    const customer: Customer = {
+      id: order.customer.id,
+      name: order.customer.name,
+      email: order.customer.email,
+      phone: order.customer.phone,
+      addresses: [order.shippingAddress],
+      totalOrders: 0,
+      totalSpent: 0,
+      averageOrderValue: 0,
+      createdAt: order.placedAt,
+      tags: [],
+      marketingConsent: true,
+      status: 'ACTIVE',
+    };
 
-      await tx.customer.upsert({
-        where: { id: customer.id },
-        create: {
-          ...toCustomerData(customer),
-          totalOrders: 1,
-          totalSpent: order.totalAmount,
-          averageOrderValue: order.totalAmount,
-          lastOrderAt: new Date(order.placedAt),
-          addresses: { create: customer.addresses.map((address) => toAddressData(address)) },
-        },
-        update: {
-          name: customer.name,
-          email: customer.email,
-          phone: customer.phone,
-          totalOrders: { increment: 1 },
-          totalSpent: { increment: order.totalAmount },
-          lastOrderAt: new Date(order.placedAt),
-        },
-      });
+    await prisma.customer.upsert({
+      where: { id: customer.id },
+      create: {
+        ...toCustomerData(customer),
+        totalOrders: 1,
+        totalSpent: order.totalAmount,
+        averageOrderValue: order.totalAmount,
+        lastOrderAt: new Date(order.placedAt),
+        addresses: { create: customer.addresses.map((address) => toAddressData(address)) },
+      },
+      update: {
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        totalOrders: { increment: 1 },
+        totalSpent: { increment: order.totalAmount },
+        lastOrderAt: new Date(order.placedAt),
+      },
+    });
 
-      return tx.order.create({
-        data: {
-          ...toOrderCreateData(order),
-          items: { create: order.items as any },
-          history: {
-            create: order.history.map((step) => ({
-              status: step.status,
-              timestamp: new Date(step.timestamp),
-              note: step.note,
-              updatedBy: step.updatedBy,
-            })),
-          },
+    const saved = await prisma.order.create({
+      data: {
+        ...toOrderCreateData(order),
+        items: { create: order.items as any },
+        history: {
+          create: order.history.map((step) => ({
+            status: step.status,
+            timestamp: new Date(step.timestamp),
+            note: step.note,
+            updatedBy: step.updatedBy,
+          })),
         },
-        include: orderInclude,
-      });
+      },
+      include: orderInclude,
     });
 
     res.status(201).json(toOrderResponse(saved as unknown as Order));
@@ -107,6 +107,8 @@ ordersRouter.patch(
     const status = String(req.body.status || '');
     const note = String(req.body.note || `Status updated to ${status}`);
     const updatedBy = String(req.body.updatedBy || 'Admin User');
+    const trackingNumber = req.body.trackingNumber ? String(req.body.trackingNumber) : undefined;
+    const courierPartner = req.body.courierPartner ? String(req.body.courierPartner) : undefined;
 
     const existing = await prisma.order.findUnique({ where: { id: String(req.params.id) } });
     if (!existing) throw new HttpError(404, 'Order not found');
@@ -118,6 +120,8 @@ ordersRouter.patch(
       where: { id: String(req.params.id) },
       data: {
         orderStatus: status,
+        ...(trackingNumber ? { trackingNumber } : {}),
+        ...(courierPartner ? { courierPartner } : {}),
         history: {
           create: {
             status,
@@ -129,6 +133,16 @@ ordersRouter.patch(
       },
       include: orderInclude,
     });
-    res.json(toOrderResponse(saved as unknown as Order));
+
+    const responseOrder = toOrderResponse(saved as unknown as Order) as Order;
+    void sendOrderStatusEmail({
+      order: responseOrder,
+      status,
+      note,
+      trackingNumber: trackingNumber || responseOrder.trackingNumber,
+      courierPartner: courierPartner || responseOrder.courierPartner,
+    }).catch(console.error);
+
+    res.json(responseOrder);
   })
 );

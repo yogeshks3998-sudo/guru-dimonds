@@ -174,7 +174,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             onMouseLeave={() => setIsZooming(false)}
             onMouseMove={handleMouseMove}
             onClick={() => setLightboxOpen(true)}
-            className="relative aspect-square rounded-3xl overflow-hidden bg-[#FAF8F3] border border-[#E7E1D7] shadow-xl group cursor-zoom-in select-none"
+            className="relative aspect-square w-[80%] mx-auto rounded-3xl overflow-hidden bg-[#FAF8F3] border border-[#E7E1D7] shadow-xl group cursor-zoom-in select-none"
           >
             {/* Main Image with Smooth Zoom Transformation */}
             <ImageWithFallback
@@ -221,7 +221,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           </div>
 
           {/* Image Thumbnails */}
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
+          <div className="w-[80%] mx-auto flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
             {images.map((img, idx) => (
               <button
                 key={idx}

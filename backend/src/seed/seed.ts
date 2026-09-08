@@ -32,7 +32,7 @@ async function seed() {
 
   for (const category of INITIAL_CATEGORIES) {
     await prisma.category.upsert({
-      where: { id: category.id },
+      where: { slug: category.slug },
       create: toCategoryData(category),
       update: toCategoryData(category),
     });
@@ -40,11 +40,20 @@ async function seed() {
 
   for (const collection of INITIAL_COLLECTIONS) {
     await prisma.jewelleryCollection.upsert({
-      where: { id: collection.id },
+      where: { slug: collection.slug },
       create: toCollectionData(collection),
       update: toCollectionData(collection),
     });
   }
+
+  const activeProductIds = INITIAL_PRODUCTS.map((p) => p.id);
+  await prisma.cartItem.deleteMany({ where: { productId: { notIn: activeProductIds } } });
+  await prisma.productReview.deleteMany({ where: { productId: { notIn: activeProductIds } } });
+  await prisma.orderItem.deleteMany({ where: { productId: { notIn: activeProductIds } } });
+  await prisma.productVariant.deleteMany({ where: { productId: { notIn: activeProductIds } } });
+  await prisma.productMedia.deleteMany({ where: { productId: { notIn: activeProductIds } } });
+  await prisma.inventoryItem.deleteMany({ where: { productId: { notIn: activeProductIds } } });
+  await prisma.product.deleteMany({ where: { id: { notIn: activeProductIds } } });
 
   for (const product of INITIAL_PRODUCTS) {
     await prisma.$transaction(async (tx) => {
@@ -55,13 +64,13 @@ async function seed() {
         where: { id: product.id },
         create: {
           ...toProductCreateData(product),
-          variants: { create: product.variants as any },
+          variants: { create: (product.variants || []).map((v) => ({ ...v, images: v.images || [] })) as any },
           media: { create: product.images.map((url, position) => ({ url, position })) },
           inventoryItems: { create: [{ sku: product.sku, quantity: product.totalStock }] },
         },
         update: {
           ...toProductCreateData(product),
-          variants: { create: product.variants as any },
+          variants: { create: (product.variants || []).map((v) => ({ ...v, images: v.images || [] })) as any },
           media: { create: product.images.map((url, position) => ({ url, position })) },
           inventoryItems: { create: [{ sku: product.sku, quantity: product.totalStock }] },
         },

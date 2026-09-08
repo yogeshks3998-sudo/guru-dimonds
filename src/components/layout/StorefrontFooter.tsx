@@ -17,43 +17,6 @@ export const StorefrontFooter: React.FC = () => {
 
   return (
     <div className="pg-footer border-t border-[#B8893D]/40">
-      {/* Top Value Proposition Badges */}
-      <div className="bg-[#2D080C] text-[#FFF9F0] pt-12 pb-8">
-        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-[#3D0B10] border border-[#B8893D]/30 shadow-inner">
-            <ShieldCheck className="w-7 h-7 text-[#B8893D] shrink-0" />
-            <div>
-              <h4 className="text-xs font-serif font-bold text-[#FFF9F0] uppercase tracking-wider">100% Genuine</h4>
-              <p className="text-[11px] text-[#F4E4C8]/80 mt-0.5">Authenticity Guaranteed</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-[#3D0B10] border border-[#B8893D]/30 shadow-inner">
-            <Award className="w-7 h-7 text-[#B8893D] shrink-0" />
-            <div>
-              <h4 className="text-xs font-serif font-bold text-[#FFF9F0] uppercase tracking-wider">Lab Certified</h4>
-              <p className="text-[11px] text-[#F4E4C8]/80 mt-0.5">Natural Precious Stones</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-[#3D0B10] border border-[#B8893D]/30 shadow-inner">
-            <Truck className="w-7 h-7 text-[#B8893D] shrink-0" />
-            <div>
-              <h4 className="text-xs font-serif font-bold text-[#FFF9F0] uppercase tracking-wider">Insured Express</h4>
-              <p className="text-[11px] text-[#F4E4C8]/80 mt-0.5">Tamper-Proof Transit</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-[#3D0B10] border border-[#B8893D]/30 shadow-inner">
-            <RefreshCw className="w-7 h-7 text-[#B8893D] shrink-0" />
-            <div>
-              <h4 className="text-xs font-serif font-bold text-[#FFF9F0] uppercase tracking-wider">Trust Guarantee</h4>
-              <p className="text-[11px] text-[#F4E4C8]/80 mt-0.5">Established Since 2000</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <footer className="footer">
         {/* Decorative Wave SVG Top Header */}
         <svg className="footer-wave-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 100" preserveAspectRatio="none">

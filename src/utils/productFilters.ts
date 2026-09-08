@@ -1,74 +1,118 @@
 import type { Product } from '../types';
 
-const normalize = (value?: string | null) => (value || '').trim().toLowerCase();
+const normalize = (value?: string | null) =>
+  (value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ');
+
+/**
+ * Maps any category name, slug, or search term to one of the 9 canonical category keys.
+ * Note: 'earrings' is checked before 'rings' so that the substring 'ring' never matches earrings.
+ */
+export function getCanonicalCategory(categoryOrSlug?: string | null): string {
+  const norm = normalize(categoryOrSlug);
+  if (!norm) return '';
+
+  // 1. Earrings (must check before rings to avoid substring collision)
+  if (norm.includes('earring') || norm.includes('jhumka') || norm.includes('stud') || norm.includes('chandbali')) {
+    return 'earrings';
+  }
+
+  // 2. Rings (strictly ring/rings, not earrings)
+  if (/\brings?\b/.test(norm) || norm === 'cat rings' || norm === 'rings' || norm === 'ring') {
+    return 'rings';
+  }
+
+  // 3. Neck Jewellery
+  if (
+    norm.includes('neck') ||
+    norm.includes('chain') ||
+    norm.includes('choker') ||
+    norm.includes('necklace') ||
+    norm === 'cat neck jewellery'
+  ) {
+    return 'neck-jewellery';
+  }
+
+  // 4. Pendants
+  if (norm.includes('pendant') || norm.includes('kavach') || norm.includes('locket') || norm === 'cat pendants') {
+    return 'pendants';
+  }
+
+  // 5. Bracelets & Bangles
+  if (
+    norm.includes('bracelet') ||
+    norm.includes('bangle') ||
+    norm.includes('kada') ||
+    norm === 'cat bracelets bangles'
+  ) {
+    return 'bracelets-bangles';
+  }
+
+  // 6. Gemstones (astrological stones, loose gemstones)
+  if (norm.includes('gemstone') || norm === 'cat gemstones') {
+    return 'gemstones';
+  }
+
+  // 7. Spiritual Maalas
+  if (norm.includes('maala') || norm.includes('mala') || norm === 'cat spiritual maalas') {
+    return 'spiritual-maalas';
+  }
+
+  // 8. Rudraksha
+  if (norm.includes('rudraksha') || norm.includes('mukhi') || norm === 'cat rudraksha') {
+    return 'rudraksha';
+  }
+
+  // 9. God Small Statues
+  if (
+    norm.includes('statue') ||
+    norm.includes('idol') ||
+    norm.includes('god') ||
+    norm.includes('murti') ||
+    norm === 'cat god statues'
+  ) {
+    return 'god-small-statues';
+  }
+
+  return norm;
+}
 
 export function isGemstoneProduct(product: Product): boolean {
-  const searchableText = [
-    product.category,
-    product.subcategory,
-    product.collection,
-    product.name,
-    product.shortDescription,
-    product.description,
-    ...product.tags,
-    ...product.gemstones.map((gemstone) => gemstone.type),
-  ]
-    .map(normalize)
-    .join(' ');
-
-  return /\bgemstone(s)?\b/.test(searchableText) || /\bstone(s)?\b/.test(searchableText);
+  const catKey = getCanonicalCategory(product.category);
+  if (catKey === 'gemstones') return true;
+  const subKey = getCanonicalCategory(product.subcategory);
+  return subKey === 'gemstones';
 }
 
 export function productMatchesCategory(product: Product, selectedCategory: string): boolean {
-  const selected = normalize(selectedCategory);
-  const category = normalize(product.category);
-  const subcategory = normalize(product.subcategory);
+  if (!selectedCategory || selectedCategory === 'ALL' || selectedCategory === 'all') return true;
 
-  if (!selected) return true;
-  if (category === selected || subcategory === selected) return true;
+  const targetCanonical = getCanonicalCategory(selectedCategory);
+  const productCategoryCanonical = getCanonicalCategory(product.category);
 
-  // Synonyms & Fuzzy Category Matching for the official 9 Categories
-  if (selected.includes('ring')) {
-    return category.includes('ring') || subcategory.includes('ring');
+  // Exact canonical match on product primary category
+  if (targetCanonical && productCategoryCanonical && targetCanonical === productCategoryCanonical) {
+    return true;
   }
 
-  if (selected.includes('earring') || selected.includes('jhumka')) {
-    return category.includes('earring') || subcategory.includes('earring') || subcategory.includes('jhumka');
+  // Check subcategory
+  const productSubcategoryCanonical = getCanonicalCategory(product.subcategory);
+  if (targetCanonical && productSubcategoryCanonical && targetCanonical === productSubcategoryCanonical) {
+    return true;
   }
 
-  if (selected.includes('neck') || selected.includes('chain') || selected.includes('necklace')) {
-    return category.includes('neck') || category.includes('chain') || subcategory.includes('chain') || subcategory.includes('necklace');
+  // Direct string match fallback
+  const normSelected = normalize(selectedCategory);
+  const normCat = normalize(product.category);
+  const normSub = normalize(product.subcategory);
+
+  if (normCat === normSelected || normSub === normSelected) {
+    return true;
   }
 
-  if (selected.includes('pendant')) {
-    return category.includes('pendant') || subcategory.includes('pendant');
-  }
-
-  if (selected.includes('bracelet') || selected.includes('bangle') || selected.includes('kada')) {
-    return (
-      category.includes('bracelet') ||
-      category.includes('bangle') ||
-      subcategory.includes('bracelet') ||
-      subcategory.includes('bangle') ||
-      subcategory.includes('kada')
-    );
-  }
-
-  if (selected.includes('gemstone')) {
-    return isGemstoneProduct(product) || category.includes('gemstone');
-  }
-
-  if (selected.includes('maala') || selected.includes('mala')) {
-    return category.includes('maala') || subcategory.includes('maala') || category.includes('mala');
-  }
-
-  if (selected.includes('rudraksha')) {
-    return category.includes('rudraksha') || subcategory.includes('rudraksha');
-  }
-
-  if (selected.includes('statue') || selected.includes('idol') || selected.includes('god')) {
-    return category.includes('statue') || category.includes('idol') || subcategory.includes('statue') || subcategory.includes('idol');
-  }
-
-  return category.includes(selected) || subcategory.includes(selected);
+  return false;
 }
+

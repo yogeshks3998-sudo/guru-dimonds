@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { AdminRole, AdminUser, Customer } from '../types';
-import { AUTH_TOKEN_KEY, LEGACY_AUTH_TOKEN_KEY } from '../services/api';
+import { AUTH_TOKEN_KEY, LEGACY_AUTH_TOKEN_KEY, clearStoredAuth } from '../services/api';
 import { authApi } from '../services/authApi';
 
 interface AuthState {
@@ -12,9 +12,15 @@ interface AuthState {
   loading: boolean;
   error: string | null;
 
-  loginCustomer: (email: string, password: string) => Promise<boolean>;
-  registerCustomer: (params: { name: string; email: string; phone: string; password: string }) => Promise<boolean>;
+  loginCustomer: (identifier: string, password: string) => Promise<boolean>;
+  registerCustomer: (params: { name: string; phone: string; email?: string; password: string; confirmPassword?: string }) => Promise<{
+    success: boolean;
+    message?: string;
+  }>;
+  verifyCustomerOtp: (identifier: { email?: string; phone?: string } | string, otp?: string) => Promise<boolean>;
+  resendCustomerOtp: (identifier: { email?: string; phone?: string } | string) => Promise<{ success: boolean; message: string }>;
   logoutCustomer: () => void;
+
   updateCustomerProfile: (updated: Partial<Customer>) => void;
 
   loginAdmin: (email: string, password: string) => Promise<boolean>;
@@ -36,105 +42,21 @@ const getSavedToken = () => {
   }
 };
 
+export const isMockAuthToken = (token: string | null) =>
+  Boolean(token?.startsWith('mock-cust-token-') || token?.startsWith('mock-admin-token-'));
+
+export const hasCustomerApiSession = () => {
+  const state = useAuthStore.getState();
+  return state.isCustomerLoggedIn && Boolean(state.token) && !isMockAuthToken(state.token);
+};
+
 const saveToken = (token: string | null) => {
   try {
     if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
-    else {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
-      localStorage.removeItem('guru_mock_user_v1');
-    }
+    else clearStoredAuth();
   } catch {
     // Ignore storage errors
   }
-};
-
-const saveMockUser = (user: { type: 'ADMIN'; adminUser: AdminUser } | { type: 'CUSTOMER'; customer: Customer }) => {
-  try {
-    localStorage.setItem('guru_mock_user_v1', JSON.stringify(user));
-  } catch {
-    // Ignore
-  }
-};
-
-const getSavedMockUser = (): ({ type: 'ADMIN'; adminUser: AdminUser } | { type: 'CUSTOMER'; customer: Customer }) | null => {
-  try {
-    const raw = localStorage.getItem('guru_mock_user_v1');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
-const nowIso = new Date().toISOString();
-
-const MOCK_ADMIN_ACCOUNTS: Record<string, AdminUser> = {
-  'owner@gurudimonds.in': {
-    id: 'adm-owner',
-    name: 'Guru Diamonds Owner',
-    email: 'owner@gurudimonds.in',
-    role: 'OWNER',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-    active: true,
-    lastLogin: nowIso,
-  },
-  'superadmin@gurudimonds.in': {
-    id: 'adm-super',
-    name: 'Guru Diamonds Super Admin',
-    email: 'superadmin@gurudimonds.in',
-    role: 'SUPER_ADMIN',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-    active: true,
-    lastLogin: nowIso,
-  },
-  'product.manager@gurudimonds.in': {
-    id: 'adm-product',
-    name: 'Product Manager',
-    email: 'product.manager@gurudimonds.in',
-    role: 'PRODUCT_MANAGER',
-    active: true,
-    lastLogin: nowIso,
-  },
-  'inventory.manager@gurudimonds.in': {
-    id: 'adm-inventory',
-    name: 'Inventory Manager',
-    email: 'inventory.manager@gurudimonds.in',
-    role: 'INVENTORY_MANAGER',
-    active: true,
-    lastLogin: nowIso,
-  },
-  'order.manager@gurudimonds.in': {
-    id: 'adm-order',
-    name: 'Order Manager',
-    email: 'order.manager@gurudimonds.in',
-    role: 'ORDER_MANAGER',
-    active: true,
-    lastLogin: nowIso,
-  },
-  'content.manager@gurudimonds.in': {
-    id: 'adm-content',
-    name: 'Content Manager',
-    email: 'content.manager@gurudimonds.in',
-    role: 'CONTENT_MANAGER',
-    active: true,
-    lastLogin: nowIso,
-  },
-  'finance.manager@gurudimonds.in': {
-    id: 'adm-finance',
-    name: 'Finance Manager',
-    email: 'finance.manager@gurudimonds.in',
-    role: 'FINANCE',
-    active: true,
-    lastLogin: nowIso,
-  },
-  'staff@gurudimonds.in': {
-    id: 'adm-staff',
-    name: 'Store Staff',
-    email: 'staff@gurudimonds.in',
-    role: 'STAFF',
-    active: true,
-    lastLogin: nowIso,
-  },
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -146,12 +68,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: false,
   error: null,
 
-  loginCustomer: async (email, password) => {
+  loginCustomer: async (identifier, password) => {
     set({ loading: true, error: null });
     try {
-      const { token, customer } = await authApi.loginCustomer(email, password);
+      const { token, customer } = await authApi.loginCustomer(identifier, password);
       saveToken(token);
-      saveMockUser({ type: 'CUSTOMER', customer });
       set({
         token,
         customer,
@@ -161,43 +82,59 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         loading: false,
       });
       return true;
-    } catch {
-      // Fallback mode for standalone/offline frontend
-      const mockCustomer: Customer = {
-        id: `cust-${Date.now()}`,
-        name: email.split('@')[0].replace('.', ' '),
-        email,
-        phone: '+91 98765 43210',
-        totalOrders: 0,
-        totalSpent: 0,
-        averageOrderValue: 0,
-        createdAt: new Date().toISOString(),
-        tags: ['New Customer'],
-        marketingConsent: true,
-        status: 'ACTIVE',
-        addresses: [],
-      };
-      const mockToken = `mock-cust-token-${Date.now()}`;
-      saveToken(mockToken);
-      saveMockUser({ type: 'CUSTOMER', customer: mockCustomer });
+    } catch (error) {
+      saveToken(null);
       set({
-        token: mockToken,
-        customer: mockCustomer,
-        isCustomerLoggedIn: true,
+        token: null,
+        customer: null,
+        isCustomerLoggedIn: false,
         adminUser: null,
         isAdminLoggedIn: false,
         loading: false,
+        error: error instanceof Error ? error.message : 'Customer login failed',
       });
-      return true;
+      return false;
     }
   },
 
   registerCustomer: async (params) => {
     set({ loading: true, error: null });
     try {
-      const { token, customer } = await authApi.registerCustomer(params);
+      const response = await authApi.registerCustomer(params);
+      if (!('token' in response)) {
+        throw new Error('Registration response was incomplete');
+      }
+      saveToken(response.token);
+      set({
+        token: response.token,
+        customer: response.customer,
+        isCustomerLoggedIn: true,
+        adminUser: null,
+        isAdminLoggedIn: false,
+        loading: false,
+      });
+      return { success: true, message: response.message };
+    } catch (error) {
+      saveToken(null);
+      set({
+        token: null,
+        customer: null,
+        isCustomerLoggedIn: false,
+        adminUser: null,
+        isAdminLoggedIn: false,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Customer registration failed',
+      });
+      return { success: false, message: error instanceof Error ? error.message : 'Registration failed' };
+    }
+  },
+
+  verifyCustomerOtp: async (identifier, otp) => {
+    set({ loading: true, error: null });
+    try {
+      const payload = typeof identifier === 'string' ? { phone: identifier, otp: otp || '' } : { ...identifier, otp: otp || (identifier as any).otp || '' };
+      const { token, customer } = await authApi.verifyCustomerOtp(payload);
       saveToken(token);
-      saveMockUser({ type: 'CUSTOMER', customer });
       set({
         token,
         customer,
@@ -207,36 +144,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         loading: false,
       });
       return true;
-    } catch {
-      // Fallback mode for standalone/offline frontend
-      const mockCustomer: Customer = {
-        id: `cust-${Date.now()}`,
-        name: params.name,
-        email: params.email,
-        phone: params.phone || '+91 98765 43210',
-        totalOrders: 0,
-        totalSpent: 0,
-        averageOrderValue: 0,
-        createdAt: new Date().toISOString(),
-        tags: ['Registered Patron'],
-        marketingConsent: true,
-        status: 'ACTIVE',
-        addresses: [],
-      };
-      const mockToken = `mock-cust-token-${Date.now()}`;
-      saveToken(mockToken);
-      saveMockUser({ type: 'CUSTOMER', customer: mockCustomer });
+    } catch (error) {
       set({
-        token: mockToken,
-        customer: mockCustomer,
-        isCustomerLoggedIn: true,
-        adminUser: null,
-        isAdminLoggedIn: false,
         loading: false,
+        error: error instanceof Error ? error.message : 'Verification failed',
       });
-      return true;
+      return false;
     }
   },
+
+  resendCustomerOtp: async (identifier) => {
+    set({ loading: true, error: null });
+    try {
+      const payload = typeof identifier === 'string' ? { phone: identifier } : identifier;
+      const response = await authApi.resendCustomerOtp(payload);
+      set({ loading: false });
+      return { success: true, message: response.message };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to resend verification code';
+      set({ loading: false, error: message });
+      return { success: false, message };
+    }
+  },
+
 
   logoutCustomer: () => {
     saveToken(null);
@@ -247,9 +177,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   updateCustomerProfile: (updated) => {
     set((state) => {
       const updatedCust = state.customer ? { ...state.customer, ...updated } : null;
-      if (updatedCust) {
-        saveMockUser({ type: 'CUSTOMER', customer: updatedCust });
-      }
       return { customer: updatedCust };
     });
   },
@@ -259,7 +186,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { token, adminUser } = await authApi.loginAdmin(email, password);
       saveToken(token);
-      saveMockUser({ type: 'ADMIN', adminUser });
       set({
         token,
         adminUser,
@@ -269,30 +195,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         loading: false,
       });
       return true;
-    } catch {
-      // Fallback mode for standalone/offline frontend
-      const normalizedEmail = email.trim().toLowerCase();
-      const adminUser: AdminUser = MOCK_ADMIN_ACCOUNTS[normalizedEmail] || {
-        id: `adm-${Date.now()}`,
-        name: normalizedEmail.split('@')[0].replace('.', ' '),
-        email: normalizedEmail,
-        role: 'OWNER',
-        active: true,
-        lastLogin: new Date().toISOString(),
-      };
-
-      const mockToken = `mock-admin-token-${Date.now()}`;
-      saveToken(mockToken);
-      saveMockUser({ type: 'ADMIN', adminUser });
+    } catch (error) {
+      saveToken(null);
       set({
-        token: mockToken,
-        adminUser,
-        isAdminLoggedIn: true,
+        token: null,
+        adminUser: null,
+        isAdminLoggedIn: false,
         customer: null,
         isCustomerLoggedIn: false,
         loading: false,
+        error: error instanceof Error ? error.message : 'Admin login failed',
       });
-      return true;
+      return false;
     }
   },
 
@@ -305,9 +219,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   switchAdminRole: (role) => {
     set((state) => {
       const updatedAdmin = state.adminUser ? { ...state.adminUser, role } : null;
-      if (updatedAdmin) {
-        saveMockUser({ type: 'ADMIN', adminUser: updatedAdmin });
-      }
       return { adminUser: updatedAdmin };
     });
   },
@@ -316,6 +227,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const token = getSavedToken();
     if (!token) return;
     set({ loading: true, error: null, token });
+    if (isMockAuthToken(token)) {
+      saveToken(null);
+      set({
+        token: null,
+        customer: null,
+        isCustomerLoggedIn: false,
+        adminUser: null,
+        isAdminLoggedIn: false,
+        loading: false,
+      });
+      return;
+    }
     try {
       const session = await authApi.me();
       if (session.type === 'ADMIN') {
@@ -336,37 +259,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
       }
     } catch {
-      // Offline / standalone session recovery from localStorage
-      const savedMock = getSavedMockUser();
-      if (savedMock) {
-        if (savedMock.type === 'ADMIN') {
-          set({
-            adminUser: savedMock.adminUser,
-            isAdminLoggedIn: true,
-            customer: null,
-            isCustomerLoggedIn: false,
-            loading: false,
-          });
-        } else {
-          set({
-            customer: savedMock.customer,
-            isCustomerLoggedIn: true,
-            adminUser: null,
-            isAdminLoggedIn: false,
-            loading: false,
-          });
-        }
-      } else {
-        saveToken(null);
-        set({
-          token: null,
-          customer: null,
-          isCustomerLoggedIn: false,
-          adminUser: null,
-          isAdminLoggedIn: false,
-          loading: false,
-        });
-      }
+      saveToken(null);
+      set({
+        token: null,
+        customer: null,
+        isCustomerLoggedIn: false,
+        adminUser: null,
+        isAdminLoggedIn: false,
+        loading: false,
+      });
     }
   },
 

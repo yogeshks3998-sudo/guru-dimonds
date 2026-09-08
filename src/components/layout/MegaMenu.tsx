@@ -173,63 +173,6 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ activeMenu, onClose }) => {
             </div>
           </div>
         )}
-
-        {activeMenu === 'Gemstones' && (
-          <div className="grid grid-cols-3 gap-8">
-            <div className="space-y-3 col-span-2">
-              <h4 className="font-serif font-bold text-sm text-[#7A1822] uppercase tracking-wider border-b border-[#E9D9C5] pb-2 flex items-center gap-2">
-                <Gem className="w-4 h-4 text-[#B8893D]" /> Certified Natural Gemstones & Rudrakshas
-              </h4>
-              <div className="grid grid-cols-2 gap-4 text-xs text-[#281C18]">
-                <button
-                  onClick={() => handleNav(() => setSelectedCategory('Maalas'))}
-                  className="p-3 bg-[#FFF9F0] border border-[#E9D9C5] rounded-xl text-left hover:border-[#B8893D] transition-all"
-                >
-                  <span className="font-bold text-[#7A1822] block">Natural Sphatika Quartz</span>
-                  <span className="text-[11px] text-[#796A65]">108-bead certified Himalayan mala crystals</span>
-                </button>
-                <button
-                  onClick={() => handleNav(() => setSelectedCategory('Rudrakshas (1 to 24 Mukhi)'))}
-                  className="p-3 bg-[#FFF9F0] border border-[#E9D9C5] rounded-xl text-left hover:border-[#B8893D] transition-all"
-                >
-                  <span className="font-bold text-[#281C18] block">1 to 24 Mukhi Rudraksha</span>
-                  <span className="text-[11px] text-[#796A65]">Authentic lab-tested sacred beads</span>
-                </button>
-                <button
-                  onClick={() => handleNav(() => setSelectedCategory('Gemstones'))}
-                  className="p-3 bg-[#FFF9F0] border border-[#E9D9C5] rounded-xl text-left hover:border-[#B8893D] transition-all"
-                >
-                  <span className="font-bold text-[#281C18] block">Natural Emeralds (Panna)</span>
-                  <span className="text-[11px] text-[#796A65]">Unheated, natural astrological stones</span>
-                </button>
-                <button
-                  onClick={() => handleNav(() => setSelectedCategory('Gemstones'))}
-                  className="p-3 bg-[#FFF9F0] border border-[#E9D9C5] rounded-xl text-left hover:border-[#B8893D] transition-all"
-                >
-                  <span className="font-bold text-[#281C18] block">Certified Rubies & Sapphires</span>
-                  <span className="text-[11px] text-[#796A65]">Vivid certified precious gemstones</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-[#FFF9F0] rounded-2xl p-5 border border-[#E9D9C5] space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#B8893D] flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4 text-[#2E7D5B]" /> Astrological Verification
-              </span>
-              <h5 className="font-serif font-bold text-sm text-[#281C18]">100% Certified Origin Guarantee</h5>
-              <p className="text-xs text-[#796A65] leading-relaxed">
-                Every gemstone and Rudraksha at Guru Diamonds is carefully verified for authenticity and lab certified.
-              </p>
-              <button
-                onClick={() => handleNav(() => setSelectedCategory('Gemstones'))}
-                className="text-xs font-bold text-[#7A1822] hover:underline flex items-center gap-1"
-              >
-                <span>View All Gemstones</span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#B8893D]" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

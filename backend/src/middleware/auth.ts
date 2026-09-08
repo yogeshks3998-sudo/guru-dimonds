@@ -78,11 +78,12 @@ export const requireRole =
         next(error);
         return;
       }
-      if (!req.auth?.role || !roles.includes(req.auth.role)) {
+      if (!req.auth?.role || (req.auth.role !== 'SUPER_ADMIN' && !roles.includes(req.auth.role))) {
         next(new HttpError(403, 'You do not have permission to perform this action'));
         return;
       }
       next();
     });
   };
+
 

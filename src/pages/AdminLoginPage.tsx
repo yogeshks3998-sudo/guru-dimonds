@@ -25,11 +25,11 @@ export const AdminLoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#1B1A18] flex items-center justify-center px-4 py-16">
       <div className="bg-[#23211E] border border-[#A67C32]/40 rounded-3xl p-8 max-w-md w-full space-y-6 text-xs text-[#FAF8F3] shadow-2xl">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-[#A67C32]/20 border border-[#A67C32] rounded-2xl flex items-center justify-center mx-auto text-[#D8C29D]">
-            <Flame className="w-6 h-6" />
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <img src="/logo.png" alt="Guru Diamonds" className="h-16 w-auto max-w-[220px] object-contain rounded-xl bg-white p-2 shadow-md" />
           </div>
-          <span className="font-logo text-2xl font-bold text-white block">GURU DIAMONDS CMS</span>
+          <span className="font-logo text-xl font-bold text-white block">GURU DIAMONDS CMS</span>
           <p className="text-[#A7A9AC]">Authorized Manager & Staff Portal</p>
         </div>
 

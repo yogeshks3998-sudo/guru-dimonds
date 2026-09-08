@@ -3,6 +3,8 @@ import { getCurrentPath } from './utils/navigation';
 import { StorefrontHeader } from './components/layout/StorefrontHeader';
 import { StorefrontFooter } from './components/layout/StorefrontFooter';
 import { CartDrawer } from './components/storefront/CartDrawer';
+import { WhatsAppButton } from './components/ui/WhatsAppButton';
+import { ScrollToTopButton } from './components/ui/ScrollToTopButton';
 import { ToastProvider } from './components/ui/Toast';
 import { useCartStore } from './stores/useCartStore';
 import { useCMSStore } from './stores/useCMSStore';
@@ -64,6 +66,9 @@ const AdminOrdersPage = lazy(() =>
 const AdminCMSPage = lazy(() => import('./pages/admin/AdminCMSPage').then((module) => ({ default: module.AdminCMSPage })));
 const AdminCustomersPage = lazy(() =>
   import('./pages/admin/AdminCustomersPage').then((module) => ({ default: module.AdminCustomersPage }))
+);
+const AdminInquiriesPage = lazy(() =>
+  import('./pages/admin/AdminInquiriesPage').then((module) => ({ default: module.AdminInquiriesPage }))
 );
 
 export function App() {
@@ -129,6 +134,7 @@ export function App() {
       return <AdminProductFormPage productId={id} />;
     }
     if (currentPath === '/admin/orders') return <AdminOrdersPage />;
+    if (currentPath === '/admin/inquiries') return <AdminInquiriesPage />;
     if (currentPath === '/admin/cms') return <AdminCMSPage />;
     if (currentPath === '/admin/customers') return <AdminCustomersPage />;
 
@@ -183,6 +189,8 @@ export function App() {
         {!isAdminRoute && (
           <>
             <StorefrontFooter />
+            <WhatsAppButton />
+            <ScrollToTopButton />
             <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
           </>
         )}

@@ -8,11 +8,23 @@ import { CheckCircle2, Package, ShieldCheck, Printer, ArrowRight, Truck } from '
 export const OrderConfirmationPage: React.FC = () => {
   const { orders } = useOrderStore();
   const latestOrder = orders[0]; // Most recent placed order
+  const orderNumber = new URLSearchParams(window.location.search).get('orderNumber');
 
   if (!latestOrder) {
     return (
       <div className="max-w-xl mx-auto py-20 px-4 text-center space-y-4">
-        <h2 className="font-serif text-2xl font-bold text-[#1B1A18]">Order Confirmation</h2>
+        <div className="w-16 h-16 bg-[#E6F4EA] border border-[#2E7D5B] text-[#2E7D5B] rounded-full flex items-center justify-center mx-auto">
+          <CheckCircle2 className="w-10 h-10" />
+        </div>
+        <span className="text-xs font-bold uppercase tracking-widest text-[#A67C32] block">
+          Booking Successful
+        </span>
+        <h2 className="font-serif text-2xl font-bold text-[#1B1A18]">Thank You For Choosing Guru Diamonds</h2>
+        {orderNumber && (
+          <p className="text-xs text-[#6F6A62]">
+            Your order number is <strong className="text-[#1B1A18]">{orderNumber}</strong>.
+          </p>
+        )}
         <button
           onClick={() => navigateTo('/')}
           className="px-6 py-2.5 bg-[#A67C32] text-white text-xs font-bold uppercase rounded-xl"
@@ -32,7 +44,7 @@ export const OrderConfirmationPage: React.FC = () => {
         </div>
 
         <span className="text-xs font-bold uppercase tracking-widest text-[#A67C32] block">
-          Order Successfully Confirmed
+          Booking Successful
         </span>
 
         <h1 className="font-serif text-3xl font-bold text-[#1B1A18]">
