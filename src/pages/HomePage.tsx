@@ -641,8 +641,8 @@ export const HomePage: React.FC = () => {
                   onClick={() => setActiveHeroIndex(index)}
                   aria-label={`Show hero slide ${index + 1}`}
                   className={`h-1.5 rounded-full transition-all cursor-pointer ${index === activeHeroIndex
-                      ? 'w-8 bg-[#6D121B]'
-                      : 'w-3 bg-[#9A622A]/40 hover:bg-[#9A622A]/80'
+                    ? 'w-8 bg-[#6D121B]'
+                    : 'w-3 bg-[#9A622A]/40 hover:bg-[#9A622A]/80'
                     }`}
                 />
               ))}
@@ -1125,7 +1125,7 @@ export const HomePage: React.FC = () => {
 
             {/* Auto-moving 2nd & 3rd Cards Across All Categories (2-Column on Mobile) */}
             <div
-              className="md:col-span-2 lg:col-span-6 grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-5 relative pb-8 group/bestseller-carousel"
+              className="md:col-span-2 lg:col-span-6 grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-5 relative pb-8 group/bestseller-carousel items-stretch"
               onMouseEnter={() => setIsBestsellerPaused(true)}
               onMouseLeave={() => setIsBestsellerPaused(false)}
             >
@@ -1133,7 +1133,7 @@ export const HomePage: React.FC = () => {
               {categoryShowcaseProducts.length > 0 && (
                 <div
                   key={`slot1-${categoryShowcaseProducts[bestsellerSlideIndex % categoryShowcaseProducts.length]?.id}`}
-                  className="flex flex-col transition-all duration-500 ease-out"
+                  className="flex flex-col h-full transition-all duration-500 ease-out"
                 >
                   <ProductCard
                     product={categoryShowcaseProducts[bestsellerSlideIndex % categoryShowcaseProducts.length]}
@@ -1145,7 +1145,7 @@ export const HomePage: React.FC = () => {
               {categoryShowcaseProducts.length > 1 && (
                 <div
                   key={`slot2-${categoryShowcaseProducts[(bestsellerSlideIndex + 1) % categoryShowcaseProducts.length]?.id}`}
-                  className="flex flex-col transition-all duration-500 ease-out"
+                  className="flex flex-col h-full transition-all duration-500 ease-out"
                 >
                   <ProductCard
                     product={categoryShowcaseProducts[(bestsellerSlideIndex + 1) % categoryShowcaseProducts.length]}

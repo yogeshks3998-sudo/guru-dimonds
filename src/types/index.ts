@@ -89,7 +89,7 @@ export interface Product {
   occasion: string[];
   images: string[];
   videoUrl?: string;
-  
+
   // Jewellery technical parameters
   metalType: MetalType;
   metalPurity: MetalPurity;
@@ -101,7 +101,7 @@ export interface Product {
   hallmarkCenter?: string;
   certified: boolean;
   certificationAgency?: string; // SGL, IGI, BIS
-  
+
   // Pricing parameters
   pricingMode: PricingMode;
   fixedPrice?: number; // Used if PricingMode === 'FIXED'
@@ -112,7 +112,7 @@ export interface Product {
   certificationCharge: number;
   packagingCharge: number;
   gstPercentage: number; // Defaults to 3% for jewellery
-  
+
   // Inventory
   totalStock: number;
   hasVariants: boolean;
@@ -126,12 +126,13 @@ export interface Product {
   returnEligible: boolean;
   returnPolicyDays: number;
   codAvailable: boolean;
-  
+
   // Marketing & Metadata
   badges: ('NEW' | 'BEST_SELLER' | 'HALLMARKED' | 'CERTIFIED' | 'SALE' | 'LIMITED' | 'MADE_TO_ORDER')[];
   rating: number;
   reviewCount: number;
   status: 'DRAFT' | 'ACTIVE' | 'SCHEDULED' | 'HIDDEN' | 'ARCHIVED';
+  enabled?: boolean;
   createdAt: string;
   updatedAt: string;
   seoTitle?: string;
@@ -381,5 +382,7 @@ export interface CMSContent {
     email: string;
     address: string;
     whatsapp: string;
+    facebook?: string;
+    instagram?: string;
   };
 }

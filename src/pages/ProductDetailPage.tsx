@@ -35,6 +35,8 @@ import {
   ThumbsUp,
   MessageSquare,
 } from 'lucide-react';
+import { useAuthStore } from '../stores/useAuthStore';
+import { isProductActive } from '../utils/productFilters';
 
 interface ProductDetailPageProps {
   slug: string;
@@ -42,22 +44,48 @@ interface ProductDetailPageProps {
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) => {
   const { products } = useProductStore();
+  const { isAdminLoggedIn } = useAuthStore();
   const { getRate, rates } = useMetalRateStore();
   const { addItem } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const { toggleCompare, compareIds, setDrawerOpen } = useCompareStore();
   const { showToast } = useToast();
 
-  const product = products.find((p) => p.slug === slug) || products[0];
+  const product = products.find((p) => p.slug === slug);
+  const isActive = isProductActive(product);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(
-    product.variants && product.variants.length > 0 ? product.variants[0] : undefined
+    product?.variants && product.variants.length > 0 ? product.variants[0] : undefined
   );
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>(
     selectedVariant?.attributes || {}
   );
   const [quantity, setQuantity] = useState(1);
+
+  if (!product || (!isActive && !isAdminLoggedIn)) {
+    return (
+      <div className="min-h-[65vh] flex items-center justify-center px-4 py-16 bg-[#FAF8F3]">
+        <div className="max-w-md w-full bg-white border border-[#E7E1D7] rounded-3xl p-8 text-center space-y-5 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-[#FAF0DE] border border-[#D8C29D] flex items-center justify-center mx-auto text-[#A67C32]">
+            <Sparkles className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-[#1B1A18]">Product Currently Unavailable</h2>
+            <p className="text-xs text-[#6F6A62] mt-2 leading-relaxed">
+              This jewellery creation is currently offline or turned OFF by store administration. Please explore our active collection in the shop catalogue.
+            </p>
+          </div>
+          <button
+            onClick={() => navigateTo('/shop')}
+            className="w-full py-3 bg-[#3E1616] hover:bg-[#2A0F0F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
+          >
+            Explore Active Jewellery &rarr;
+          </button>
+        </div>
+      </div>
+    );
+  }
   const [customEngraving, setCustomEngraving] = useState('');
   const [pincode, setPincode] = useState('');
   const [pincodeMessage, setPincodeMessage] = useState<string | null>(null);

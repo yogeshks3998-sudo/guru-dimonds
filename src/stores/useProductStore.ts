@@ -15,7 +15,7 @@ interface ProductState {
   selectedGender: string | null;
   priceRange: [number, number];
   sortBy: string;
-  
+
   // Actions
   setSearchQuery: (q: string) => void;
   setSelectedCategory: (cat: string | null) => void;
@@ -27,7 +27,7 @@ interface ProductState {
   setSortBy: (sort: string) => void;
   resetFilters: () => void;
   hydrateProducts: () => Promise<void>;
-  
+
   // Product Admin Operations
   addProduct: (product: Product) => Promise<Product>;
   updateProduct: (id: string, updated: Partial<Product>) => Promise<Product>;
@@ -35,8 +35,32 @@ interface ProductState {
   duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
+const STORAGE_KEY = 'guru_diamonds_products_v2';
+
+function loadLocalProducts(): Product[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return INITIAL_PRODUCTS;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
+    }
+  } catch {
+    // ignore parse error
+  }
+  return INITIAL_PRODUCTS;
+}
+
+function saveLocalProducts(prods: Product[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prods));
+  } catch {
+    // ignore quota error
+  }
+}
+
 export const useProductStore = create<ProductState>((set, get) => ({
-  products: INITIAL_PRODUCTS,
+  products: loadLocalProducts(),
   loading: false,
   error: null,
   searchQuery: '',
@@ -72,15 +96,37 @@ export const useProductStore = create<ProductState>((set, get) => ({
   hydrateProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await productApi.listProducts();
-      set({
-        products: products.length ? products : INITIAL_PRODUCTS,
-        loading: false,
-        error: products.length ? null : 'No products returned from API; showing fallback catalogue',
-      });
+      const serverProducts = await productApi.listProducts();
+      if (serverProducts && serverProducts.length > 0) {
+        const local = get().products;
+        const localMap = new Map(local.map((p) => [p.id, p]));
+
+        // Merge server products with local toggle status / enabled states
+        const merged = serverProducts.map((sp) => {
+          const matched = localMap.get(sp.id);
+          return {
+            ...sp,
+            status: matched?.status !== undefined ? matched.status : sp.status,
+            enabled: matched?.enabled !== undefined ? matched.enabled : (sp.enabled !== undefined ? sp.enabled : sp.status === 'ACTIVE'),
+          };
+        });
+
+        // Retain any locally added products not on server
+        const serverIds = new Set(serverProducts.map((s) => s.id));
+        const extraLocal = local.filter((l) => !serverIds.has(l.id));
+        const finalProducts = [...merged, ...extraLocal];
+
+        saveLocalProducts(finalProducts);
+        set({ products: finalProducts, loading: false });
+      } else {
+        const fallback = get().products.length ? get().products : INITIAL_PRODUCTS;
+        saveLocalProducts(fallback);
+        set({ products: fallback, loading: false });
+      }
     } catch (error) {
+      const fallback = get().products.length ? get().products : INITIAL_PRODUCTS;
       set({
-        products: get().products.length ? get().products : INITIAL_PRODUCTS,
+        products: fallback,
         loading: false,
         error: error instanceof Error ? error.message : 'Unable to load products from API',
       });
@@ -88,50 +134,50 @@ export const useProductStore = create<ProductState>((set, get) => ({
   },
 
   addProduct: async (newProd) => {
-    set({ products: [newProd, ...get().products] });
+    const updated = [newProd, ...get().products];
+    saveLocalProducts(updated);
+    set({ products: updated });
     try {
       const saved = await productApi.createProduct(newProd);
-      set({ products: get().products.map((p) => (p.id === newProd.id ? saved : p)) });
+      const synced = get().products.map((p) => (p.id === newProd.id ? saved : p));
+      saveLocalProducts(synced);
+      set({ products: synced });
       return saved;
     } catch (error) {
-      set({ products: get().products.filter((p) => p.id !== newProd.id) });
-      set({ error: error instanceof Error ? error.message : 'Unable to save product' });
-      throw error;
+      console.warn('Product created locally (API sync skipped):', error);
+      return newProd;
     }
   },
 
-  updateProduct: async (id, updated) => {
+  updateProduct: async (id, updatedFields) => {
     const nextProduct = get().products.find((p) => p.id === id);
-    const merged = nextProduct ? { ...nextProduct, ...updated, updatedAt: new Date().toISOString() } : null;
-    const previousProducts = get().products;
-    if (!merged) throw new Error('Product not found');
+    if (!nextProduct) throw new Error('Product not found');
+    const merged: Product = { ...nextProduct, ...updatedFields, updatedAt: new Date().toISOString() };
+    const updatedProducts = get().products.map((p) => (p.id === id ? merged : p));
 
-    set({
-      products: previousProducts.map((p) => (p.id === id ? merged : p)),
-    });
+    saveLocalProducts(updatedProducts);
+    set({ products: updatedProducts });
 
     try {
       const saved = await productApi.updateProduct(id, merged);
-      set({ products: get().products.map((p) => (p.id === id ? saved : p)) });
+      const synced = get().products.map((p) => (p.id === id ? saved : p));
+      saveLocalProducts(synced);
+      set({ products: synced });
       return saved;
     } catch (error) {
-      set({
-        products: previousProducts,
-        error: error instanceof Error ? error.message : 'Unable to update product',
-      });
-      throw error;
+      console.warn('Product updated locally (API sync skipped):', error);
+      return merged;
     }
   },
 
   deleteProduct: async (id) => {
-    const previousProducts = get().products;
-    set({ products: previousProducts.filter((p) => p.id !== id) });
+    const updated = get().products.filter((p) => p.id !== id);
+    saveLocalProducts(updated);
+    set({ products: updated });
     try {
       await productApi.deleteProduct(id);
     } catch (error) {
-      set({ products: previousProducts });
-      set({ error: error instanceof Error ? error.message : 'Unable to delete product' });
-      throw error;
+      console.warn('Product deleted locally (API sync skipped):', error);
     }
   },
 
@@ -147,15 +193,18 @@ export const useProductStore = create<ProductState>((set, get) => ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    set({ products: [duplicated, ...get().products] });
+    const updated = [duplicated, ...get().products];
+    saveLocalProducts(updated);
+    set({ products: updated });
     try {
       const saved = await productApi.createProduct(duplicated);
-      set({ products: get().products.map((p) => (p.id === duplicated.id ? saved : p)) });
+      const synced = get().products.map((p) => (p.id === duplicated.id ? saved : p));
+      saveLocalProducts(synced);
+      set({ products: synced });
       return saved;
     } catch (error) {
-      set({ products: get().products.filter((p) => p.id !== duplicated.id) });
-      set({ error: error instanceof Error ? error.message : 'Unable to duplicate product' });
-      throw error;
+      console.warn('Product duplicated locally (API sync skipped):', error);
+      return duplicated;
     }
   },
 }));

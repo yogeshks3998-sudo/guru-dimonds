@@ -400,9 +400,9 @@ export const ShopPage: React.FC = () => {
               {sortedProducts.length === 0
                 ? 0
                 : `${(currentPage - 1) * ITEMS_PER_PAGE + 1}–${Math.min(
-                    currentPage * ITEMS_PER_PAGE,
-                    sortedProducts.length
-                  )}`}
+                  currentPage * ITEMS_PER_PAGE,
+                  sortedProducts.length
+                )}`}
             </strong>{' '}
             of <strong>{sortedProducts.length}</strong> creations
           </span>
@@ -534,11 +534,10 @@ export const ShopPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start relative">
         {/* Filter Sidebar (Desktop Sticky / Mobile toggleable) - Exactly matching Image 1 */}
         <aside
-          className={`${
-            filterDrawerOpen
+          className={`${filterDrawerOpen
               ? 'fixed inset-x-4 top-20 z-50 max-h-[90vh] overflow-y-auto lg:static lg:inset-auto lg:top-auto lg:z-auto lg:max-h-none'
               : 'hidden lg:block'
-          } lg:col-span-1 self-start`}
+            } lg:col-span-1 self-start`}
         >
           <div className="bg-white border border-[#E7E1D7] rounded-2xl p-5 sm:p-6 space-y-5 shadow-xs">
             {/* Header: Filters & Clear All */}
@@ -571,9 +570,8 @@ export const ShopPage: React.FC = () => {
               >
                 <span className="font-sans font-bold text-xs text-[#1B1A18] tracking-wide">Category</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${
-                    openSections.category ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${openSections.category ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -615,9 +613,8 @@ export const ShopPage: React.FC = () => {
               >
                 <span className="font-sans font-bold text-xs text-[#1B1A18] tracking-wide">Price Range</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${
-                    openSections.price ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${openSections.price ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -658,9 +655,8 @@ export const ShopPage: React.FC = () => {
               >
                 <span className="font-sans font-bold text-xs text-[#1B1A18] tracking-wide">Gemstone</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${
-                    openSections.gemstone ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${openSections.gemstone ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -698,9 +694,8 @@ export const ShopPage: React.FC = () => {
               >
                 <span className="font-sans font-bold text-xs text-[#1B1A18] tracking-wide">Occasion</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${
-                    openSections.occasion ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${openSections.occasion ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -738,9 +733,8 @@ export const ShopPage: React.FC = () => {
               >
                 <span className="font-sans font-bold text-xs text-[#1B1A18] tracking-wide">Availability</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${
-                    openSections.availability ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-[#6F6A62] transition-transform duration-200 ${openSections.availability ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -812,9 +806,8 @@ export const ShopPage: React.FC = () => {
             <>
               {/* Product Cards Grid */}
               <div
-                className={`grid gap-3 sm:gap-6 ${
-                  viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
-                }`}
+                className={`grid gap-3 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+                  }`}
               >
                 {paginatedProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
@@ -854,11 +847,10 @@ export const ShopPage: React.FC = () => {
                         key={pageNum}
                         type="button"
                         onClick={() => handlePageChange(pageNum)}
-                        className={`w-9 h-9 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center justify-center ${
-                          isActive
+                        className={`w-9 h-9 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center justify-center ${isActive
                             ? 'bg-[#3E1616] text-white shadow-sm scale-105'
                             : 'bg-white hover:bg-[#FAF8F3] text-[#5A524C] hover:text-[#1B1A18] border border-[#E7E1D7]'
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </button>
