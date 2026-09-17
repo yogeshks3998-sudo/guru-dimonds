@@ -127,11 +127,16 @@ checkoutRouter.post(
         include: orderInclude,
       });
 
-      await createInvoiceAndEmailLog(tx, order, input.gstNumber);
-      const cart = await tx.cart.findUnique({ where: { customerId: customer.id } });
-      if (cart) await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
       return created;
     }, transactionOptions);
+
+    // Invoicing, email notifications, and cart cleanup execute after order creation commits
+    await createInvoiceAndEmailLog(prisma, order, input.gstNumber).catch((err) => {
+      console.warn(`Invoice generation notice for #${order.orderNumber}:`, err);
+    });
+
+    const cart = await prisma.cart.findUnique({ where: { customerId: customer.id } }).catch(() => null);
+    if (cart) await prisma.cartItem.deleteMany({ where: { cartId: cart.id } }).catch(() => {});
 
     res.status(201).json(toOrderResponse(saved));
   })

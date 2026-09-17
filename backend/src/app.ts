@@ -47,9 +47,9 @@ app.use((req, _res, next) => {
 });
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Backend Request Error:', err);
   const status = err instanceof HttpError ? err.status : 500;
-  const message =
-    err instanceof HttpError ? err.message : process.env.NODE_ENV === 'test' ? err.message : 'Unexpected server error';
+  const message = err.message || 'Unexpected server error';
 
   res.status(status).json({
     message,
