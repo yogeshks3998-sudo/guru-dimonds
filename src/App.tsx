@@ -5,6 +5,7 @@ import { StorefrontFooter } from './components/layout/StorefrontFooter';
 import { CartDrawer } from './components/storefront/CartDrawer';
 import { WhatsAppButton } from './components/ui/WhatsAppButton';
 import { ScrollToTopButton } from './components/ui/ScrollToTopButton';
+import { CookiePolicyBanner } from './components/ui/CookiePolicyBanner';
 import { ToastProvider } from './components/ui/Toast';
 import { useCartStore } from './stores/useCartStore';
 import { useCMSStore } from './stores/useCMSStore';
@@ -191,6 +192,7 @@ export function App() {
             <StorefrontFooter />
             <WhatsAppButton />
             <ScrollToTopButton />
+            <CookiePolicyBanner />
             <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
           </>
         )}
