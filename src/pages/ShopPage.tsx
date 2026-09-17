@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { navigateTo } from '../utils/navigation';
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 24;
 
 const GEMSTONE_OPTIONS = [
   'Ruby',
@@ -75,7 +75,7 @@ export const ShopPage: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     selectedCategory ? [selectedCategory] : []
   );
-  const [priceRange, setPriceRange] = useState<[number, number]>([500, 50000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [selectedGemstones, setSelectedGemstones] = useState<string[]>([]);
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
@@ -624,7 +624,7 @@ export const ShopPage: React.FC = () => {
                   <div className="relative pt-1 pb-1">
                     <input
                       type="range"
-                      min={500}
+                      min={0}
                       max={100000}
                       step={500}
                       value={priceRange[1]}
