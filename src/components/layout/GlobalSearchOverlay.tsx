@@ -66,7 +66,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
     setRecentSearches(updated);
     try {
       localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
-    } catch {}
+    } catch { }
   };
 
   const clearRecentSearches = () => {
@@ -86,17 +86,17 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
 
   const filteredProducts = cleanQuery
     ? products
-        .filter((p) => {
-          const matchName = p.name.toLowerCase().includes(cleanQuery);
-          const matchCategory = p.category.toLowerCase().includes(cleanQuery);
-          const matchSubcategory = p.subcategory.toLowerCase().includes(cleanQuery);
-          const matchSku = p.sku.toLowerCase().includes(cleanQuery);
-          const matchMetal = `${p.metalType} ${p.metalPurity}`.toLowerCase().includes(cleanQuery);
-          const matchGemstones = p.gemstones.some((g) => g.type.toLowerCase().includes(cleanQuery));
-          const matchTags = p.tags.some((t) => t.toLowerCase().includes(cleanQuery));
-          return matchName || matchCategory || matchSubcategory || matchSku || matchMetal || matchGemstones || matchTags;
-        })
-        .sort((a, b) => a.name.localeCompare(b.name))
+      .filter((p) => {
+        const matchName = p.name.toLowerCase().includes(cleanQuery);
+        const matchCategory = p.category.toLowerCase().includes(cleanQuery);
+        const matchSubcategory = p.subcategory.toLowerCase().includes(cleanQuery);
+        const matchSku = p.sku.toLowerCase().includes(cleanQuery);
+        const matchMetal = `${p.metalType} ${p.metalPurity}`.toLowerCase().includes(cleanQuery);
+        const matchGemstones = p.gemstones.some((g) => g.type.toLowerCase().includes(cleanQuery));
+        const matchTags = p.tags.some((t) => t.toLowerCase().includes(cleanQuery));
+        return matchName || matchCategory || matchSubcategory || matchSku || matchMetal || matchGemstones || matchTags;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name))
     : [];
 
   const matchedCategories = cleanQuery
@@ -105,10 +105,10 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
 
   const matchedGemstones = cleanQuery
     ? Array.from(
-        new Set(
-          products.flatMap((p) => p.gemstones.map((g) => g.type))
-        )
-      ).filter((gem) => gem.toLowerCase().includes(cleanQuery))
+      new Set(
+        products.flatMap((p) => p.gemstones.map((g) => g.type))
+      )
+    ).filter((gem) => gem.toLowerCase().includes(cleanQuery))
     : [];
 
   return (

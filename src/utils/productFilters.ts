@@ -116,3 +116,10 @@ export function productMatchesCategory(product: Product, selectedCategory: strin
   return false;
 }
 
+export function isProductActive(product?: Product | null): boolean {
+  if (!product) return false;
+  if (product.enabled === false) return false;
+  if (product.status === 'HIDDEN' || product.status === 'DRAFT' || product.status === 'ARCHIVED') return false;
+  return true;
+}
+

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { useProductStore } from '../../stores/useProductStore';
+import { useCategoryStore } from '../../stores/useCategoryStore';
 import { useMetalRateStore } from '../../stores/useMetalRateStore';
 import { Product } from '../../types';
 import { calculateJewelleryPrice } from '../../utils/pricing';
@@ -50,6 +51,7 @@ function resizeProductImage(file: File): Promise<string> {
 
 export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ productId }) => {
   const { products, addProduct, updateProduct } = useProductStore();
+  const { categories } = useCategoryStore();
   const { getRate } = useMetalRateStore();
   const { showToast } = useToast();
 
@@ -279,15 +281,14 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs font-semibold"
                   >
-                    <option value="Rings">Rings</option>
-                    <option value="Earrings">Earrings</option>
-                    <option value="Neck Jewellery">Neck Jewellery</option>
-                    <option value="Pendants">Pendants</option>
-                    <option value="Bracelets & Bangles">Bracelets & Bangles</option>
-                    <option value="Gemstones">Gemstones</option>
-                    <option value="Spiritual Maalas">Spiritual Maalas</option>
-                    <option value="Rudraksha (1 to 24 Mukhi)">Rudraksha (1 to 24 Mukhi)</option>
-                    <option value="God Small Statues">God Small Statues</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name} {c.enabled === false ? '(Inactive)' : ''}
+                      </option>
+                    ))}
+                    {formData.category && !categories.some((c) => c.name === formData.category) && (
+                      <option value={formData.category}>{formData.category}</option>
+                    )}
                   </select>
                 </div>
                 <div>

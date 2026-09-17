@@ -43,7 +43,7 @@ export const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({ onOpenCartDr
   const { cms } = useCMSStore();
   const { setSelectedCategory, resetFilters, setSortBy } = useProductStore();
 
-  const navCategories = [
+  const navCategories: Array<{ name: string; action: () => void; isNew?: boolean; hasMega?: string }> = [
     {
       name: 'Home',
       action: () => {

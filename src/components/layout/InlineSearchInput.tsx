@@ -27,17 +27,17 @@ export const InlineSearchInput: React.FC = () => {
   // Filter & sort matching products alphabetically (A to Z)
   const filteredProducts = cleanQuery
     ? products
-        .filter((p) => {
-          const matchName = p.name.toLowerCase().includes(cleanQuery);
-          const matchCategory = p.category.toLowerCase().includes(cleanQuery);
-          const matchSubcategory = p.subcategory.toLowerCase().includes(cleanQuery);
-          const matchSku = p.sku.toLowerCase().includes(cleanQuery);
-          const matchMetal = `${p.metalType} ${p.metalPurity}`.toLowerCase().includes(cleanQuery);
-          const matchGemstones = p.gemstones.some((g) => g.type.toLowerCase().includes(cleanQuery));
-          const matchTags = p.tags.some((t) => t.toLowerCase().includes(cleanQuery));
-          return matchName || matchCategory || matchSubcategory || matchSku || matchMetal || matchGemstones || matchTags;
-        })
-        .sort((a, b) => a.name.localeCompare(b.name))
+      .filter((p) => {
+        const matchName = p.name.toLowerCase().includes(cleanQuery);
+        const matchCategory = p.category.toLowerCase().includes(cleanQuery);
+        const matchSubcategory = p.subcategory.toLowerCase().includes(cleanQuery);
+        const matchSku = p.sku.toLowerCase().includes(cleanQuery);
+        const matchMetal = `${p.metalType} ${p.metalPurity}`.toLowerCase().includes(cleanQuery);
+        const matchGemstones = p.gemstones.some((g) => g.type.toLowerCase().includes(cleanQuery));
+        const matchTags = p.tags.some((t) => t.toLowerCase().includes(cleanQuery));
+        return matchName || matchCategory || matchSubcategory || matchSku || matchMetal || matchGemstones || matchTags;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name))
     : [];
 
   const handleSearchSubmit = (term: string) => {

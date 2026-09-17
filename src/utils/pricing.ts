@@ -57,8 +57,8 @@ export function calculateJewelleryPrice(params: {
     gstPercentage = 3, // Standard 3% GST for Indian Jewellery
   } = params;
 
-  // 1. Gemstones total
-  const gemstoneValue = gemstones.reduce((sum, g) => sum + (g.totalPrice || 0), 0);
+  // 1. Gemstones explicit total
+  const explicitGemstoneValue = gemstones.reduce((sum, g) => sum + (g.totalPrice || 0), 0);
 
   if (pricingMode === 'FIXED') {
     const subtotal = fixedPrice;
@@ -77,7 +77,7 @@ export function calculateJewelleryPrice(params: {
       makingChargeTotal: 0,
       wastagePercentage: 0,
       wastageValue: 0,
-      gemstoneValue,
+      gemstoneValue: explicitGemstoneValue,
       certificationCharge,
       packagingCharge,
       subtotal,
@@ -107,6 +107,26 @@ export function calculateJewelleryPrice(params: {
 
   // Wastage Charge
   const wastageValue = Math.round((metalValue * wastagePercentage) / 100);
+
+  // If explicit gemstones are not provided but a catalogue/fixed reference price exists,
+  // deduce the implicit certified gemstones & artisan craft premium so that rate movements
+  // scale accurately from the benchmark catalog price.
+  let gemstoneValue = explicitGemstoneValue;
+  if (gemstoneValue === 0 && fixedPrice > 0) {
+    const defaultRate = DEFAULT_METAL_RATES[getRateKey(metalType, purity)] || ratePerGram;
+    const baseMetalValue = Math.round(netWeightGrams * defaultRate * purityFactor);
+    let baseMaking = 0;
+    if (makingChargeType === 'FIXED') {
+      baseMaking = makingChargeValue;
+    } else if (makingChargeType === 'PERCENTAGE') {
+      baseMaking = Math.round((baseMetalValue * makingChargeValue) / 100);
+    } else if (makingChargeType === 'PER_GRAM') {
+      baseMaking = Math.round(netWeightGrams * makingChargeValue);
+    }
+    const baseWastage = Math.round((baseMetalValue * wastagePercentage) / 100);
+    const baseDirectSum = baseMetalValue + baseMaking + baseWastage + certificationCharge + packagingCharge;
+    gemstoneValue = Math.max(0, fixedPrice - baseDirectSum);
+  }
 
   // Subtotal
   const subtotal = Math.round(

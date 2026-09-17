@@ -5,12 +5,14 @@ import { StorefrontFooter } from './components/layout/StorefrontFooter';
 import { CartDrawer } from './components/storefront/CartDrawer';
 import { WhatsAppButton } from './components/ui/WhatsAppButton';
 import { ScrollToTopButton } from './components/ui/ScrollToTopButton';
+import { CookiePolicyBanner } from './components/ui/CookiePolicyBanner';
 import { ToastProvider } from './components/ui/Toast';
 import { useCartStore } from './stores/useCartStore';
 import { useCMSStore } from './stores/useCMSStore';
 import { useMetalRateStore } from './stores/useMetalRateStore';
 import { useOrderStore } from './stores/useOrderStore';
 import { useProductStore } from './stores/useProductStore';
+import { useCategoryStore } from './stores/useCategoryStore';
 import { useAuthStore } from './stores/useAuthStore';
 import { useWishlistStore } from './stores/useWishlistStore';
 import { roleCan, routePermissions } from './utils/permissions';
@@ -60,6 +62,9 @@ const AdminProductsPage = lazy(() =>
 const AdminProductFormPage = lazy(() =>
   import('./pages/admin/AdminProductFormPage').then((module) => ({ default: module.AdminProductFormPage }))
 );
+const AdminCategoriesPage = lazy(() =>
+  import('./pages/admin/AdminCategoriesPage').then((module) => ({ default: module.AdminCategoriesPage }))
+);
 const AdminOrdersPage = lazy(() =>
   import('./pages/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage }))
 );
@@ -88,6 +93,7 @@ export function App() {
 
   useEffect(() => {
     void useAuthStore.getState().restoreSession();
+    void useCategoryStore.getState().hydrateCategories();
     void useProductStore.getState().hydrateProducts();
     void useMetalRateStore.getState().hydrateMetalRates();
     void useCMSStore.getState().hydrateCMS();
@@ -129,6 +135,7 @@ export function App() {
     if (currentPath === '/admin/metal-rates') return <AdminMetalRatesPage />;
     if (currentPath === '/admin/products') return <AdminProductsPage />;
     if (currentPath === '/admin/products/new') return <AdminProductFormPage />;
+    if (currentPath === '/admin/categories') return <AdminCategoriesPage />;
     if (currentPath.startsWith('/admin/products/edit/')) {
       const id = currentPath.replace('/admin/products/edit/', '');
       return <AdminProductFormPage productId={id} />;
@@ -191,6 +198,7 @@ export function App() {
             <StorefrontFooter />
             <WhatsAppButton />
             <ScrollToTopButton />
+            <CookiePolicyBanner />
             <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
           </>
         )}

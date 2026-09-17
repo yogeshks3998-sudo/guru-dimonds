@@ -21,7 +21,7 @@ const orderInclude = {
 
 const getRazorpayClient = () => {
   if (!env.razorpayKeyId || !env.razorpayKeySecret) {
-    throw new HttpError(500, 'Razorpay test credentials are not configured');
+    throw new HttpError(500, 'Razorpay credentials are not configured');
   }
   return new Razorpay({
     key_id: env.razorpayKeyId,

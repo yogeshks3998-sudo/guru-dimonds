@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { useMetalRateStore } from '../../stores/useMetalRateStore';
 import { useProductStore } from '../../stores/useProductStore';
@@ -6,17 +6,27 @@ import { MetalType, MetalPurity } from '../../types';
 import { formatINR, formatDate } from '../../utils/formatters';
 import { calculateJewelleryPrice } from '../../utils/pricing';
 import { useToast } from '../../components/ui/Toast';
-import { Coins, RefreshCw, Save, ArrowUpRight, ArrowDownRight, Sparkles, AlertCircle } from 'lucide-react';
+import { Coins, RefreshCw, Save, ArrowUpRight, ArrowDownRight, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 
 export const AdminMetalRatesPage: React.FC = () => {
-  const { rates, publishNewRate } = useMetalRateStore();
+  const { rates, publishBatchRates, hydrateMetalRates, loading } = useMetalRateStore();
   const { products } = useProductStore();
   const { showToast } = useToast();
 
   const [localRates, setLocalRates] = useState(rates);
   const [percentageAdjustment, setPercentageAdjustment] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Synchronize local rates whenever store rates update from API or storage
+  useEffect(() => {
+    if (rates && rates.length > 0 && !hasUnsavedChanges) {
+      setLocalRates(rates);
+    }
+  }, [rates, hasUnsavedChanges]);
 
   const handleRateChange = (metal: MetalType, purity: MetalPurity, newRate: number) => {
+    setHasUnsavedChanges(true);
     setLocalRates((prev) =>
       prev.map((r) => (r.metal === metal && r.purity === purity ? { ...r, ratePerGram: newRate } : r))
     );
@@ -24,6 +34,7 @@ export const AdminMetalRatesPage: React.FC = () => {
 
   const handleApplyPercentage = (percent: number) => {
     setPercentageAdjustment(percent);
+    setHasUnsavedChanges(true);
     setLocalRates((prev) =>
       prev.map((r) => ({
         ...r,
@@ -32,11 +43,24 @@ export const AdminMetalRatesPage: React.FC = () => {
     );
   };
 
-  const handleSaveAll = () => {
-    localRates.forEach((r) => {
-      publishNewRate(r.metal, r.purity, r.ratePerGram);
-    });
-    showToast('Live Bullion Rates Updated', 'Catalog formula prices have been re-calculated across storefront.');
+  const handleSaveAll = async (ratesToSave = localRates) => {
+    setIsSaving(true);
+    try {
+      await publishBatchRates(
+        ratesToSave.map((r) => ({
+          metal: r.metal,
+          purity: r.purity,
+          ratePerGram: r.ratePerGram,
+          notes: percentageAdjustment !== 0 ? `Bulk shift of ${percentageAdjustment > 0 ? `+${percentageAdjustment}%` : `${percentageAdjustment}%`}` : 'Manual Admin Update',
+        }))
+      );
+      setHasUnsavedChanges(false);
+      showToast('Live Bullion Rates Published', 'Catalog formula prices have been updated in real-time across the storefront.');
+    } catch (err) {
+      showToast('Update Failed', err instanceof Error ? err.message : 'Unable to publish rates', 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -45,36 +69,82 @@ export const AdminMetalRatesPage: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E7E1D7] pb-6">
           <div>
-            <h1 className="font-serif text-3xl font-bold text-[#1B1A18]">Live Metal Rates Manager</h1>
-            <p className="text-xs text-[#6F6A62]">
+            <div className="flex items-center gap-3">
+              <h1 className="font-serif text-3xl font-bold text-[#1B1A18]">Live Metal Rates Manager</h1>
+              {hasUnsavedChanges && (
+                <span className="text-[11px] font-bold bg-[#FAF3E6] text-[#A67C32] border border-[#D8C29D] px-2.5 py-0.5 rounded-full animate-pulse">
+                  Unsaved Changes
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-[#6F6A62] mt-1">
               Update MCX spot rates for Gold, Silver, and Platinum to dynamically shift storefront pricing.
             </p>
           </div>
 
-          <button
-            onClick={handleSaveAll}
-            className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all"
-          >
-            <Save className="w-4 h-4" /> Save & Publish Rates
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => void hydrateMetalRates()}
+              disabled={loading || isSaving}
+              className="px-4 py-3 bg-white border border-[#E7E1D7] hover:bg-[#FAF8F3] text-[#1B1A18] text-xs font-bold rounded-xl shadow-xs flex items-center gap-2 transition-all disabled:opacity-50"
+              title="Refresh from Server"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#A67C32]' : ''}`} /> Refresh
+            </button>
+            <button
+              onClick={() => handleSaveAll()}
+              disabled={isSaving}
+              className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" /> {isSaving ? 'Publishing...' : 'Save & Publish Rates'}
+            </button>
+          </div>
         </div>
 
         {/* Bulk Percentage Adjuster Bar */}
-        <div className="bg-[#FAF3E6] border border-[#D8C29D] rounded-2xl p-5 space-y-3">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#A67C32] block">
-            Bulk Rate Shift Tools
-          </span>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs font-semibold text-[#1B1A18]">Quick Adjustment:</span>
-            {[-2, -1, 0.5, 1, 2, 5].map((pct) => (
+        <div className="bg-gradient-to-r from-[#FAF3E6] to-[#FFF9F0] border border-[#D8C29D] rounded-2xl p-5 space-y-3.5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#A67C32]" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#A67C32]">
+                Bulk Rate Shift Tools
+              </span>
+            </div>
+            {hasUnsavedChanges && (
+              <span className="text-xs font-semibold text-[#A67C32]">
+                Previewing shift. Click "Save & Publish" to go live.
+              </span>
+            )}
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-xs font-semibold text-[#1B1A18] mr-1">Shift All Rates By:</span>
+            {[-5, -2, -1, 0.5, 1, 2, 5].map((pct) => (
               <button
                 key={pct}
+                type="button"
                 onClick={() => handleApplyPercentage(pct)}
-                className="px-3 py-1.5 bg-white border border-[#D8C29D] hover:bg-[#A67C32] hover:text-white text-xs font-bold text-[#1B1A18] rounded-xl transition-colors"
+                className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all border ${
+                  percentageAdjustment === pct && hasUnsavedChanges
+                    ? 'bg-[#A67C32] text-white border-[#A67C32] shadow-sm'
+                    : 'bg-white border-[#D8C29D] hover:bg-[#FAF3E6] text-[#1B1A18]'
+                }`}
               >
                 {pct > 0 ? `+${pct}%` : `${pct}%`}
               </button>
             ))}
+
+            <div className="h-5 w-[1px] bg-[#D8C29D] mx-1 hidden sm:block" />
+
+            <button
+              type="button"
+              onClick={() => handleSaveAll()}
+              disabled={!hasUnsavedChanges || isSaving}
+              className="px-4 py-1.5 bg-[#1B1A18] hover:bg-[#333] text-white text-xs font-bold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+            >
+              <CheckCircle className="w-3.5 h-3.5 text-[#D8C29D]" />
+              <span>Apply & Publish Shift</span>
+            </button>
           </div>
         </div>
 

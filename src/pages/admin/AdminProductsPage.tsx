@@ -5,12 +5,14 @@ import { formatINR } from '../../utils/formatters';
 import { navigateTo } from '../../utils/navigation';
 import { useToast } from '../../components/ui/Toast';
 import { ImageWithFallback } from '../../components/ui/ImageWithFallback';
-import { Search, Plus, Edit3, Trash2, Eye, BadgeAlert, Sparkles } from 'lucide-react';
+import { Search, Plus, Edit3, Trash2, Eye, BadgeAlert, Sparkles, Layers, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { roleCan } from '../../utils/permissions';
+import { isProductActive } from '../../utils/productFilters';
+import { Product } from '../../types';
 
 export const AdminProductsPage: React.FC = () => {
-  const { products, deleteProduct } = useProductStore();
+  const { products, deleteProduct, updateProduct } = useProductStore();
   const { adminUser } = useAuthStore();
   const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,6 +24,26 @@ export const AdminProductsPage: React.FC = () => {
       p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleToggleStatus = async (product: Product) => {
+    if (!canWrite) return;
+    const currentActive = isProductActive(product);
+    const nextStatus = currentActive ? 'HIDDEN' : 'ACTIVE';
+    const nextEnabled = !currentActive;
+
+    try {
+      await updateProduct(product.id, {
+        status: nextStatus,
+        enabled: nextEnabled,
+      });
+      showToast(
+        nextEnabled ? 'Product is ON (Active)' : 'Product is OFF (Hidden)',
+        `${product.name} is now ${nextEnabled ? 'visible to customers' : 'hidden from storefront'}.`
+      );
+    } catch (error) {
+      showToast('Update Failed', error instanceof Error ? error.message : 'Could not change product status', 'error');
+    }
+  };
 
   const handleDelete = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to delete ${name}?`)) {
@@ -47,12 +69,20 @@ export const AdminProductsPage: React.FC = () => {
           </div>
 
           {canWrite && (
-            <button
-              onClick={() => navigateTo('/admin/products/new')}
-              className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all"
-            >
-              <Plus className="w-4 h-4" /> Add New Product
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => navigateTo('/admin/categories')}
+                className="px-4 py-3 bg-[#FAF3E6] hover:bg-[#F2E8D5] text-[#A67C32] border border-[#D8C29D] text-xs font-bold uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all shadow-xs"
+              >
+                <Layers className="w-4 h-4" /> Manage Categories
+              </button>
+              <button
+                onClick={() => navigateTo('/admin/products/new')}
+                className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all"
+              >
+                <Plus className="w-4 h-4" /> Add New Product
+              </button>
+            </div>
           )}
         </div>
 
@@ -87,6 +117,7 @@ export const AdminProductsPage: React.FC = () => {
                   <th className="p-3">Net Wt</th>
                   <th className="p-3">Pricing Mode</th>
                   <th className="p-3">Stock Status</th>
+                  <th className="p-3 text-center">Status / Live</th>
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -123,6 +154,29 @@ export const AdminProductsPage: React.FC = () => {
                       <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#E6F4EA] text-[#2E7D5B] border border-[#2E7D5B]">
                         {product.readyToShip ? 'READY TO SHIP' : 'MADE TO ORDER'}
                       </span>
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className="inline-flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          disabled={!canWrite}
+                          onClick={() => handleToggleStatus(product)}
+                          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                            isProductActive(product) ? 'bg-[#2E7D5B]' : 'bg-[#D1D5DB]'
+                          } ${!canWrite ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          title={isProductActive(product) ? 'Product is ON (Click to turn OFF)' : 'Product is OFF (Click to turn ON)'}
+                          aria-label={`Toggle ON/OFF for ${product.name}`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                              isProductActive(product) ? 'translate-x-5' : 'translate-x-0'
+                            }`}
+                          />
+                        </button>
+                        <span className={`text-[10px] font-bold uppercase min-w-[28px] text-left ${isProductActive(product) ? 'text-[#2E7D5B]' : 'text-[#6F6A62]'}`}>
+                          {isProductActive(product) ? 'ON' : 'OFF'}
+                        </span>
+                      </div>
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-2">

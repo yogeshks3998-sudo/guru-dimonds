@@ -384,7 +384,7 @@ export const CheckoutPage: React.FC = () => {
                 <div className="p-3 bg-[#FAF8F3] rounded-xl border border-[#E7E1D7]">
                   <span className="font-bold text-[#1B1A18] block mb-1">Payment Method Selected:</span>
                   <p className="font-bold text-[#A67C32]">
-                    {paymentMethod === 'COD' ? 'Cash on Delivery' : `${paymentMethod} via Razorpay Test Mode`}
+                    {paymentMethod === 'COD' ? 'Cash on Delivery' : `${paymentMethod} via Razorpay (Instant & Secure)`}
                   </p>
                 </div>
 

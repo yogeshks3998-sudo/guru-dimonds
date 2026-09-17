@@ -45,6 +45,16 @@ catalogRouter.put(
   })
 );
 
+catalogRouter.delete(
+  '/categories/:id',
+  requireRole('OWNER', 'PRODUCT_MANAGER'),
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    await prisma.category.delete({ where: { id } }).catch(() => {});
+    res.status(204).send();
+  })
+);
+
 catalogRouter.get(
   '/collections',
   asyncHandler(async (_req, res) => {
