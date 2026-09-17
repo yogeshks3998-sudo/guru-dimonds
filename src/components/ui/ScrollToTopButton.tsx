@@ -28,7 +28,7 @@ export const ScrollToTopButton: React.FC = () => {
 
   return (
     <div
-      className={`fixed bottom-24 right-7 z-40 flex items-center transition-all duration-300 ${
+      className={`fixed bottom-36 right-5 sm:bottom-24 sm:right-7 z-40 flex items-center transition-all duration-300 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
       }`}
       onMouseEnter={() => setIsHovered(true)}

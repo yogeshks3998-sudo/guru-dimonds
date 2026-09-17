@@ -6,6 +6,7 @@ vi.mock('../useAuthStore', () => ({
   useAuthStore: {
     getState: () => ({ isCustomerLoggedIn: false }),
   },
+  hasCustomerApiSession: () => false,
 }));
 
 describe('useCartStore guest behavior', () => {

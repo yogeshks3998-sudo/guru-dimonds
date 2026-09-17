@@ -375,9 +375,7 @@ export const HomePage: React.FC = () => {
         <div className="absolute inset-0 z-0">
           {heroSlides.map((slide, index) => {
             const localHeroImages = ['/hero/hero1.png', '/hero/hero2.png', '/hero/hero3.png'];
-            const localSrc = slide.imageUrl && (slide.imageUrl.endsWith('hero1.png') || slide.imageUrl.endsWith('hero2.png') || slide.imageUrl.endsWith('hero3.png'))
-              ? slide.imageUrl
-              : localHeroImages[index % localHeroImages.length];
+            const localSrc = slide.imageUrl || localHeroImages[index % localHeroImages.length];
 
             return (
               <img

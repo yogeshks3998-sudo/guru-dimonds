@@ -45,5 +45,50 @@ describe('calculateJewelleryPrice', () => {
     expect(price.discountedSubtotal).toBe(9000);
     expect(price.finalPrice).toBe(9270);
   });
+
+  it('dynamically recalculates price when bullion spot rate shifts for rate-linked products with benchmark price', () => {
+    // Base rate calculation (e.g. Silver 925 @ default 82/g)
+    const basePrice = calculateJewelleryPrice({
+      pricingMode: 'RATE_LINKED',
+      fixedPrice: 4850,
+      metalType: 'SILVER',
+      purity: '925',
+      netWeightGrams: 4.9,
+      ratePerGram: 82,
+      makingChargeType: 'FIXED',
+      makingChargeValue: 582,
+      wastagePercentage: 2,
+      certificationCharge: 350,
+      packagingCharge: 150,
+      gstPercentage: 3,
+    });
+
+    // Subtotal matches base price 4850
+    expect(basePrice.subtotal).toBe(4850);
+    expect(basePrice.finalPrice).toBe(4996);
+
+    // Shift rate from 82 to 250 (user's admin update)
+    const shiftedPrice = calculateJewelleryPrice({
+      pricingMode: 'RATE_LINKED',
+      fixedPrice: 4850,
+      metalType: 'SILVER',
+      purity: '925',
+      netWeightGrams: 4.9,
+      ratePerGram: 250,
+      makingChargeType: 'FIXED',
+      makingChargeValue: 582,
+      wastagePercentage: 2,
+      certificationCharge: 350,
+      packagingCharge: 150,
+      gstPercentage: 3,
+    });
+
+    // Metal value increased from 372 to 1133 (+761)
+    expect(shiftedPrice.metalValue).toBe(1133);
+    expect(shiftedPrice.wastageValue).toBe(23);
+    expect(shiftedPrice.subtotal).toBe(5627);
+    expect(shiftedPrice.finalPrice).toBe(5796);
+    expect(shiftedPrice.finalPrice).toBeGreaterThan(basePrice.finalPrice);
+  });
 });
 

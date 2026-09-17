@@ -154,7 +154,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   ];
 
   return (
-    <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pb-28 lg:pb-8 space-y-8 lg:space-y-12">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-xs text-[#6F6A62]">
         <button onClick={() => navigateTo('/')} className="hover:text-[#A67C32] transition-colors">Home</button>
@@ -165,16 +165,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
       </nav>
 
       {/* Main PDP Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        {/* Left: Product Images Gallery with Hover-Based Zoom Effect */}
-        <div className="space-y-4 sticky top-28">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+        {/* Left: Product Images Gallery with Hover-Based Zoom Effect (sticky only on desktop) */}
+        <div className="space-y-4 lg:sticky lg:top-28">
           <div
             ref={imageContainerRef}
             onMouseEnter={() => setIsZooming(true)}
             onMouseLeave={() => setIsZooming(false)}
             onMouseMove={handleMouseMove}
             onClick={() => setLightboxOpen(true)}
-            className="relative aspect-square w-[80%] mx-auto rounded-3xl overflow-hidden bg-[#FAF8F3] border border-[#E7E1D7] shadow-xl group cursor-zoom-in select-none"
+            className="relative aspect-square w-full max-w-[500px] lg:max-w-none mx-auto rounded-3xl overflow-hidden bg-[#FAF8F3] border border-[#E7E1D7] shadow-xl group cursor-zoom-in select-none"
           >
             {/* Main Image with Smooth Zoom Transformation */}
             <ImageWithFallback
@@ -191,7 +191,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             {/* Hover Lens Hint Badge */}
             <div className={`absolute bottom-4 left-4 bg-[#1B1A18]/80 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/20 flex items-center gap-1.5 transition-opacity duration-300 ${isZooming ? 'opacity-100 bg-[#A67C32]/90 border-[#A67C32]' : 'opacity-80'}`}>
               <ZoomIn className="w-3.5 h-3.5 text-[#D8C29D]" />
-              <span>{isZooming ? '2.6x Micro-Detail Zoom Active' : 'Hover over image to inspect hallmark & gemstones'}</span>
+              <span className="hidden sm:inline">{isZooming ? '2.6x Micro-Detail Zoom Active' : 'Hover over image to inspect hallmark & gemstones'}</span>
+              <span className="sm:hidden">Tap to view studio lightbox</span>
             </div>
 
             {/* Lightbox Trigger Icon */}
@@ -221,12 +222,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           </div>
 
           {/* Image Thumbnails */}
-          <div className="w-[80%] mx-auto flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
+          <div className="w-full max-w-[500px] lg:max-w-none mx-auto flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
             {images.map((img, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedImageIndex(idx)}
-                className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-[#FAF8F3] relative ${
+                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-[#FAF8F3] relative ${
                   selectedImageIndex === idx ? 'border-[#A67C32] scale-105 shadow-md ring-2 ring-[#A67C32]/20' : 'border-[#E7E1D7] opacity-70 hover:opacity-100'
                 }`}
               >
