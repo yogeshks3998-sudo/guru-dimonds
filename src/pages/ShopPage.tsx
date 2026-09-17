@@ -157,7 +157,7 @@ export const ShopPage: React.FC = () => {
     setSelectedGemstones([]);
     setSelectedOccasions([]);
     setSelectedAvailability([]);
-    setPriceRange([500, 50000]);
+    setPriceRange([0, 100000]);
     setSearchQuery('');
     resetStoreFilters();
     setCurrentPage(1);
@@ -302,6 +302,26 @@ export const ShopPage: React.FC = () => {
     getRate,
   ]);
 
+  // Helper to compute live final price for accurate sorting
+  const getProductLivePrice = (p: Product) => {
+    const rate = getRate(p.metalType, p.metalPurity);
+    return calculateJewelleryPrice({
+      pricingMode: p.pricingMode,
+      fixedPrice: p.fixedPrice,
+      metalType: p.metalType,
+      purity: p.metalPurity,
+      netWeightGrams: p.netWeightGrams,
+      ratePerGram: rate,
+      makingChargeType: p.makingChargeType,
+      makingChargeValue: p.makingChargeValue,
+      wastagePercentage: p.wastagePercentage,
+      gemstones: p.gemstones,
+      certificationCharge: p.certificationCharge,
+      packagingCharge: p.packagingCharge,
+      gstPercentage: p.gstPercentage,
+    }).finalPrice;
+  };
+
   // Sort Products
   const sortedProducts = useMemo(() => {
     const list = [...filteredProducts];
@@ -312,14 +332,14 @@ export const ShopPage: React.FC = () => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     } else if (sortBy === 'PRICE_LOW_HIGH') {
-      list.sort((a, b) => a.grossWeightGrams - b.grossWeightGrams);
+      list.sort((a, b) => getProductLivePrice(a) - getProductLivePrice(b));
     } else if (sortBy === 'PRICE_HIGH_LOW') {
-      list.sort((a, b) => b.grossWeightGrams - a.grossWeightGrams);
+      list.sort((a, b) => getProductLivePrice(b) - getProductLivePrice(a));
     } else if (sortBy === 'RATING') {
       list.sort((a, b) => b.rating - a.rating);
     }
     return list;
-  }, [filteredProducts, sortBy]);
+  }, [filteredProducts, sortBy, getRate]);
 
   // Pagination calculations (Image 2)
   const totalPages = Math.max(1, Math.ceil(sortedProducts.length / ITEMS_PER_PAGE));
