@@ -18,7 +18,9 @@ import {
   ChevronRight,
   Gift,
   Check,
+  Sparkles,
 } from 'lucide-react';
+import { navigateTo } from '../utils/navigation';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -767,25 +769,22 @@ export const ShopPage: React.FC = () => {
               )}
             </div>
 
-            {/* 6. Promotional Banner at bottom of filters (Image 1) */}
+            {/* 6. Custom Jewellery Contact Banner at bottom of filters */}
             <div className="pt-2">
               <div className="rounded-2xl p-4 bg-gradient-to-br from-[#FDF9F2] via-[#FBF4E9] to-[#F7EFE3] border border-[#E7D6C1] shadow-2xs flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-[#FAF0DE] border border-[#D8C29D] flex items-center justify-center shrink-0 shadow-2xs">
-                  <Gift className="w-6 h-6 text-[#A67C32]" />
+                  <Sparkles className="w-6 h-6 text-[#A67C32]" />
                 </div>
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <h5 className="font-serif text-xs font-bold text-[#1B1A18] leading-tight">
-                    A Perfect Gift for Every Occasion
+                    Contact Us for Customised Jewellery
                   </h5>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedOccasions(['Gift']);
-                      setCurrentPage(1);
-                    }}
-                    className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white bg-[#3E1616] hover:bg-[#2A0F0F] px-3 py-1.5 rounded-lg transition-all shadow-xs"
+                    onClick={() => navigateTo('/contact')}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white bg-[#3E1616] hover:bg-[#2A0F0F] px-3 py-1.5 rounded-lg transition-all shadow-xs cursor-pointer"
                   >
-                    Shop Gift Sets &rarr;
+                    Contact Us &rarr;
                   </button>
                 </div>
               </div>
