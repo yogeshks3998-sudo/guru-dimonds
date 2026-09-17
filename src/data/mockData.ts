@@ -760,5 +760,7 @@ export const INITIAL_CMS: CMSContent = {
     email: 'info@gurudimonds.in',
     address: 'No. 1108, 1st Cross, Kurubageri, Lashkar Mohalla, Mysuru - 570001, Karnataka, India',
     whatsapp: '+91 78991 25449',
+    facebook: 'https://www.facebook.com/profile.php?id=61567178701595',
+    instagram: 'https://www.instagram.com/guru_diamonds?stkn=YWZpeHc1dm9taGtr',
   },
 };

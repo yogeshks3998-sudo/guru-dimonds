@@ -88,7 +88,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
       onClick={() => navigateTo(`/product/${product.slug}`)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative bg-[#FFFFFF] border border-[#E9D9C5] rounded-2xl overflow-hidden hover:shadow-xl hover:border-[#B8893D]/60 transition-all duration-300 flex flex-col cursor-pointer"
+      className="group relative bg-[#FFFFFF] border border-[#E9D9C5] rounded-2xl overflow-hidden hover:shadow-xl hover:border-[#B8893D]/60 transition-all duration-300 flex flex-col h-full cursor-pointer"
     >
       {/* Product Image Area */}
       <div className="relative aspect-[4/5] overflow-hidden bg-[#FFF9F0]">
@@ -152,11 +152,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
             </span>
             <div className="flex items-center gap-0.5 sm:gap-1 text-[#B8893D] shrink-0">
               <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
-              <span className="font-bold text-[#281C18]">{product.rating}</span>
+              <span className="font-bold text-[#281C18]">
+                {typeof product.rating === 'number' ? Number(product.rating).toFixed(1) : product.rating || '5.0'}
+              </span>
             </div>
           </div>
 
-          <h3 className="font-product font-bold text-xs sm:text-base text-[#281C18] line-clamp-2 group-hover:text-[#7A1822] transition-colors leading-snug">
+          <h3 className="font-product font-bold text-xs sm:text-base text-[#281C18] line-clamp-2 group-hover:text-[#7A1822] transition-colors leading-snug min-h-[2.25rem] sm:min-h-[2.75rem]">
             {product.name}
           </h3>
         </div>
@@ -164,7 +166,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
         {/* Price & Action */}
         <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-[#E9D9C5] flex items-center justify-between gap-1">
           <div className="min-w-0">
-            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
+            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap min-h-[1.25rem] sm:min-h-[1.5rem]">
               <span className="text-xs sm:text-base font-bold text-[#7A1822]">{formatINR(finalPrice)}</span>
               {compareAt && compareAt > finalPrice && (
                 <span className="text-[10px] sm:text-xs text-[#796A65] line-through">{formatINR(compareAt)}</span>
@@ -175,7 +177,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
 
           <button
             onClick={handleAddToCart}
-            className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0"
+            className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0 cursor-pointer"
             aria-label="Add to cart"
             title="Add to shopping bag"
           >

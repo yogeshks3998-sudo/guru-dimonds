@@ -20,11 +20,13 @@ interface CMSState {
 
 const LOCAL_KEY = 'guru_diamonds_cms_content_v1';
 const LEGACY_LOCAL_KEY = 'vedaara_cms_content_v1';
-const BRAND_FOOTER_CONTACT: Pick<CMSContent['footer'], 'phone' | 'email' | 'address' | 'whatsapp'> = {
+const BRAND_FOOTER_CONTACT: Pick<CMSContent['footer'], 'phone' | 'email' | 'address' | 'whatsapp' | 'facebook' | 'instagram'> = {
   phone: '+91 78991 25449',
   email: 'info@gurudimonds.in',
   address: 'No. 1108, 1st Cross, Kurubageri, Lashkar Mohalla, Mysuru - 570001, Karnataka, India',
   whatsapp: '+91 78991 25449',
+  facebook: 'https://www.facebook.com/profile.php?id=61567178701595',
+  instagram: 'https://www.instagram.com/guru_diamonds?stkn=YWZpeHc1dm9taGtr',
 };
 
 const withBrandFooterContact = (cms: CMSContent): CMSContent => ({

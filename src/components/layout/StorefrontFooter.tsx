@@ -2,8 +2,11 @@ import React from 'react';
 import { navigateTo } from '../../utils/navigation';
 import { useCMSStore } from '../../stores/useCMSStore';
 import { useProductStore } from '../../stores/useProductStore';
-import { ShieldCheck, Award, Truck, RefreshCw, Phone, Mail, MapPin, Send } from 'lucide-react';
+import { Phone, Mail, MapPin, Instagram, Facebook } from 'lucide-react';
 import guruDiamondsLogo from '../../../assets/gurudimondslogo.png';
+
+const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61567178701595';
+const INSTAGRAM_URL = 'https://www.instagram.com/guru_diamonds?stkn=YWZpeHc1dm9taGtr';
 
 export const StorefrontFooter: React.FC = () => {
   const { cms } = useCMSStore();
@@ -45,6 +48,31 @@ export const StorefrontFooter: React.FC = () => {
               <p className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-[#B8893D] shrink-0 mt-0.5" /> No. 1108, 1st Cross, Kurubageri, Lashkar Mohalla, Mysuru - 570001
               </p>
+            </div>
+
+            {/* Social Media Links */}
+            <div className="pt-2 flex items-center gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#B8893D]">Follow Us:</span>
+              <div className="flex items-center gap-2.5">
+                <a
+                  href={footer.instagram || INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Follow Guru Diamonds on Instagram"
+                  className="w-8 h-8 rounded-full bg-[#FAF0DE]/10 hover:bg-[#B8893D] border border-[#B8893D]/40 hover:border-[#B8893D] flex items-center justify-center text-[#F4E4C8] hover:text-[#2A050A] transition-all transform hover:scale-110 shadow-xs"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+                <a
+                  href={footer.facebook || FACEBOOK_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Follow Guru Diamonds on Facebook"
+                  className="w-8 h-8 rounded-full bg-[#FAF0DE]/10 hover:bg-[#B8893D] border border-[#B8893D]/40 hover:border-[#B8893D] flex items-center justify-center text-[#F4E4C8] hover:text-[#2A050A] transition-all transform hover:scale-110 shadow-xs"
+                >
+                  <Facebook className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           </div>
 
@@ -118,29 +146,6 @@ export const StorefrontFooter: React.FC = () => {
                 </li>
               </ul>
             </div>
-          </div>
-
-          {/* Floating Social Amoeba Corner SVG */}
-          <div className="footer-social-links hidden md:block">
-            <svg className="footer-social-amoeba-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 236 54">
-              <path className="footer-social-amoeba-path" d="M223.06,43.32c-.77-7.2,1.87-28.47-20-32.53C187.78,8,180.41,18,178.32,20.7s-5.63,10.1-4.07,16.7-.13,15.23-4.06,15.91-8.75-2.9-6.89-7S167.41,36,167.15,33a18.93,18.93,0,0,0-2.64-8.53c-3.44-5.5-8-11.19-19.12-11.19a21.64,21.64,0,0,0-18.31,9.18c-2.08,2.7-5.66,9.6-4.07,16.69s.64,14.32-6.11,13.9S108.35,46.5,112,36.54s-1.89-21.24-4-23.94S96.34,0,85.23,0,57.46,8.84,56.49,24.56s6.92,20.79,7,24.59c.07,2.75-6.43,4.16-12.92,2.38s-4-10.75-3.46-12.38c1.85-6.6-2-14-4.08-16.69a21.62,21.62,0,0,0-18.3-9.18C13.62,13.28,9.06,19,5.62,24.47A18.81,18.81,0,0,0,3,33a21.85,21.85,0,0,0,1.58,9.08,16.58,16.58,0,0,1,1.06,5A6.75,6.75,0,0,1,0,54H236C235.47,54,223.83,50.52,223.06,43.32Z"></path>
-            </svg>
-
-            <a className="footer-social-link" style={{ left: '15px', top: '11px' }} href="https://wa.me/917899125449" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-              <Phone className="w-5 h-5 text-[#FFF9F0]" />
-            </a>
-
-            <a className="footer-social-link" style={{ left: '72px', top: '5px' }} href="mailto:info@gurudimonds.in" aria-label="Email">
-              <Mail className="w-5 h-5 text-[#FFF9F0]" />
-            </a>
-
-            <a className="footer-social-link" style={{ left: '130px', top: '12px' }} href="/contact" aria-label="Location">
-              <MapPin className="w-5 h-5 text-[#FFF9F0]" />
-            </a>
-
-            <a className="footer-social-link" style={{ left: '180px', top: '7px' }} href="/contact" aria-label="Contact">
-              <Send className="w-5 h-5 text-[#FFF9F0]" />
-            </a>
           </div>
         </div>
 
