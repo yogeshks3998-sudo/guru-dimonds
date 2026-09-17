@@ -11,6 +11,7 @@ export const routePermissions: Record<string, AdminRole[]> = {
   '/admin/metal-rates': ['OWNER', 'FINANCE'],
   '/admin/products': ['OWNER', 'PRODUCT_MANAGER'],
   '/admin/products/new': ['OWNER', 'PRODUCT_MANAGER'],
+  '/admin/categories': ['OWNER', 'PRODUCT_MANAGER', 'CONTENT_MANAGER'],
   '/admin/orders': ['OWNER', 'ORDER_MANAGER', 'FINANCE'],
   '/admin/customers': ['OWNER', 'ORDER_MANAGER'],
   '/admin/inquiries': ['OWNER', 'STAFF', 'PRODUCT_MANAGER', 'ORDER_MANAGER', 'CONTENT_MANAGER', 'FINANCE'],

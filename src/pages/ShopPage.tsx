@@ -4,7 +4,7 @@ import { useMetalRateStore } from '../stores/useMetalRateStore';
 import { ProductCard } from '../components/storefront/ProductCard';
 import { calculateJewelleryPrice } from '../utils/pricing';
 import { productMatchesCategory } from '../utils/productFilters';
-import { INITIAL_CATEGORIES } from '../data/mockData';
+import { useCategoryStore } from '../stores/useCategoryStore';
 import { SlidersHorizontal, X, Search, RotateCcw, LayoutGrid, List } from 'lucide-react';
 
 export const ShopPage: React.FC = () => {
@@ -29,8 +29,18 @@ export const ShopPage: React.FC = () => {
   } = useProductStore();
 
   const { getRate } = useMetalRateStore();
+  const { categories } = useCategoryStore();
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  const activeCategories = useMemo(
+    () => categories.filter((c) => c.enabled !== false),
+    [categories]
+  );
+
+  const getCategoryCount = (categoryName: string) => {
+    return products.filter((p) => productMatchesCategory(p, categoryName)).length;
+  };
 
   // Calculate live price for filtering & sorting
   const filteredProducts = useMemo(() => {
@@ -301,19 +311,22 @@ export const ShopPage: React.FC = () => {
                 >
                   All Categories
                 </button>
-                {INITIAL_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(selectedCategory === cat.name ? null : cat.name)}
-                    className={`block w-full text-left py-1 px-2 rounded-lg transition-colors ${
-                      selectedCategory === cat.name
-                        ? 'bg-[#FAF3E6] font-bold text-[#A67C32]'
-                        : 'text-[#6F6A62] hover:bg-[#FAF8F3]'
-                    }`}
-                  >
-                    {cat.name} ({cat.itemCount})
-                  </button>
-                ))}
+                {activeCategories.map((cat) => {
+                  const count = getCategoryCount(cat.name);
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(selectedCategory === cat.name ? null : cat.name)}
+                      className={`block w-full text-left py-1 px-2 rounded-lg transition-colors ${
+                        selectedCategory === cat.name
+                          ? 'bg-[#FAF3E6] font-bold text-[#A67C32]'
+                          : 'text-[#6F6A62] hover:bg-[#FAF8F3]'
+                      }`}
+                    >
+                      {cat.name} ({count})
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

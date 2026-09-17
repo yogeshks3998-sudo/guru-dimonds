@@ -147,6 +147,7 @@ export interface Category {
   subcategories: string[];
   featured: boolean;
   itemCount: number;
+  enabled?: boolean;
 }
 
 export interface Collection {

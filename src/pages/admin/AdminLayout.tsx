@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   UserCheck,
+  Layers,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -68,6 +69,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
     { id: 'dashboard', label: 'Dashboard Overview', icon: LayoutDashboard, path: '/admin', roles: ['STAFF', 'PRODUCT_MANAGER', 'ORDER_MANAGER', 'CONTENT_MANAGER', 'FINANCE'] },
     { id: 'rates', label: 'Live Metal Rates', icon: Coins, path: '/admin/metal-rates', roles: ['FINANCE'] },
     { id: 'products', label: 'Jewellery Products', icon: Package, path: '/admin/products', roles: ['PRODUCT_MANAGER'] },
+    { id: 'categories', label: 'Categories & Filters', icon: Layers, path: '/admin/categories', roles: ['PRODUCT_MANAGER', 'CONTENT_MANAGER'] },
     { id: 'orders', label: 'Customer Orders', icon: ShoppingBag, path: '/admin/orders', roles: ['ORDER_MANAGER', 'FINANCE'] },
     { id: 'customers', label: 'Patrons & Clients', icon: Users, path: '/admin/customers', roles: ['ORDER_MANAGER'] },
     {

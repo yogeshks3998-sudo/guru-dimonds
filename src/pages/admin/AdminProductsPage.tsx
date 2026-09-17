@@ -5,7 +5,7 @@ import { formatINR } from '../../utils/formatters';
 import { navigateTo } from '../../utils/navigation';
 import { useToast } from '../../components/ui/Toast';
 import { ImageWithFallback } from '../../components/ui/ImageWithFallback';
-import { Search, Plus, Edit3, Trash2, Eye, BadgeAlert, Sparkles } from 'lucide-react';
+import { Search, Plus, Edit3, Trash2, Eye, BadgeAlert, Sparkles, Layers } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { roleCan } from '../../utils/permissions';
 
@@ -47,12 +47,20 @@ export const AdminProductsPage: React.FC = () => {
           </div>
 
           {canWrite && (
-            <button
-              onClick={() => navigateTo('/admin/products/new')}
-              className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all"
-            >
-              <Plus className="w-4 h-4" /> Add New Product
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => navigateTo('/admin/categories')}
+                className="px-4 py-3 bg-[#FAF3E6] hover:bg-[#F2E8D5] text-[#A67C32] border border-[#D8C29D] text-xs font-bold uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all shadow-xs"
+              >
+                <Layers className="w-4 h-4" /> Manage Categories
+              </button>
+              <button
+                onClick={() => navigateTo('/admin/products/new')}
+                className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all"
+              >
+                <Plus className="w-4 h-4" /> Add New Product
+              </button>
+            </div>
           )}
         </div>
 
