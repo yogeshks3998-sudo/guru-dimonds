@@ -49,12 +49,7 @@ export const toCartItemResponse = (item: any, ratePerGram: number): CartItem => 
   };
 };
 
-export const getPublishedRate = async (tx: any, metal: string, purity: string) => {
-  const record = await tx.metalRate.findFirst({
-    where: { metal, purity, status: 'PUBLISHED' },
-    orderBy: { updatedAt: 'desc' },
-  });
-  if (record) return record.ratePerGram;
+export const getPublishedRatesMap = async (tx: any, pairs: Array<{ metal: string; purity: string }>) => {
   const defaults: Record<string, number> = {
     GOLD_24K: 7450,
     GOLD_22K: 6830,
@@ -64,16 +59,70 @@ export const getPublishedRate = async (tx: any, metal: string, purity: string) =
     SILVER_925: 82,
     PLATINUM_950: 3450,
   };
-  return defaults[`${metal}_${purity}`] || 5000;
+
+  if (!pairs.length) return new Map<string, number>();
+
+  const uniquePairs = Array.from(
+    new Set(pairs.map((p) => `${p.metal}_${p.purity}`))
+  ).map((k) => {
+    const [metal, purity] = k.split('_');
+    return { metal, purity, status: 'PUBLISHED' };
+  });
+
+  const records = await tx.metalRate.findMany({
+    where: { OR: uniquePairs },
+    orderBy: { updatedAt: 'desc' },
+  });
+
+  const ratesMap = new Map<string, number>();
+  for (const r of records) {
+    const key = `${r.metal}_${r.purity}`;
+    if (!ratesMap.has(key)) {
+      ratesMap.set(key, r.ratePerGram);
+    }
+  }
+
+  return ratesMap;
+};
+
+export const getPublishedRate = async (tx: any, metal: string, purity: string) => {
+  const map = await getPublishedRatesMap(tx, [{ metal, purity }]);
+  const key = `${metal}_${purity}`;
+  const defaults: Record<string, number> = {
+    GOLD_24K: 7450,
+    GOLD_22K: 6830,
+    GOLD_18K: 5590,
+    GOLD_14K: 4340,
+    SILVER_999: 89,
+    SILVER_925: 82,
+    PLATINUM_950: 3450,
+  };
+  return map.get(key) || defaults[key] || 5000;
 };
 
 export const toCartResponse = async (tx: any, cart: any) => {
-  const items = await Promise.all(
-    cart.items.map(async (item: any) => {
-      const rate = await getPublishedRate(tx, item.product.metalType, item.product.metalPurity);
-      return toCartItemResponse(item, rate);
-    })
-  );
+  const pairs = cart.items.map((item: any) => ({
+    metal: item.product.metalType,
+    purity: item.product.metalPurity,
+  }));
+
+  const ratesMap = await getPublishedRatesMap(tx, pairs);
+  const defaults: Record<string, number> = {
+    GOLD_24K: 7450,
+    GOLD_22K: 6830,
+    GOLD_18K: 5590,
+    GOLD_14K: 4340,
+    SILVER_999: 89,
+    SILVER_925: 82,
+    PLATINUM_950: 3450,
+  };
+
+  const items = cart.items.map((item: any) => {
+    const key = `${item.product.metalType}_${item.product.metalPurity}`;
+    const rate = ratesMap.get(key) || defaults[key] || 5000;
+    return toCartItemResponse(item, rate);
+  });
+
   return {
     id: cart.id,
     customerId: cart.customerId,

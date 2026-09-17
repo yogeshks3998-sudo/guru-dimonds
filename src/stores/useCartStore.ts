@@ -130,10 +130,10 @@ export const useCartStore = create<CartState>((set, get) => ({
 
     const priceBreakdown = calculateJewelleryPrice({
       pricingMode: product.pricingMode,
-      fixedPrice: variant ? variant.price : product.fixedPrice,
+      fixedPrice: product.pricingMode === 'FIXED' ? (product.fixedPrice ?? variant?.price ?? 0) : (product.fixedPrice || variant?.price || 0),
       metalType: product.metalType,
       purity: product.metalPurity,
-      netWeightGrams: variant ? variant.netWeightGrams : product.netWeightGrams,
+      netWeightGrams: (variant?.netWeightGrams !== undefined && variant.netWeightGrams > 0) ? variant.netWeightGrams : product.netWeightGrams,
       ratePerGram: currentRate,
       makingChargeType: product.makingChargeType,
       makingChargeValue: product.makingChargeValue,

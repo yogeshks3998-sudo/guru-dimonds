@@ -1,10 +1,10 @@
+import 'dotenv/config';
 import '@testing-library/jest-dom';
 import { beforeEach, jest as jestGlobals } from '@jest/globals';
 import { TextDecoder, TextEncoder } from 'node:util';
 import { setImmediate } from 'node:timers';
 
 process.env.JWT_SECRET ||= 'jest-test-secret-with-enough-length';
-process.env.DATABASE_URL ||= 'postgresql://postgres:Abcd%40123@localhost:5432/gurudimonds?schema=public';
 process.env.VITE_API_URL ||= 'http://localhost:5000/api';
 
 Object.assign(globalThis, { TextDecoder, TextEncoder });

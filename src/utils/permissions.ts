@@ -8,6 +8,7 @@ export const roleCan = (role: AdminRole | undefined, ...allowed: AdminRole[]) =>
 
 export const routePermissions: Record<string, AdminRole[]> = {
   '/admin': ['OWNER', 'STAFF', 'PRODUCT_MANAGER', 'ORDER_MANAGER', 'CONTENT_MANAGER', 'FINANCE'],
+  '/admin/pricing': ['OWNER', 'FINANCE', 'PRODUCT_MANAGER'],
   '/admin/metal-rates': ['OWNER', 'FINANCE'],
   '/admin/products': ['OWNER', 'PRODUCT_MANAGER'],
   '/admin/products/new': ['OWNER', 'PRODUCT_MANAGER'],

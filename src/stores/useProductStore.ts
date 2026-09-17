@@ -153,6 +153,18 @@ export const useProductStore = create<ProductState>((set, get) => ({
     const nextProduct = get().products.find((p) => p.id === id);
     if (!nextProduct) throw new Error('Product not found');
     const merged: Product = { ...nextProduct, ...updatedFields, updatedAt: new Date().toISOString() };
+
+    // Synchronize variant pricing and weights so variants don't retain stale disconnected values
+    if (merged.variants && merged.variants.length > 0) {
+      merged.variants = merged.variants.map((v) => ({
+        ...v,
+        price: updatedFields.fixedPrice !== undefined ? updatedFields.fixedPrice : (merged.fixedPrice || v.price),
+        compareAtPrice: updatedFields.compareAtPrice !== undefined ? updatedFields.compareAtPrice : (merged.compareAtPrice || v.compareAtPrice),
+        netWeightGrams: updatedFields.netWeightGrams !== undefined ? updatedFields.netWeightGrams : (merged.netWeightGrams || v.netWeightGrams),
+        grossWeightGrams: updatedFields.grossWeightGrams !== undefined ? updatedFields.grossWeightGrams : (merged.grossWeightGrams || v.grossWeightGrams),
+      }));
+    }
+
     const updatedProducts = get().products.map((p) => (p.id === id ? merged : p));
 
     saveLocalProducts(updatedProducts);

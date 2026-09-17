@@ -419,3 +419,59 @@ model AuditLog {
   newValue      String?
   ipAddress     String
 }
+
+model PricingRule {
+  id        String   @id @default(cuid())
+  name      String
+  ruleType  String
+  value     Float
+  active    Boolean  @default(true)
+  createdBy String   @default("Admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ruleType, active])
+}
+
+model CategoryPricingRule {
+  id                     String   @id @default(cuid())
+  categoryId             String   @unique
+  makingChargeAdjustment Float    @default(0)
+  marginPercentage       Float    @default(0)
+  fixedAdjustment        Float    @default(0)
+  active                 Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([categoryId, active])
+}
+
+model GemstoneRate {
+  id            String   @id @default(cuid())
+  gemstoneType  String   @unique
+  ratePerCarat  Float
+  effectiveDate String
+  active        Boolean  @default(true)
+  notes         String?
+  updatedBy     String   @default("Admin")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([gemstoneType, active])
+}
+
+model PricingAuditLog {
+  id            String   @id @default(cuid())
+  action        String
+  entityType    String
+  entityId      String
+  previousValue Json?
+  newValue      Json?
+  userId        String   @default("Admin")
+  metadata      Json?
+  timestamp     DateTime @default(now())
+
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Product, ProductVariant } from '../types';
 import { useProductStore } from '../stores/useProductStore';
 import { useMetalRateStore } from '../stores/useMetalRateStore';
@@ -55,13 +55,21 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   const isActive = isProductActive(product);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(
-    product?.variants && product.variants.length > 0 ? product.variants[0] : undefined
-  );
-  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>(
-    selectedVariant?.attributes || {}
-  );
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>(() => {
+    return product?.variants && product.variants.length > 0
+      ? (product.variants[0].attributes || {})
+      : {};
+  });
   const [quantity, setQuantity] = useState(1);
+
+  // Dynamically resolve variant from latest product store data
+  const selectedVariant = useMemo(() => {
+    if (!product?.variants || product.variants.length === 0) return undefined;
+    const match = product.variants.find((v) =>
+      Object.entries(selectedAttributes).every(([k, val]) => v.attributes?.[k] === val)
+    );
+    return match || product.variants[0];
+  }, [product?.variants, selectedAttributes]);
 
   if (!product || (!isActive && !isAdminLoggedIn)) {
     return (
@@ -120,10 +128,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   };
 
   // Price breakdown formula calculation
-  const netWeight = selectedVariant ? selectedVariant.netWeightGrams : product.netWeightGrams;
+  const netWeight = (selectedVariant?.netWeightGrams !== undefined && selectedVariant.netWeightGrams > 0)
+    ? selectedVariant.netWeightGrams
+    : product.netWeightGrams;
+
   const priceBreakdown = calculateJewelleryPrice({
     pricingMode: product.pricingMode,
-    fixedPrice: selectedVariant ? selectedVariant.price : product.fixedPrice,
+    fixedPrice: product.pricingMode === 'FIXED'
+      ? (product.fixedPrice ?? selectedVariant?.price ?? 0)
+      : (product.fixedPrice || selectedVariant?.price || 0),
     metalType: product.metalType,
     purity: product.metalPurity,
     netWeightGrams: netWeight,
@@ -142,14 +155,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   const handleAttributeChange = (attrName: string, optionValue: string) => {
     const newAttrs = { ...selectedAttributes, [attrName]: optionValue };
     setSelectedAttributes(newAttrs);
-
-    // Find matching variant if exists
-    if (product.variants) {
-      const match = product.variants.find((v) =>
-        Object.entries(newAttrs).every(([k, val]) => v.attributes[k] === val)
-      );
-      if (match) setSelectedVariant(match);
-    }
   };
 
   const handleAddToCart = () => {

@@ -386,3 +386,104 @@ export interface CMSContent {
     instagram?: string;
   };
 }
+
+export interface PricingRule {
+  id: string;
+  name: string;
+  ruleType: 'MAKING_CHARGE_ADJUSTMENT' | 'MARGIN_PERCENTAGE' | 'FIXED_ADJUSTMENT' | 'DISCOUNT_PERCENTAGE';
+  value: number;
+  active: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CategoryPricingRule {
+  id: string;
+  categoryId: string;
+  makingChargeAdjustment: number; // e.g. +200/g or +200 INR
+  marginPercentage: number; // e.g. +5%
+  fixedAdjustment: number; // e.g. +1000 INR for fixed items
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GemstoneRate {
+  id: string;
+  gemstoneType: string;
+  ratePerCarat: number;
+  effectiveDate: string;
+  active: boolean;
+  notes?: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PricingAuditLog {
+  id: string;
+  action: string;
+  entityType: 'CATEGORY' | 'PRODUCT' | 'METAL_RATE' | 'GEMSTONE_RATE' | 'PRICING_RULE' | 'BULK_OPERATION';
+  entityId: string;
+  previousValue?: Record<string, any> | null;
+  newValue?: Record<string, any> | null;
+  userId: string;
+  metadata?: Record<string, any> | null;
+  timestamp: string;
+}
+
+export type BulkAdjustmentType =
+  | 'MAKING_CHARGE_PER_GRAM'
+  | 'MAKING_CHARGE_PERCENTAGE'
+  | 'MAKING_CHARGE_FIXED'
+  | 'MARGIN_PERCENTAGE'
+  | 'FIXED_PRICE_AMOUNT'
+  | 'WASTAGE_PERCENTAGE';
+
+export interface BulkPricePreviewItem {
+  productId: string;
+  productName: string;
+  sku: string;
+  category: string;
+  metalType: MetalType;
+  metalPurity: MetalPurity;
+  netWeightGrams: number;
+  pricingMode: PricingMode;
+  oldPrice: number;
+  newPrice: number;
+  priceDifference: number;
+  percentageChange: number;
+  oldMakingChargeValue: number;
+  newMakingChargeValue: number;
+  oldFixedPrice?: number;
+  newFixedPrice?: number;
+}
+
+export interface BulkPricePreviewResponse {
+  category: string;
+  adjustmentType: BulkAdjustmentType;
+  adjustmentValue: number;
+  affectedProductsCount: number;
+  increasingProductsCount: number;
+  decreasingProductsCount: number;
+  unchangedProductsCount: number;
+  averagePriceChange: number;
+  totalEstimatedRevenueImpact: number;
+  items: BulkPricePreviewItem[];
+}
+
+export interface BulkPriceApplyRequest {
+  category: string;
+  adjustmentType: BulkAdjustmentType;
+  adjustmentValue: number;
+  reason?: string;
+  adminName?: string;
+}
+
+export interface BulkPriceApplyResponse {
+  success: boolean;
+  auditLogId: string;
+  updatedCount: number;
+  message: string;
+}
