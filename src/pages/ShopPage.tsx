@@ -534,11 +534,11 @@ export const ShopPage: React.FC = () => {
         <aside
           className={`${
             filterDrawerOpen
-              ? 'fixed inset-x-4 top-20 z-50 max-h-[85vh] overflow-y-auto lg:static lg:inset-auto lg:top-auto lg:z-auto lg:max-h-none'
+              ? 'fixed inset-x-4 top-20 z-50 max-h-[90vh] overflow-y-auto lg:static lg:inset-auto lg:top-auto lg:z-auto lg:max-h-none'
               : 'hidden lg:block'
-          } lg:col-span-1 lg:sticky lg:top-28 self-start`}
+          } lg:col-span-1 self-start`}
         >
-          <div className="bg-white border border-[#E7E1D7] rounded-2xl p-5 sm:p-6 space-y-5 shadow-xs max-h-[calc(100vh-8rem)] overflow-y-auto no-scrollbar">
+          <div className="bg-white border border-[#E7E1D7] rounded-2xl p-5 sm:p-6 space-y-5 shadow-xs">
             {/* Header: Filters & Clear All */}
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E1D7]">
               <h3 className="font-serif font-bold text-lg text-[#1B1A18]">Filters</h3>
@@ -576,7 +576,7 @@ export const ShopPage: React.FC = () => {
               </button>
 
               {openSections.category && (
-                <div className="space-y-2 pt-1 max-h-52 overflow-y-auto no-scrollbar pr-1">
+                <div className="space-y-2 pt-1">
                   {activeCategories.map((cat) => {
                     const count = getCategoryCount(cat.name);
                     const isChecked = selectedCategories.includes(cat.name);
