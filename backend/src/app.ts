@@ -16,6 +16,8 @@ import { ratesRouter } from './routes/rates';
 import { wishlistRouter } from './routes/wishlist';
 import { invoicesRouter } from './routes/invoices';
 import { pricingRouter } from './routes/pricing';
+import { inquiriesRouter } from './routes/inquiries';
+import { seoRouter } from './routes/seo';
 import { HttpError } from './utils/http';
 
 export const app = express();
@@ -72,6 +74,9 @@ app.use('/api', ratesRouter);
 app.use('/api', wishlistRouter);
 app.use('/api', invoicesRouter);
 app.use('/api', pricingRouter);
+app.use('/api', inquiriesRouter);
+app.use('/api', seoRouter);
+app.use(seoRouter);
 
 app.use((req, _res, next) => {
   if (req.path.startsWith('/api')) {

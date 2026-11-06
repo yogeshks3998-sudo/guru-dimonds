@@ -60,6 +60,92 @@ ordersRouter.get(
   })
 );
 
+// Rate limiter for tracking lookups: max 20 requests per 5 minutes per IP to block enumeration attacks
+const trackingRateLimiter = new Map<string, number[]>();
+const TRACK_WINDOW_MS = 5 * 60 * 1000;
+const MAX_TRACK_PER_WINDOW = 20;
+
+const checkTrackingRateLimit = (ip: string) => {
+  const now = Date.now();
+  const timestamps = (trackingRateLimiter.get(ip) || []).filter((ts) => now - ts < TRACK_WINDOW_MS);
+  if (timestamps.length >= MAX_TRACK_PER_WINDOW) {
+    throw new HttpError(429, 'Too many tracking requests. Please try again after a few minutes.');
+  }
+  timestamps.push(now);
+  trackingRateLimiter.set(ip, timestamps);
+};
+
+ordersRouter.get(
+  '/orders/track/:reference',
+  asyncHandler(async (req, res) => {
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    checkTrackingRateLimit(clientIp);
+
+    const reference = String(req.params.reference || '').trim();
+    if (!reference || reference.length < 3) {
+      throw new HttpError(400, 'Please enter a valid order number or tracking number');
+    }
+
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { orderNumber: { equals: reference, mode: 'insensitive' } },
+          { trackingNumber: { equals: reference, mode: 'insensitive' } },
+        ],
+      },
+      include: orderInclude,
+    });
+
+    if (!order) {
+      throw new HttpError(404, 'No shipment found matching the provided reference');
+    }
+
+    const auth = extractAuthToken(req);
+    const contact = req.query.contact ? String(req.query.contact).trim().toLowerCase() : '';
+
+    const isAdmin = auth?.type === 'ADMIN' && ['OWNER', 'ORDER_MANAGER', 'FINANCE', 'SUPER_ADMIN'].includes(auth.role || '');
+    const isOwnerCustomer = auth?.type === 'CUSTOMER' && order.customerId === auth.sub;
+
+    if (!isAdmin && !isOwnerCustomer && contact) {
+      const snap = order.customerSnapshot as any;
+      const ship = order.shippingAddress as any;
+      const customerEmail = String(snap?.email || '').toLowerCase();
+      const customerPhone = String(snap?.phone || '').replace(/\D/g, '');
+      const shipPhone = String(ship?.phone || '').replace(/\D/g, '');
+      const cleanContact = contact.replace(/\D/g, '');
+
+      const matches =
+        (contact.includes('@') && customerEmail === contact) ||
+        (cleanContact.length >= 7 && (customerPhone.endsWith(cleanContact) || shipPhone.endsWith(cleanContact)));
+
+      if (!matches) {
+        throw new HttpError(403, 'The contact details provided do not match the order record');
+      }
+    }
+
+    // Sanitize output strictly: Zero PII exposure
+    const safeTrackingData = {
+      orderNumber: order.orderNumber,
+      orderStatus: order.orderStatus,
+      courierPartner: order.courierPartner || 'BlueDart Air Express',
+      trackingNumber: order.trackingNumber || 'Pending Dispatch',
+      placedAt: order.placedAt instanceof Date ? order.placedAt.toISOString() : order.placedAt,
+      history: (order.history || []).map((step: any) => ({
+        status: step.status,
+        note: step.note,
+        timestamp: step.timestamp instanceof Date ? step.timestamp.toISOString() : step.timestamp,
+      })),
+      items: (order.items || []).map((item: any) => ({
+        productName: item.productName,
+        quantity: item.quantity,
+        image: item.image,
+      })),
+    };
+
+    res.json(safeTrackingData);
+  })
+);
+
 ordersRouter.get(
   '/orders/:id',
   asyncHandler(async (req, res) => {

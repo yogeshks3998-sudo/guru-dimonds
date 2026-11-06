@@ -38,8 +38,10 @@ export const ContactPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isSubmitting) return;
 
     if (!formData.name.trim() || !formData.contactNumber.trim() || !formData.gmail.trim() || !formData.message.trim()) {
       showToast('Please fill in all required fields.', 'error');
@@ -49,19 +51,13 @@ export const ContactPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      addInquiry({
+      await addInquiry({
         name: formData.name.trim(),
         contactNumber: formData.contactNumber.trim(),
         gmail: formData.gmail.trim(),
         requirement: formData.requirement,
         message: formData.message.trim(),
       });
-    } catch {
-      // fallback safe
-    }
-
-    setTimeout(() => {
-      setIsSubmitting(false);
       setIsSubmitted(true);
       showToast('Inquiry submitted successfully! Our team will reach out soon.', 'success');
       setFormData({
@@ -71,7 +67,11 @@ export const ContactPage: React.FC = () => {
         requirement: 'Silver Rings',
         message: '',
       });
-    }, 600);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Unable to submit inquiry. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
