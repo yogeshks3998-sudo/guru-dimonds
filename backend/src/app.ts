@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import path from 'node:path';
+import { env } from './config/env';
 import { authRouter } from './routes/auth';
 import { cartRouter } from './routes/cart';
 import { catalogRouter } from './routes/catalog';
@@ -19,7 +20,38 @@ import { HttpError } from './utils/http';
 
 export const app = express();
 
-app.use(cors());
+const configuredOrigins = [
+  env.appUrl,
+  'https://gurudiamonds.in',
+  'https://www.gurudiamonds.in',
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://localhost:5055',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:5055',
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow non-browser requests (e.g. server-to-server Razorpay webhooks, curl, Jest test runner)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (
+        configuredOrigins.includes(origin) ||
+        (env.nodeEnv !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
+      ) {
+        callback(null, true);
+        return;
+      }
+      callback(new HttpError(403, `CORS policy: origin ${origin} is not allowed`));
+    },
+    credentials: true,
+  })
+);
 app.use('/products', express.static(path.resolve('public/products')));
 app.use('/categories', express.static(path.resolve('public/categories')));
 app.use('/api/payments/webhook/razorpay', express.raw({ type: 'application/json' }));

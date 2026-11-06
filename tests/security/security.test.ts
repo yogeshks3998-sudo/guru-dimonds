@@ -41,4 +41,51 @@ describe('Security regression tests', () => {
       .send({ metal: 'GOLD', purity: '22K', ratePerGram: 1 })
       .expect(403);
   });
+
+  it('protects coupon creation from unauthorized users', async () => {
+    await api().post('/api/coupons').send({ code: 'HACK99', discountType: 'PERCENTAGE', discountValue: 99 }).expect(401);
+  });
+
+  it('protects coupon creation from STAFF role', async () => {
+    await api()
+      .post('/api/coupons')
+      .set(authHeader(tokenFor({ role: 'STAFF' })))
+      .send({ code: 'HACK99', discountType: 'PERCENTAGE', discountValue: 99 })
+      .expect(403);
+  });
+
+  it('protects customer PII by ID from STAFF role', async () => {
+    await api()
+      .get('/api/customers/non-existent-id')
+      .set(authHeader(tokenFor({ role: 'STAFF' })))
+      .expect(403);
+  });
+
+  it('webhook fails closed when signature is missing', async () => {
+    await api()
+      .post('/api/payments/webhook/razorpay')
+      .send({ event: 'payment.captured' })
+      .expect((res) => {
+        // If secret is unset: 500; if secret is set: 400
+        expect([400, 500]).toContain(res.status);
+      });
+  });
+
+  it('webhook rejects malformed signature without unhandled RangeError', async () => {
+    await api()
+      .post('/api/payments/webhook/razorpay')
+      .set('x-razorpay-signature', 'short')
+      .send({ event: 'payment.captured' })
+      .expect((res) => {
+        // If secret is unset: 500; if secret is set: 400
+        expect([400, 500]).toContain(res.status);
+      });
+  });
+
+  it('enforces CORS policy against unauthorized third-party origins', async () => {
+    await api()
+      .get('/api/health')
+      .set('Origin', 'https://malicious-phishing-site.com')
+      .expect(403);
+  });
 });

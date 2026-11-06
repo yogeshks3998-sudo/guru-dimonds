@@ -27,10 +27,18 @@ describe('Commerce APIs', () => {
     expect(Array.isArray(response.body)).toBe(true);
   });
 
-  it('POST /api/coupons creates or updates a coupon', async () => {
-    const response = await api().post('/api/coupons').send(coupon).expect(201);
+  it('POST /api/coupons creates or updates a coupon for ORDER_MANAGER', async () => {
+    const response = await api().post('/api/coupons').set(orderManager).send(coupon).expect(201);
 
     expect(response.body.code).toBe(coupon.code);
+  });
+
+  it('POST /api/coupons denies unauthenticated requests', async () => {
+    await api().post('/api/coupons').send(coupon).expect(401);
+  });
+
+  it('POST /api/coupons denies STAFF', async () => {
+    await api().post('/api/coupons').set(staff).send(coupon).expect(403);
   });
 
   it('POST /api/coupons/validate accepts a valid coupon', async () => {

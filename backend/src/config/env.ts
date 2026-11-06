@@ -7,11 +7,12 @@ export const env = {
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET || 'change-this-before-production',
   nodeEnv: process.env.NODE_ENV || 'development',
+  appUrl: (process.env.APP_URL || 'https://gurudiamonds.in').trim(),
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || '',
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || '',
   razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',
   emailProvider: (process.env.EMAIL_PROVIDER || 'brevo').trim().toLowerCase(),
-  fromEmail: (process.env.FROM_EMAIL || 'info@gurudaimonds.in').trim(),
+  fromEmail: (process.env.FROM_EMAIL || 'info@gurudiamonds.in').trim(),
   fromName: (process.env.FROM_NAME || 'Guru Diamonds').trim(),
 
 

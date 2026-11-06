@@ -18,7 +18,7 @@ const toCustomerResponse = (customer: any): Customer =>
 
 customersRouter.get(
   '/customers',
-  requireRole('OWNER', 'ORDER_MANAGER', 'PRODUCT_MANAGER', 'STAFF', 'FINANCE'),
+  requireRole('OWNER', 'ORDER_MANAGER', 'PRODUCT_MANAGER', 'FINANCE'),
   asyncHandler(async (req, res) => {
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : undefined;
     const status = typeof req.query.status === 'string' ? req.query.status.trim() : undefined;
@@ -59,7 +59,7 @@ customersRouter.get(
 
 customersRouter.get(
   '/customers/:id',
-  requireRole('OWNER', 'ORDER_MANAGER', 'PRODUCT_MANAGER', 'STAFF'),
+  requireRole('OWNER', 'ORDER_MANAGER', 'PRODUCT_MANAGER', 'FINANCE'),
   asyncHandler(async (req, res) => {
     const customer = await prisma.customer.findUnique({
       where: { id: String(req.params.id) },

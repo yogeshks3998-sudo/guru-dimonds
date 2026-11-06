@@ -207,6 +207,9 @@ export const calculateCheckout = async (tx: any, input: CheckoutInput) => {
     if (!coupon || !coupon.active || coupon.startDate > now || coupon.endDate < now || subtotal < coupon.minOrderAmount) {
       throw new HttpError(400, 'Coupon is invalid for this order');
     }
+    if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
+      throw new HttpError(400, 'Coupon usage limit has been reached');
+    }
     if (coupon.discountType === 'FIXED') discountAmount = Math.min(coupon.discountValue, subtotal);
     if (coupon.discountType === 'PERCENTAGE') {
       const calculated = (subtotal * coupon.discountValue) / 100;
