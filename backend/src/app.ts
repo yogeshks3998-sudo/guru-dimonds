@@ -22,6 +22,9 @@ import { HttpError } from './utils/http';
 
 export const app = express();
 
+// Trust first reverse proxy hop (Render / Cloudflare) to ensure accurate client IP resolution
+app.set('trust proxy', 1);
+
 const configuredOrigins = [
   env.appUrl,
   'https://gurudiamonds.in',

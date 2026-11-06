@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "https://guru-dimonds.onrender.com/sitemap.xml"
+    },
+    {
+      "source": "/image-sitemap.xml",
+      "destination": "https://guru-dimonds.onrender.com/image-sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "https://guru-dimonds.onrender.com/robots.txt"
+    },
+    {
       "source": "/((?!api/.*).*)",
       "destination": "/index.html"
     }

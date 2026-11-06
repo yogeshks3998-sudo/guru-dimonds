@@ -105,12 +105,19 @@ Sitemap: ${siteUrl}/sitemap.xml
 Sitemap: ${siteUrl}/image-sitemap.xml
 `;
 
-  fs.mkdirSync(publicDir, { recursive: true });
-  fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemap);
-  fs.writeFileSync(path.join(publicDir, 'image-sitemap.xml'), imageSitemap);
-  fs.writeFileSync(path.join(publicDir, 'robots.txt'), robots);
+  const targetDirs = [path.resolve('dist'), path.resolve('public')];
+  for (const dir of targetDirs) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'sitemap.xml'), sitemap);
+      fs.writeFileSync(path.join(dir, 'image-sitemap.xml'), imageSitemap);
+      fs.writeFileSync(path.join(dir, 'robots.txt'), robots);
+    } catch {
+      // Continue if one directory cannot be accessed
+    }
+  }
 
-  console.log(`[SEO] Generated SEO files for ${siteUrl} (Total URLs: ${allUrls.length})`);
+  console.log(`[SEO] Generated SEO files for ${siteUrl} in dist/ and public/ (Total URLs: ${allUrls.length})`);
 }
 
 generateSEO().catch((err) => {
