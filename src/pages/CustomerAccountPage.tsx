@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../stores/useAuthStore';
-import { useOrderStore } from '../stores/useOrderStore';
+import { orderApi } from '../services/orderApi';
+import { Order } from '../types';
 import { formatINR, formatDate } from '../utils/formatters';
 import { navigateTo } from '../utils/navigation';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
@@ -8,8 +9,30 @@ import { User, Package, MapPin, Heart, LogOut, ShieldCheck, Clock } from 'lucide
 
 export const CustomerAccountPage: React.FC = () => {
   const { customer, isCustomerLoggedIn, logoutCustomer } = useAuthStore();
-  const { orders } = useOrderStore();
+  const [customerOrders, setCustomerOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'addresses'>('orders');
+
+  useEffect(() => {
+    if (isCustomerLoggedIn && customer) {
+      setLoadingOrders(true);
+      setOrderError(null);
+      orderApi
+        .listMyOrders()
+        .then((orders) => {
+          setCustomerOrders(orders);
+          setLoadingOrders(false);
+        })
+        .catch((err) => {
+          setOrderError(err instanceof Error ? err.message : 'Unable to load orders');
+          setCustomerOrders([]);
+          setLoadingOrders(false);
+        });
+    } else {
+      setCustomerOrders([]);
+    }
+  }, [isCustomerLoggedIn, customer?.id]);
 
   if (!isCustomerLoggedIn || !customer) {
     return (
@@ -25,8 +48,6 @@ export const CustomerAccountPage: React.FC = () => {
       </div>
     );
   }
-
-  const customerOrders = orders.filter((o) => o.customer.email.toLowerCase() === customer.email.toLowerCase());
 
   return (
     <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -81,7 +102,15 @@ export const CustomerAccountPage: React.FC = () => {
       {/* Orders Tab */}
       {activeTab === 'orders' && (
         <div className="space-y-4">
-          {customerOrders.length === 0 ? (
+          {loadingOrders ? (
+            <div className="bg-white border border-[#E7E1D7] rounded-2xl p-8 text-center text-xs text-[#6F6A62]">
+              Loading order history...
+            </div>
+          ) : orderError ? (
+            <div className="bg-white border border-[#E7E1D7] rounded-2xl p-8 text-center text-xs text-[#B43C3C]">
+              {orderError}
+            </div>
+          ) : customerOrders.length === 0 ? (
             <div className="bg-white border border-[#E7E1D7] rounded-2xl p-8 text-center text-xs text-[#6F6A62]">
               No past orders found.
             </div>
