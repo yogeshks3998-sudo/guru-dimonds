@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { navigateTo } from '../../utils/navigation';
 import { useProductStore } from '../../stores/useProductStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 import { calculateJewelleryPrice } from '../../utils/pricing';
 import { useMetalRateStore } from '../../stores/useMetalRateStore';
 import { ImageWithFallback } from '../ui/ImageWithFallback';
+import { isDemoProduct } from '../../utils/supplierProducts';
+import { isProductActive } from '../../utils/productFilters';
 import { Search, X, TrendingUp, History, ArrowRight, Sparkles, Gem, ShieldCheck } from 'lucide-react';
 
 interface GlobalSearchOverlayProps {
@@ -14,14 +17,14 @@ interface GlobalSearchOverlayProps {
 const RECENT_SEARCHES_KEY = 'guru_diamonds_recent_searches_v1';
 const LEGACY_RECENT_SEARCHES_KEY = 'vedaara_recent_searches_v1';
 const TRENDING_KEYWORDS = [
-  'Sphatika Maala',
-  '925 Silver Jhumkas',
-  'Certified Ruby Gemstone',
-  '1-24 Mukhi Rudraksha',
-  'Silver Ganesha Statue',
-  'Navarathna Silver Bracelet',
-  'Deity Silver Pendant',
+  'Ayyappa Mala',
   'Silver Rings',
+  'Silver Stud Earrings',
+  'Natural Gemstones',
+  'Navaratna Ring',
+  'Gomedhika Silver Ring',
+  'Yellow Sapphire Ring',
+  'Ruby Silver Ring',
 ];
 
 export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen, onClose }) => {
@@ -30,6 +33,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { products, setSearchQuery, setSelectedCategory, setSelectedCollection } = useProductStore();
+  const { isAdminLoggedIn } = useAuthStore();
   const getRate = useMetalRateStore((state) => state.getRate);
 
   useEffect(() => {
@@ -87,6 +91,8 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
   const filteredProducts = cleanQuery
     ? products
       .filter((p) => {
+        if (isDemoProduct(p)) return false;
+        if (!isAdminLoggedIn && !isProductActive(p)) return false;
         const matchName = p.name.toLowerCase().includes(cleanQuery);
         const matchCategory = p.category.toLowerCase().includes(cleanQuery);
         const matchSubcategory = p.subcategory.toLowerCase().includes(cleanQuery);
@@ -100,13 +106,13 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ isOpen
     : [];
 
   const matchedCategories = cleanQuery
-    ? Array.from(new Set(products.map((p) => p.category))).filter((cat) => cat.toLowerCase().includes(cleanQuery))
+    ? Array.from(new Set(products.filter((p) => !isDemoProduct(p) && (isAdminLoggedIn || isProductActive(p))).map((p) => p.category))).filter((cat) => cat.toLowerCase().includes(cleanQuery))
     : [];
 
   const matchedGemstones = cleanQuery
     ? Array.from(
       new Set(
-        products.flatMap((p) => p.gemstones.map((g) => g.type))
+        products.filter((p) => !isDemoProduct(p) && (isAdminLoggedIn || isProductActive(p))).flatMap((p) => p.gemstones.map((g) => g.type))
       )
     ).filter((gem) => gem.toLowerCase().includes(cleanQuery))
     : [];

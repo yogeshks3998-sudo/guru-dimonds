@@ -4,7 +4,7 @@ import { asyncHandler, HttpError } from '../utils/http';
 import { toCategoryData, toCollectionData, toProductCreateData, toProductResponse } from '../utils/serializers';
 import type { Category, Collection, Product } from '../../../src/types';
 import { requireRole } from '../middleware/auth';
-import { supplierPublicationError } from '../../../src/utils/supplierProducts';
+import { supplierPublicationError, isDemoProduct } from '../../../src/utils/supplierProducts';
 import { SUPPLIER_PRODUCT_DRAFTS } from '../../../src/data/supplierProductBatches';
 
 function validateSupplierProduct(product: Product, previous?: Product) {
@@ -98,36 +98,73 @@ catalogRouter.get(
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
 
-    const products = await prisma.product.findMany({
-      where: {
-        ...(status ? { status } : {}),
-        ...(category ? { category: { equals: category, mode: 'insensitive' } } : {}),
-        ...(search
-          ? {
-              OR: [
-                { name: { contains: search, mode: 'insensitive' } },
-                { sku: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-              ],
-            }
-          : {}),
-      },
-      include: { variants: true },
-      orderBy: { updatedAt: 'desc' },
-    });
+    let products: any[] = [];
+    try {
+      products = await prisma.product.findMany({
+        where: {
+          ...(status ? { status } : {}),
+          ...(category ? { category: { equals: category, mode: 'insensitive' } } : {}),
+          ...(search
+            ? {
+                OR: [
+                  { name: { contains: search, mode: 'insensitive' } },
+                  { sku: { contains: search, mode: 'insensitive' } },
+                  { description: { contains: search, mode: 'insensitive' } },
+                ],
+              }
+            : {}),
+        },
+        include: { variants: true },
+        orderBy: { updatedAt: 'desc' },
+      });
+    } catch {
+      const rawProducts: any[] = await prisma.$queryRaw`
+        SELECT p.*, 
+               COALESCE(json_agg(v.*) FILTER (WHERE v.id IS NOT NULL), '[]') as variants
+        FROM "Product" p
+        LEFT JOIN "ProductVariant" v ON v."productId" = p.id
+        GROUP BY p.id
+        ORDER BY p."updatedAt" DESC
+      `;
+      products = rawProducts;
+    }
 
-    res.json(products.map((product) => toProductResponse(product as unknown as Product)));
+    const sanitized = products
+      .filter((p) => !isDemoProduct(p.id) && !isDemoProduct(p.sku) && p.status !== 'ARCHIVED')
+      .map((product) => toProductResponse(product as unknown as Product));
+
+    res.json(sanitized);
   })
 );
 
 catalogRouter.get(
   '/products/:slug',
   asyncHandler(async (req, res) => {
-    const product = await prisma.product.findUnique({
-      where: { slug: String(req.params.slug) },
-      include: { variants: true },
-    });
-    if (!product) throw new HttpError(404, 'Product not found');
+    const slug = String(req.params.slug);
+    if (isDemoProduct(slug)) throw new HttpError(404, 'Product not found');
+
+    let product: any = null;
+    try {
+      product = await prisma.product.findUnique({
+        where: { slug },
+        include: { variants: true },
+      });
+    } catch {
+      const rawProducts: any[] = await prisma.$queryRaw`
+        SELECT p.*, 
+               COALESCE(json_agg(v.*) FILTER (WHERE v.id IS NOT NULL), '[]') as variants
+        FROM "Product" p
+        LEFT JOIN "ProductVariant" v ON v."productId" = p.id
+        WHERE p.slug = ${slug}
+        GROUP BY p.id
+        LIMIT 1
+      `;
+      product = rawProducts[0] || null;
+    }
+
+    if (!product || isDemoProduct(product.id) || isDemoProduct(product.sku) || product.status === 'ARCHIVED') {
+      throw new HttpError(404, 'Product not found');
+    }
     res.json(toProductResponse(product as unknown as Product));
   })
 );

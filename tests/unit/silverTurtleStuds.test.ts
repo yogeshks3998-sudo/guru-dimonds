@@ -14,7 +14,7 @@ const source = [
 describe('Six additional silver supplier products', () => {
  test('adds exactly six distinct products while keeping both same-named supplier entries separate',()=>{
   expect(batch).toHaveLength(6); expect(SUPPLIER_PRODUCT_DRAFTS).toHaveLength(16);
-  expect(INITIAL_PRODUCTS).toHaveLength(72);
+  expect(INITIAL_PRODUCTS).toHaveLength(16);
   for (const field of ['id','sku','slug'] as const) expect(new Set(INITIAL_PRODUCTS.map(p=>p[field])).size).toBe(INITIAL_PRODUCTS.length);
   expect(batch.filter(p=>p.supplierReview.raw.originalName==='silver stones tops')).toHaveLength(2);
   expect(planSilverImport(INITIAL_PRODUCTS.filter(p=>!p.supplierReview),batch).create).toHaveLength(6);

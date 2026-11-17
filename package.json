@@ -38,7 +38,9 @@
     "import:silver": "node --import tsx scripts/import-silver-products.ts",
     "import:silver:dry-run": "node --import tsx scripts/import-silver-products.ts --dry-run",
     "import:silver-studs": "node --import tsx scripts/import-silver-turtle-studs.ts",
-    "import:silver-studs:dry-run": "node --import tsx scripts/import-silver-turtle-studs.ts --dry-run"
+    "import:silver-studs:dry-run": "node --import tsx scripts/import-silver-turtle-studs.ts --dry-run",
+    "cleanup:demo": "node --import tsx scripts/cleanup-demo-products.ts",
+    "cleanup:demo:dry-run": "node --import tsx scripts/cleanup-demo-products.ts --dry-run"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

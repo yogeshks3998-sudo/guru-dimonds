@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../config/db';
 import { env } from '../config/env';
 import { asyncHandler } from '../utils/http';
+import { isDemoProduct } from '../../../src/utils/supplierProducts';
 
 export const seoRouter = Router();
 
@@ -30,11 +31,12 @@ seoRouter.get(
       { loc: `${siteUrl}/track-order`, changefreq: 'weekly', priority: '0.6' },
     ];
 
-    // 2. Query only ACTIVE published products from PostgreSQL
-    const products = await prisma.product.findMany({
+    // 2. Query only ACTIVE published non-demo products from PostgreSQL
+    const rawProducts = await prisma.product.findMany({
       where: { status: 'ACTIVE' },
       select: { slug: true, updatedAt: true },
     });
+    const products = rawProducts.filter((p) => !isDemoProduct(p.slug));
 
     // 3. Query Categories
     const categories = await prisma.category.findMany({

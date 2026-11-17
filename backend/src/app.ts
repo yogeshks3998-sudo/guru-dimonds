@@ -64,6 +64,21 @@ app.use('/categories', express.static(path.resolve('public/categories')));
 app.use('/api/payments/webhook/razorpay', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
 app.use('/api/health', healthRouter);
+app.get(['/', '/api'], (_req, res) => {
+  res.json({
+    service: 'guru-diamonds-api',
+    status: 'online',
+    message: 'Guru Diamonds API Server is running.',
+    frontend: 'http://localhost:5173',
+    documentation: {
+      health: '/api/health',
+      products: '/api/products',
+      categories: '/api/categories',
+      rates: '/api/rates',
+      sitemap: '/api/sitemap.xml',
+    },
+  });
+});
 app.use('/api', authRouter);
 app.use('/api', cartRouter);
 app.use('/api', catalogRouter);

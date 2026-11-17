@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { canPurchaseProduct } from '../utils/supplierProducts';
+import { canPurchaseProduct, isDemoProduct } from '../utils/supplierProducts';
 import { CartItem, Product, ProductVariant, Coupon } from '../types';
 import { calculateJewelleryPrice } from '../utils/pricing';
 import { useMetalRateStore } from './useMetalRateStore';
@@ -54,7 +54,16 @@ const getInitialItems = (): CartItem[] => {
     if (data && !localStorage.getItem(LOCAL_STORAGE_KEY)) {
       localStorage.setItem(LOCAL_STORAGE_KEY, data);
     }
-    return data ? JSON.parse(data) : [];
+    const parsed: CartItem[] = data ? JSON.parse(data) : [];
+    const cleanItems = parsed.filter((item) => {
+      const pid = item.productId || item.product?.id || '';
+      const psku = item.selectedVariant?.sku || item.product?.sku || '';
+      return !isDemoProduct(pid) && !isDemoProduct(psku);
+    });
+    if (cleanItems.length !== parsed.length) {
+      saveItems(cleanItems);
+    }
+    return cleanItems;
   } catch {
     return [];
   }
@@ -62,7 +71,12 @@ const getInitialItems = (): CartItem[] => {
 
 const saveItems = (items: CartItem[]) => {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+    const clean = items.filter((item) => {
+      const pid = item.productId || item.product?.id || '';
+      const psku = item.selectedVariant?.sku || item.product?.sku || '';
+      return !isDemoProduct(pid) && !isDemoProduct(psku);
+    });
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clean));
   } catch {
     // Ignore storage errors
   }

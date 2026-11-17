@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useProductStore } from '../stores/useProductStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { useMetalRateStore } from '../stores/useMetalRateStore';
 import { ProductCard } from '../components/storefront/ProductCard';
 import { calculateJewelleryPrice } from '../utils/pricing';
-import { productMatchesCategory } from '../utils/productFilters';
+import { isProductActive, productMatchesCategory } from '../utils/productFilters';
+import { isDemoProduct } from '../utils/supplierProducts';
 import { useCategoryStore } from '../stores/useCategoryStore';
 import { Product } from '../types';
 import {
@@ -66,6 +68,7 @@ export const ShopPage: React.FC = () => {
     resetFilters: resetStoreFilters,
   } = useProductStore();
 
+  const { isAdminLoggedIn } = useAuthStore();
   const { getRate } = useMetalRateStore();
   const { categories } = useCategoryStore();
 
@@ -207,6 +210,11 @@ export const ShopPage: React.FC = () => {
   // Calculate live price and filter products
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
+      // Exclude demo products
+      if (isDemoProduct(product)) return false;
+      // Exclude unpublished drafts from customer catalogue view
+      if (!isAdminLoggedIn && !isProductActive(product)) return false;
+
       // 1. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -785,16 +793,29 @@ export const ShopPage: React.FC = () => {
           {sortedProducts.length === 0 ? (
             <div className="bg-white border border-[#E7E1D7] rounded-2xl p-12 text-center space-y-4 shadow-xs">
               <Search className="w-12 h-12 text-[#A67C32] mx-auto opacity-50" />
-              <h3 className="font-serif font-bold text-xl text-[#1B1A18]">No Jewellery Matches Your Filter</h3>
+              <h3 className="font-serif font-bold text-xl text-[#1B1A18]">
+                {activeFiltersCount > 0 ? 'No Jewellery Matches Your Filter' : 'New Collections Arriving Soon'}
+              </h3>
               <p className="text-xs text-[#6F6A62] max-w-sm mx-auto">
-                Try resetting selected categories, price range, or gemstone filters to explore the rest of the collection.
+                {activeFiltersCount > 0
+                  ? 'Try resetting selected categories, price range, or gemstone filters to explore the rest of the collection.'
+                  : 'Our handcrafted 925 sterling silver creations, spiritual maalas and certified gemstone rings are currently being verified and curated. Please check back shortly or contact our master artisans for bespoke jewellery.'}
               </p>
-              <button
-                onClick={handleClearAll}
-                className="px-6 py-2.5 bg-[#3E1616] hover:bg-[#2A0F0F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md"
-              >
-                Reset All Filters
-              </button>
+              {activeFiltersCount > 0 ? (
+                <button
+                  onClick={handleClearAll}
+                  className="px-6 py-2.5 bg-[#3E1616] hover:bg-[#2A0F0F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
+                >
+                  Reset All Filters
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigateTo('/contact')}
+                  className="px-6 py-2.5 bg-[#3E1616] hover:bg-[#2A0F0F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
+                >
+                  Contact For Custom Jewellery
+                </button>
+              )}
             </div>
           ) : (
             <>

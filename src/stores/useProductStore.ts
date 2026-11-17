@@ -2,7 +2,13 @@ import { create } from 'zustand';
 import { Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/mockProducts';
 import { SUPPLIER_PRODUCT_DRAFTS } from '../data/supplierProductBatches';
-import { supplierPublicationError, isSameSupplierProduct, mergeMissingSupplierProducts } from '../utils/supplierProducts';
+import {
+  supplierPublicationError,
+  isSameSupplierProduct,
+  mergeMissingSupplierProducts,
+  isDemoProduct,
+  filterRetainedProducts,
+} from '../utils/supplierProducts';
 import { productApi } from '../services/productApi';
 
 interface ProductState {
@@ -37,25 +43,53 @@ interface ProductState {
   duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
-const STORAGE_KEY = 'guru_diamonds_products_v3';
+const STORAGE_KEY = 'guru_diamonds_products_v4';
+const LEGACY_STORAGE_KEYS = ['guru_diamonds_products_v3', 'guru_diamonds_products_v2', 'guru_diamonds_products_v1', 'vedaara_products_v1'];
 
 function loadLocalProducts(): Product[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return INITIAL_PRODUCTS;
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      for (const legacyKey of LEGACY_STORAGE_KEYS) {
+        const legacyVal = localStorage.getItem(legacyKey);
+        if (legacyVal) {
+          raw = legacyVal;
+          break;
+        }
+      }
+    }
+
+    // Clean up legacy keys
+    for (const legacyKey of LEGACY_STORAGE_KEYS) {
+      try {
+        localStorage.removeItem(legacyKey);
+      } catch {}
+    }
+
+    if (!raw) {
+      saveLocalProducts(INITIAL_PRODUCTS);
+      return INITIAL_PRODUCTS;
+    }
+
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return mergeMissingSupplierProducts(parsed, SUPPLIER_PRODUCT_DRAFTS);
+      // Strictly remove demo products from cached array while preserving admin edits to retained items
+      const cleanProducts = filterRetainedProducts(parsed);
+      const merged = mergeMissingSupplierProducts(cleanProducts, SUPPLIER_PRODUCT_DRAFTS);
+      saveLocalProducts(merged);
+      return merged;
     }
   } catch {
     // ignore parse error
   }
+  saveLocalProducts(INITIAL_PRODUCTS);
   return INITIAL_PRODUCTS;
 }
 
 function saveLocalProducts(prods: Product[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(prods));
+    const clean = filterRetainedProducts(prods);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
   } catch {
     // ignore quota error
   }
@@ -98,7 +132,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
   hydrateProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const serverProducts = await productApi.listProducts();
+      const rawServerProducts = await productApi.listProducts();
+      const serverProducts = filterRetainedProducts(rawServerProducts || []);
       if (serverProducts && serverProducts.length > 0) {
         const local = get().products;
         const localMap = new Map(local.map((p) => [p.id, p]));
@@ -117,17 +152,17 @@ export const useProductStore = create<ProductState>((set, get) => ({
         const serverIds = new Set(serverProducts.map((s) => s.id));
         const extraLocal = local.filter((l) => !serverIds.has(l.id)
           && (!l.supplierReview || !serverProducts.some((server) => isSameSupplierProduct(server, l))));
-        const finalProducts = [...merged, ...extraLocal];
+        const finalProducts = filterRetainedProducts([...merged, ...extraLocal]);
 
         saveLocalProducts(finalProducts);
         set({ products: finalProducts, loading: false });
       } else {
-        const fallback = get().products.length ? get().products : INITIAL_PRODUCTS;
+        const fallback = get().products.length ? filterRetainedProducts(get().products) : INITIAL_PRODUCTS;
         saveLocalProducts(fallback);
         set({ products: fallback, loading: false });
       }
     } catch (error) {
-      const fallback = get().products.length ? get().products : INITIAL_PRODUCTS;
+      const fallback = get().products.length ? filterRetainedProducts(get().products) : INITIAL_PRODUCTS;
       set({
         products: fallback,
         loading: false,

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { prisma } from '../backend/src/config/db';
+import { isDemoProduct } from '../src/utils/supplierProducts';
 
 const siteUrl = (process.env.SITE_URL || process.env.APP_URL || 'https://gurudiamonds.in').replace(/\/$/, '');
 const publicDir = path.resolve('dist');
@@ -29,10 +30,11 @@ async function generateSEO() {
   let categories: Array<{ name: string; slug: string; updatedAt: Date }> = [];
 
   try {
-    publishedProducts = await prisma.product.findMany({
+    const dbActiveProducts = await prisma.product.findMany({
       where: { status: 'ACTIVE' },
       select: { name: true, slug: true, updatedAt: true, images: true },
     });
+    publishedProducts = dbActiveProducts.filter((p) => !isDemoProduct(p.slug));
     categories = await prisma.category.findMany({
       select: { name: true, slug: true, updatedAt: true },
     });
