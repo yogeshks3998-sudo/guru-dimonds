@@ -5,6 +5,7 @@ import { toCategoryData, toCollectionData, toProductCreateData, toProductRespons
 import type { Category, Collection, Product } from '../../../src/types';
 import { requireRole } from '../middleware/auth';
 import { supplierPublicationError, isDemoProduct } from '../../../src/utils/supplierProducts';
+import { isCanonicalCategory } from '../../../src/utils/productFilters';
 import { SUPPLIER_PRODUCT_DRAFTS } from '../../../src/data/supplierProductBatches';
 
 function validateSupplierProduct(product: Product, previous?: Product) {
@@ -38,8 +39,9 @@ const toVariantCreateData = (variant: any): Record<string, any> => ({
 catalogRouter.get(
   '/categories',
   asyncHandler(async (_req, res) => {
-    const categories = await prisma.category.findMany({ orderBy: { name: 'asc' } });
-    res.json(categories);
+    const allCategories = await prisma.category.findMany({ orderBy: { name: 'asc' } });
+    const categories = allCategories.filter((c) => isCanonicalCategory(c));
+    res.json(categories.length > 0 ? categories : allCategories);
   })
 );
 

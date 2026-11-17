@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/useAuthStore';
 import { useMetalRateStore } from '../stores/useMetalRateStore';
 import { ProductCard } from '../components/storefront/ProductCard';
 import { calculateJewelleryPrice } from '../utils/pricing';
-import { isProductActive, productMatchesCategory } from '../utils/productFilters';
+import { isProductActive, productMatchesCategory, isCanonicalCategory } from '../utils/productFilters';
 import { isDemoProduct } from '../utils/supplierProducts';
 import { useCategoryStore } from '../stores/useCategoryStore';
 import { Product } from '../types';
@@ -105,13 +105,17 @@ export const ShopPage: React.FC = () => {
   };
 
   const activeCategories = useMemo(
-    () => categories.filter((c) => c.enabled !== false),
+    () => categories.filter((c) => c.enabled !== false && isCanonicalCategory(c)),
     [categories]
   );
 
-  // Dynamic product count for each category
+  // Dynamic product count for each category matching visible items
   const getCategoryCount = (categoryName: string) => {
-    return products.filter((p) => productMatchesCategory(p, categoryName)).length;
+    return products.filter((p) => {
+      if (isDemoProduct(p)) return false;
+      if (!isAdminLoggedIn && !isProductActive(p)) return false;
+      return productMatchesCategory(p, categoryName);
+    }).length;
   };
 
   // Toggle handlers for multi-select
