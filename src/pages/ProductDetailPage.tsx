@@ -1,4 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { Modal } from '../components/ui/Modal';
+import { SupplierPriceReview } from '../components/common/SupplierPriceReview';
+import { canPurchaseProduct } from '../utils/supplierProducts';
 import { Product, ProductVariant } from '../types';
 import { useProductStore } from '../stores/useProductStore';
 import { useMetalRateStore } from '../stores/useMetalRateStore';
@@ -71,6 +74,26 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
     return match || product.variants[0];
   }, [product?.variants, selectedAttributes]);
 
+  const [customEngraving, setCustomEngraving] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [pincodeMessage, setPincodeMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'certification' | 'reviews'>('description');
+  const [showPriceModal, setShowPriceModal] = useState(false);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
+  // Review Form state
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewAuthor, setReviewAuthor] = useState('');
+
+  // Hover-Based Detail Zoom Lens State
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
   if (!product || (!isActive && !isAdminLoggedIn)) {
     return (
       <div className="min-h-[65vh] flex items-center justify-center px-4 py-16 bg-[#FAF8F3]">
@@ -94,25 +117,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
       </div>
     );
   }
-  const [customEngraving, setCustomEngraving] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [pincodeMessage, setPincodeMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'certification' | 'reviews'>('description');
-  const [showPriceModal, setShowPriceModal] = useState(false);
-  const [showSizeGuide, setShowSizeGuide] = useState(false);
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-
-  // Review Form state
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewTitle, setReviewTitle] = useState('');
-  const [reviewComment, setReviewComment] = useState('');
-  const [reviewAuthor, setReviewAuthor] = useState('');
-
-  // Hover-Based Detail Zoom Lens State
-  const [isZooming, setIsZooming] = useState(false);
-  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const isWishlisted = isInWishlist(product.id);
   const isCompared = compareIds.includes(product.id);
@@ -151,6 +155,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   });
 
   const finalPrice = priceBreakdown.finalPrice;
+  const supplier = product.supplierReview;
+  const canPurchase = canPurchaseProduct(product);
 
   const handleAttributeChange = (attrName: string, optionValue: string) => {
     const newAttrs = { ...selectedAttributes, [attrName]: optionValue };
@@ -158,6 +164,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   };
 
   const handleAddToCart = () => {
+    if (!canPurchase) return;
     addItem({
       product,
       variant: selectedVariant,
@@ -183,7 +190,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   };
 
   const images = product.images && product.images.length > 0 ? product.images : [
-    'https://images.unsplash.com/photo-1611591475281-a120023a105f?auto=format&fit=crop&w=800&q=80'
+    '/images/product-placeholder.svg'
   ];
 
   return (
@@ -285,16 +292,26 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             <div className="flex items-center gap-4 text-xs pt-1">
               <div className="flex items-center gap-1 text-[#A67C32]">
                 <Star className="w-4 h-4 fill-current" />
-                <span className="font-bold text-[#1B1A18]">{product.rating}</span>
+                <span className="font-bold text-[#1B1A18]">{product.reviewCount ? product.rating : 'No reviews yet'}</span>
                 <span className="text-[#6F6A62]">({product.reviewCount} Patron Reviews)</span>
               </div>
               <span className="text-[#6F6A62]">|</span>
               <span className="text-[#2E7D5B] font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" /> 100% BIS Hallmarked {product.metalPurity}
+                <CheckCircle2 className="w-4 h-4" /> {product.hallmarked ? `Hallmark stated: ${product.metalPurity}` : supplier ? 'Hallmark not verified' : (product.certified ? (product.certificationAgency || 'Certified') : 'Handcrafted Authenticity')}
               </span>
             </div>
           </div>
 
+          {supplier && (
+            <div className="rounded-xl border border-[#D8C29D] bg-[#FAF8F3] p-4 text-sm space-y-2 break-words">
+              <strong>Draft — supplier information awaiting verification</strong>
+              <p>Price on enquiry. Purity, certificate evidence, warranty terms and GST remain unconfirmed.</p>
+              <p>{product.category === 'Rings' ? 'Custom ring sizing: enquire with the team; no ready-stock sizes are confirmed.' : 'Length: 28 inches (supplier statement).'}</p>
+              <button className="underline font-bold text-[#A67C32]" onClick={() => setShowPriceModal(true)}>Review supplier price breakdown</button>
+              <ul className="list-disc pl-5 text-xs text-[#6F6A62]">{supplier.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}</ul>
+            </div>
+          )}
+          {!supplier && <>
           {/* Pricing Box */}
           <div className="bg-gradient-to-br from-[#FAF8F3] to-[#FAF3E6] border border-[#D8C29D]/60 p-6 rounded-2xl space-y-3 shadow-sm">
             <div className="flex items-baseline justify-between">
@@ -343,7 +360,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             )}
             <div className="space-y-0.5">
               <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Hallmarking</span>
-              <span className="font-bold text-[#2E7D5B]">{product.hallmarkCenter || 'BIS HUID Verified'}</span>
+              <span className={`font-bold ${product.hallmarked ? 'text-[#2E7D5B]' : 'text-[#6F6A62]'}`}>{product.hallmarked ? (product.hallmarkCenter || 'BIS HUID Verified') : 'Pending Confirmation'}</span>
             </div>
             <div className="space-y-0.5">
               <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Lab Certification</span>
@@ -418,14 +435,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             {pincodeMessage && <p className="text-xs font-medium mt-1">{pincodeMessage}</p>}
           </div>
 
+</>}
           {/* Action Helper Bar: Size Guide & Compare */}
           <div className="flex items-center justify-between text-xs font-bold pt-1 border-t border-[#E7E1D7]">
             <button
+              disabled={!!supplier}
               onClick={() => setShowSizeGuide(true)}
-              className="text-[#7A1822] hover:underline flex items-center gap-1.5 p-1"
+              className="text-[#7A1822] hover:underline flex items-center gap-1.5 p-1 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Ruler className="w-4 h-4 text-[#B8893D]" />
-              <span>Royal Sizing & Fit Guide</span>
+              <span>{supplier ? (product.category === 'Rings' ? 'Custom sizing by enquiry' : 'Length: 28 inches') : 'Royal Sizing & Fit Guide'}</span>
             </button>
             <button
               onClick={() => toggleCompare(product.id)}
@@ -441,15 +460,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           {/* Primary Call-to-Actions */}
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <button
+              disabled={!canPurchase}
               onClick={handleAddToCart}
-              className="flex-1 py-4 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] text-xs font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
+              className="flex-1 py-4 bg-[#7A1822] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#4D1017] text-[#FFF9F0] text-xs font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
             >
               <ShoppingBag className="w-4 h-4 text-[#B8893D]" /> Add to Shopping Bag
             </button>
 
             <button
+              disabled={!canPurchase}
               onClick={handleBuyNow}
-              className="flex-1 py-4 bg-[#B8893D] hover:bg-[#966d2a] text-[#281C18] text-xs font-extrabold uppercase tracking-widest rounded-2xl transition-all shadow-xl"
+              className="flex-1 py-4 bg-[#B8893D] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#966d2a] text-[#281C18] text-xs font-extrabold uppercase tracking-widest rounded-2xl transition-all shadow-xl"
             >
               Buy Now (Insured Express)
             </button>
@@ -462,19 +483,21 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                 {product.metalPurity} {product.metalType}
               </span>
               <span className="text-sm font-extrabold text-[#7A1822]">
-                {formatINR(finalPrice)}
+                {supplier ? 'Price on enquiry' : formatINR(finalPrice)}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <button
+                disabled={!canPurchase}
                 onClick={handleAddToCart}
-                className="px-4 py-2.5 bg-[#7A1822] text-[#FFF9F0] text-xs font-bold rounded-xl uppercase tracking-wider flex items-center gap-1 shadow-md"
+                className="px-4 py-2.5 bg-[#7A1822] text-[#FFF9F0] text-xs font-bold rounded-xl uppercase tracking-wider flex items-center gap-1 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingBag className="w-3.5 h-3.5 text-[#B8893D]" /> Add
               </button>
               <button
+                disabled={!canPurchase}
                 onClick={handleBuyNow}
-                className="px-4 py-2.5 bg-[#B8893D] text-[#281C18] text-xs font-extrabold rounded-xl uppercase tracking-wider shadow-md"
+                className="px-4 py-2.5 bg-[#B8893D] text-[#281C18] text-xs font-extrabold rounded-xl uppercase tracking-wider shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Buy
               </button>
@@ -490,7 +513,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             rel="noopener noreferrer"
             className="w-full py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/30 text-xs font-bold rounded-2xl flex items-center justify-center gap-2 transition-colors"
           >
-            <MessageCircle className="w-4 h-4" /> Chat with Concierge on WhatsApp
+            <MessageCircle className="w-4 h-4" /> {supplier && product.category === 'Rings' ? 'Enquire about custom sizing & price' : 'Chat with Concierge on WhatsApp'}
           </a>
         </div>
       </div>
@@ -528,7 +551,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               activeTab === 'reviews' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
             }`}
           >
-            Patron Reviews ({product.reviewCount || 12})
+            Patron Reviews ({product.reviewCount || 0})
           </button>
         </div>
 
@@ -543,6 +566,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
 
         {activeTab === 'specs' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            {supplier && Object.entries(supplier.specifications).map(([key, value]) => (
+              <div key={key} className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                <span className="text-[#6F6A62]">{key}:</span>
+                <span className="font-bold">{value}</span>
+              </div>
+            ))}
+            {!supplier && <>
             <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
               <span className="text-[#6F6A62]">Product Category:</span>
               <span className="font-bold">{product.category}</span>
@@ -563,24 +593,43 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               <span className="text-[#6F6A62]">Return Eligibility:</span>
               <span className="font-bold text-[#2E7D5B]">{product.returnPolicyDays}-Day Easy Return Policy</span>
             </div>
+            {product.gemstones && product.gemstones.length > 0 && (
+              <>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Gemstone:</span>
+                  <span className="font-bold">{product.gemstones[0].type}</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Stone Weight & Count:</span>
+                  <span className="font-bold">{product.gemstones[0].weightCaratOrGrams} Carats ({product.gemstones[0].count} Stone)</span>
+                </div>
+                {product.gemstones[0].color && (
+                  <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                    <span className="text-[#6F6A62]">Stone Colour:</span>
+                    <span className="font-bold">{product.gemstones[0].color}</span>
+                  </div>
+                )}
+                {product.gemstones[0].clarity && (
+                  <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                    <span className="text-[#6F6A62]">Cut & Clarity:</span>
+                    <span className="font-bold">{product.gemstones[0].clarity}</span>
+                  </div>
+                )}
+              </>
+            )}
+            </>}
           </div>
         )}
 
         {activeTab === 'certification' && (
           <div className="space-y-3 text-xs text-[#6F6A62] leading-relaxed">
-            <p>
-              This creation is officially hallmarked by BIS (Bureau of Indian Standards) carrying the unique 6-digit HUID code.
-            </p>
-            <div className="p-4 bg-[#FAF3E6] border border-[#D8C29D] rounded-2xl flex items-center gap-3 text-[#1B1A18]">
-              <Award className="w-6 h-6 text-[#A67C32] shrink-0" />
-              <span>
-                Accompanying Lab Certificate: <strong>{product.certificationAgency || 'SGL Certified Lab Certificate'}</strong>.
-              </span>
-            </div>
+            <p>{product.hallmarked ? `Hallmark details: ${product.hallmarkCenter || 'Evidence details pending'}.` : 'No verified hallmark details are recorded for this product.'}</p>
+            <p>{product.certified ? `Certificate agency: ${product.certificationAgency || 'Details pending'}.` : supplier ? 'The seller claims certification availability. No product-specific certificate has been verified.' : 'No verified certificate is recorded for this product.'}</p>
           </div>
         )}
 
-        {activeTab === 'reviews' && (
+        {activeTab === 'reviews' && supplier && <p className="text-sm text-[#6F6A62]">No reviews yet.</p>}
+        {activeTab === 'reviews' && !supplier && (
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[#FFF9F0] border border-[#E9D9C5] rounded-2xl">
               <div>
@@ -754,8 +803,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
         </div>
       )}
 
+      {showPriceModal && supplier && (
+        <Modal isOpen onClose={() => setShowPriceModal(false)} title="Supplier price review">
+          <SupplierPriceReview review={supplier} />
+        </Modal>
+      )}
       {/* Formula Price Modal */}
-      {showPriceModal && (
+      {showPriceModal && !supplier && (
         <PriceBreakdownModal
           isOpen={showPriceModal}
           onClose={() => setShowPriceModal(false)}

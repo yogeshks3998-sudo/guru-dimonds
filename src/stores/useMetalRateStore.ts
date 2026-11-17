@@ -113,6 +113,7 @@ export const useMetalRateStore = create<MetalRateState>((set, get) => ({
   },
 
   getRate: (metal, purity) => {
+    if (purity === 'UNVERIFIED') return 0;
     // 1. Try to find published rate in active rates
     const record = get().rates.find((r) => r.metal === metal && r.purity === purity && r.status === 'PUBLISHED');
     if (record) return record.ratePerGram;

@@ -32,6 +32,7 @@ model JewelleryCollection {
 }
 
 model Product {
+  supplierReview      Json?
   id                  String           @id
   name                String
   slug                String           @unique

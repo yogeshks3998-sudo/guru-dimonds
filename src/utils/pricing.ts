@@ -7,6 +7,7 @@ export const PURITY_FACTORS: Record<MetalPurity, number> = {
   '14K': 14 / 24, // 0.5833
   '999': 1.0,
   '925': 0.925,
+  'UNVERIFIED': 0, // No tradable grade until supplier purity is verified.
   '950': 0.950,
 };
 

@@ -56,17 +56,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://gurudiamonds.in/product/vintage-filigree-navarathna-cocktail-ring</loc>
-    <image:image>
-      <image:loc>https://gurudiamonds.in/products/Rings/6/image_1.png</image:loc>
-      <image:title>Vintage Filigree Navarathna Cocktail Ring</image:title>
-    </image:image>
-    <image:image>
-      <image:loc>https://gurudiamonds.in/products/Rings/6/image_2.png</image:loc>
-      <image:title>Vintage Filigree Navarathna Cocktail Ring</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://gurudiamonds.in/product/classic-round-brilliant-solitaire-studs</loc>
     <image:image>
       <image:loc>https://gurudiamonds.in/products/Earrings/4/image_1.png</image:loc>
@@ -75,6 +64,17 @@
     <image:image>
       <image:loc>https://gurudiamonds.in/products/Earrings/4/image_2.png</image:loc>
       <image:title>Classic Round Brilliant Solitaire Studs</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gurudiamonds.in/product/vintage-filigree-navarathna-cocktail-ring</loc>
+    <image:image>
+      <image:loc>https://gurudiamonds.in/products/Rings/6/image_1.png</image:loc>
+      <image:title>Vintage Filigree Navarathna Cocktail Ring</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://gurudiamonds.in/products/Rings/6/image_2.png</image:loc>
+      <image:title>Vintage Filigree Navarathna Cocktail Ring</image:title>
     </image:image>
   </url>
   <url>
@@ -111,17 +111,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://gurudiamonds.in/product/sparkling-diamond-halo-stud-earrings</loc>
-    <image:image>
-      <image:loc>https://gurudiamonds.in/products/Earrings/2/image_1.png</image:loc>
-      <image:title>Sparkling Diamond Halo Stud Earrings</image:title>
-    </image:image>
-    <image:image>
-      <image:loc>https://gurudiamonds.in/products/Earrings/2/image_2.png</image:loc>
-      <image:title>Sparkling Diamond Halo Stud Earrings</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://gurudiamonds.in/product/princess-cut-statement-silver-ring</loc>
     <image:image>
       <image:loc>https://gurudiamonds.in/products/Rings/5/image_1.png</image:loc>
@@ -130,6 +119,17 @@
     <image:image>
       <image:loc>https://gurudiamonds.in/products/Rings/5/image_2.png</image:loc>
       <image:title>Princess Cut Statement Silver Ring</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gurudiamonds.in/product/sparkling-diamond-halo-stud-earrings</loc>
+    <image:image>
+      <image:loc>https://gurudiamonds.in/products/Earrings/2/image_1.png</image:loc>
+      <image:title>Sparkling Diamond Halo Stud Earrings</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://gurudiamonds.in/products/Earrings/2/image_2.png</image:loc>
+      <image:title>Sparkling Diamond Halo Stud Earrings</image:title>
     </image:image>
   </url>
   <url>

@@ -4,6 +4,19 @@ import { asyncHandler, HttpError } from '../utils/http';
 import { toCategoryData, toCollectionData, toProductCreateData, toProductResponse } from '../utils/serializers';
 import type { Category, Collection, Product } from '../../../src/types';
 import { requireRole } from '../middleware/auth';
+import { supplierPublicationError } from '../../../src/utils/supplierProducts';
+import { SILVER_COLLECTION_PRODUCTS } from '../../../src/data/silverCollectionProducts';
+
+function validateSupplierProduct(product: Product, previous?: Product) {
+  const original = SILVER_COLLECTION_PRODUCTS.find((p) => p.id === product.id || p.sku === product.sku);
+  const review = previous?.supplierReview || original?.supplierReview;
+  if (review && !product.supplierReview) throw new HttpError(400, 'Supplier review metadata must be retained.');
+  if (review && product.supplierReview) product.supplierReview.raw = review.raw;
+  if (product.status === 'ACTIVE' || product.status === 'SCHEDULED') {
+    const error = supplierPublicationError(product);
+    if (error) throw new HttpError(400, error);
+  }
+}
 
 export const catalogRouter = Router();
 
@@ -124,6 +137,7 @@ catalogRouter.post(
   requireRole('OWNER', 'PRODUCT_MANAGER'),
   asyncHandler(async (req, res) => {
     const product = req.body as Product;
+    validateSupplierProduct(product);
     const saved = await prisma.product.create({
       data: {
         ...toProductCreateData(product),
@@ -160,6 +174,7 @@ catalogRouter.put(
     }
 
     const product = { ...(req.body as Product), id };
+    validateSupplierProduct(product, existingProduct as unknown as Product);
     const incomingVariants = product.variants || [];
 
     // 1. Validation: Prevent duplicate SKUs within incoming variants

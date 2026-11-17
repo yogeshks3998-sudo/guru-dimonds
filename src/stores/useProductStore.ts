@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/mockProducts';
+import { SILVER_COLLECTION_PRODUCTS } from '../data/silverCollectionProducts';
+import { supplierPublicationError, isSameSupplierProduct, mergeMissingSupplierProducts } from '../utils/supplierProducts';
 import { productApi } from '../services/productApi';
 
 interface ProductState {
@@ -35,7 +37,7 @@ interface ProductState {
   duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
-const STORAGE_KEY = 'guru_diamonds_products_v2';
+const STORAGE_KEY = 'guru_diamonds_products_v3';
 
 function loadLocalProducts(): Product[] {
   try {
@@ -43,7 +45,7 @@ function loadLocalProducts(): Product[] {
     if (!raw) return INITIAL_PRODUCTS;
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+      return mergeMissingSupplierProducts(parsed, SILVER_COLLECTION_PRODUCTS);
     }
   } catch {
     // ignore parse error
@@ -113,7 +115,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
         // Retain any locally added products not on server
         const serverIds = new Set(serverProducts.map((s) => s.id));
-        const extraLocal = local.filter((l) => !serverIds.has(l.id));
+        const extraLocal = local.filter((l) => !serverIds.has(l.id)
+          && (!l.supplierReview || !serverProducts.some((server) => isSameSupplierProduct(server, l))));
         const finalProducts = [...merged, ...extraLocal];
 
         saveLocalProducts(finalProducts);
@@ -153,6 +156,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
     const nextProduct = get().products.find((p) => p.id === id);
     if (!nextProduct) throw new Error('Product not found');
     const merged: Product = { ...nextProduct, ...updatedFields, updatedAt: new Date().toISOString() };
+    if (nextProduct.supplierReview) {
+      merged.supplierReview = { ...(updatedFields.supplierReview || nextProduct.supplierReview), raw: nextProduct.supplierReview.raw };
+    }
+    if (merged.status === 'ACTIVE' || merged.status === 'SCHEDULED') {
+      const error = supplierPublicationError(merged);
+      if (error) throw new Error(error);
+    }
 
     // Synchronize variant pricing and weights so variants don't retain stale disconnected values
     if (merged.variants && merged.variants.length > 0) {

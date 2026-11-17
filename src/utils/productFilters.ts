@@ -1,4 +1,5 @@
 import type { Product } from '../types';
+import { supplierPublicationError } from './supplierProducts';
 
 const normalize = (value?: string | null) =>
   (value || '')
@@ -118,7 +119,7 @@ export function productMatchesCategory(product: Product, selectedCategory: strin
 
 export function isProductActive(product?: Product | null): boolean {
   if (!product) return false;
-  if (product.enabled === false) return false;
+  if (product.enabled === false || supplierPublicationError(product)) return false;
   if (product.status === 'HIDDEN' || product.status === 'DRAFT' || product.status === 'ARCHIVED') return false;
   return true;
 }

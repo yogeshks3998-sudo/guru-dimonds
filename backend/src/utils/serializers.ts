@@ -17,6 +17,7 @@ type ProductRecord = Product & {
 
 export const toProductCreateData = (product: Product): Record<string, any> => ({
   id: product.id,
+  supplierReview: product.supplierReview,
   name: product.name,
   slug: product.slug,
   sku: product.sku,

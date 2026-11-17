@@ -11,8 +11,6 @@ import {
   X,
   Search,
   RotateCcw,
-  LayoutGrid,
-  List,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -90,7 +88,6 @@ export const ShopPage: React.FC = () => {
   });
 
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
 
   // Sync selectedCategory from URL or global store
@@ -403,7 +400,7 @@ export const ShopPage: React.FC = () => {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => setFilterDrawerOpen(!filterDrawerOpen)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#FAF8F3] hover:bg-[#FAF3E6] border border-[#E7E1D7] text-[#1B1A18] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#FAF8F3] hover:bg-[#FAF3E6] border border-[#E7E1D7] text-[#1B1A18] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors lg:hidden"
           >
             <SlidersHorizontal className="w-4 h-4 text-[#A67C32]" />
             <span>Filters</span>
@@ -428,22 +425,7 @@ export const ShopPage: React.FC = () => {
           </span>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-[#6F6A62] absolute left-3 top-2.5" />
-          <input
-            type="text"
-            placeholder="Search silver rings, maalas, gemstones..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1B1A18] focus:outline-none focus:border-[#A67C32]"
-          />
-        </div>
-
-        {/* Sorting Dropdown & View Mode */}
+        {/* Sorting Dropdown */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
           <select
             value={sortBy}
@@ -459,23 +441,6 @@ export const ShopPage: React.FC = () => {
             <option value="PRICE_HIGH_LOW">Sort by: Price (High to Low)</option>
             <option value="RATING">Sort by: Highest Rated</option>
           </select>
-
-          <div className="flex items-center border border-[#E7E1D7] rounded-xl overflow-hidden bg-[#FAF8F3]">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-[#3E1616] text-white' : 'text-[#6F6A62]'}`}
-              title="Grid View"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-[#3E1616] text-white' : 'text-[#6F6A62]'}`}
-              title="List View"
-            >
-              <List className="w-4 h-4" />
-            </button>
-          </div>
         </div>
       </div>
 
@@ -552,14 +517,23 @@ export const ShopPage: React.FC = () => {
 
       {/* Main Grid + Filter Sidebar Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start relative">
-        {/* Filter Sidebar (Desktop Sticky / Mobile toggleable) - Exactly matching Image 1 */}
+        {/* Mobile Filter Drawer Backdrop */}
+        {filterDrawerOpen && (
+          <div
+            onClick={() => setFilterDrawerOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 lg:hidden"
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Filter Sidebar (Desktop Sticky / Mobile toggleable) */}
         <aside
           className={`${filterDrawerOpen
-              ? 'fixed inset-x-4 top-20 z-50 max-h-[90vh] overflow-y-auto lg:static lg:inset-auto lg:top-auto lg:z-auto lg:max-h-none'
+              ? 'fixed inset-x-4 top-20 z-50 max-h-[85vh] overflow-y-auto lg:z-auto'
               : 'hidden lg:block'
-            } lg:col-span-1 self-start`}
+            } lg:col-span-1 lg:sticky lg:top-32 self-start`}
         >
-          <div className="bg-white border border-[#E7E1D7] rounded-2xl p-5 sm:p-6 space-y-5 shadow-xs">
+          <div className="bg-white border border-[#E7E1D7] rounded-2xl p-5 sm:p-6 space-y-5 shadow-xs lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto overscroll-contain">
             {/* Header: Filters & Clear All */}
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E1D7]">
               <h3 className="font-serif font-bold text-lg text-[#1B1A18]">Filters</h3>
@@ -825,10 +799,7 @@ export const ShopPage: React.FC = () => {
           ) : (
             <>
               {/* Product Cards Grid */}
-              <div
-                className={`grid gap-3 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
-                  }`}
-              >
+              <div className="grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
                 {paginatedProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

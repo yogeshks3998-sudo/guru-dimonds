@@ -1,59 +1,70 @@
 import { Product } from '../types';
+import { SILVER_COLLECTION_PRODUCTS } from './silverCollectionProducts';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
     "id": "prod-ring-1",
-    "name": "Royal Navarathna Silver Solitaire Ring",
-    "slug": "royal-navarathna-silver-solitaire-ring",
-    "sku": "GURU-RNG-001",
-    "shortDescription": "Royal Navarathna Silver Solitaire Ring handcrafted in pure 925 sterling silver with certified authenticity.",
-    "description": "Exquisitely crafted by Guru Diamonds master artisans, the Royal Navarathna Silver Solitaire Ring features genuine materials, 100% BIS Hallmarking, and supreme attention to detail. Perfect for weddings, gifting, pujas, and daily elegance.",
+    "name": "Royal Gomedhika Hessonite Gemstone Ring",
+    "slug": "royal-gomedhika-gemstone-ring",
+    "sku": "GURU-RNG-GOM-001",
+    "shortDescription": "An elegant Gomedhika gemstone ring featuring a deep brown oval-cut centre stone, complemented by intricate vintage-inspired silver-tone detailing.",
+    "description": "Discover timeless craftsmanship with this Royal Gomedhika Gemstone Ring from Guru Diamonds. Featuring a striking oval-cut Gomedhika gemstone at its centre, this ring showcases a rich, deep brown appearance with distinctive natural-looking variations.\n\nThe centre gemstone is surrounded by a beautifully crafted raised metal setting, while the shoulders feature intricate traditional floral and ornamental engravings that enhance its vintage character.\n\nDesigned for those who appreciate traditional gemstone jewellery, this statement ring combines distinctive detailing with a bold and elegant appearance.\n\nA beautiful addition to traditional jewellery collections and a thoughtful choice for special occasions.",
     "category": "Rings",
-    "subcategory": "Gemstone silver rings",
-    "collection": "Heritage Elegance",
+    "subcategory": "Gemstone Rings",
+    "collection": "Traditional Gemstone Collection",
     "tags": [
       "rings",
-      "925 silver",
-      "hallmarked",
+      "gomedhika",
+      "hessonite garnet",
+      "silver gemstone ring",
+      "traditional gemstone",
       "guru diamonds"
     ],
     "gender": "Unisex",
     "occasion": [
-      "Festive",
-      "Party",
-      "Wedding",
+      "Traditional Wear",
+      "Festive Wear",
       "Daily Wear"
     ],
     "images": [
-      "/products/Rings/1/image_1.png",
-      "/products/Rings/1/image_2.png"
+      "/products/Rings/gomedhika/image_1.png",
+      "/products/Rings/gomedhika/image_2.png"
     ],
     "metalType": "SILVER",
     "metalPurity": "925",
-    "metalColor": "White",
-    "grossWeightGrams": 5.8,
-    "netWeightGrams": 4.9,
-    "gemstones": [],
-    "hallmarked": true,
-    "hallmarkCenter": "BIS Certified Hub",
-    "certified": true,
-    "certificationAgency": "SGL / BIS Lab Certified",
-    "pricingMode": "RATE_LINKED",
-    "fixedPrice": 4850,
-    "compareAtPrice": 5723,
+    "metalColor": "Oxidized",
+    "grossWeightGrams": 14.4,
+    "netWeightGrams": 13.4,
+    "gemstones": [
+      {
+        "type": "Gomedhika (Hessonite Garnet)",
+        "weightCaratOrGrams": 5,
+        "color": "Deep Brown",
+        "clarity": "Faceted Natural Variations",
+        "count": 1,
+        "totalPrice": 1750,
+        "certified": false
+      }
+    ],
+    "hallmarked": false,
+    "hallmarkCenter": "Pending Client Confirmation",
+    "certified": false,
+    "certificationAgency": "Laboratory Verification Pending",
+    "pricingMode": "FIXED",
+    "fixedPrice": 5230,
+    "compareAtPrice": 6200,
     "makingChargeType": "FIXED",
-    "makingChargeValue": 582,
-    "wastagePercentage": 2,
-    "certificationCharge": 350,
-    "packagingCharge": 150,
+    "makingChargeValue": 800,
+    "wastagePercentage": 0,
+    "certificationCharge": 0,
+    "packagingCharge": 0,
     "gstPercentage": 3,
-    "totalStock": 15,
+    "totalStock": 10,
     "hasVariants": true,
     "variantAttributes": [
       {
         "name": "Ring Size",
         "options": [
-          "10",
           "12",
           "14",
           "16",
@@ -64,139 +75,117 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
     "variants": [
       {
-        "id": "prod-ring-1-sz10",
-        "sku": "GURU-RNG-001-SZ10",
-        "barcode": "890858072307",
-        "attributes": {
-          "Ring Size": "10"
-        },
-        "price": 4850,
-        "compareAtPrice": 5723,
-        "netWeightGrams": 4.9,
-        "grossWeightGrams": 5.8,
-        "stock": 5,
-        "images": [
-          "/products/Rings/1/image_1.png",
-          "/products/Rings/1/image_2.png"
-        ],
-        "enabled": true,
-        "dispatchTimeDays": 2
-      },
-      {
         "id": "prod-ring-1-sz12",
-        "sku": "GURU-RNG-001-SZ12",
-        "barcode": "890480521380",
+        "sku": "GURU-RNG-GOM-001-SZ12",
+        "barcode": "890858072301",
         "attributes": {
           "Ring Size": "12"
         },
-        "price": 4850,
-        "compareAtPrice": 5723,
-        "netWeightGrams": 4.9,
-        "grossWeightGrams": 5.8,
-        "stock": 5,
+        "price": 5230,
+        "compareAtPrice": 6200,
+        "netWeightGrams": 13.4,
+        "grossWeightGrams": 14.4,
+        "stock": 2,
         "images": [
-          "/products/Rings/1/image_1.png",
-          "/products/Rings/1/image_2.png"
+          "/products/Rings/gomedhika/image_1.png",
+          "/products/Rings/gomedhika/image_2.png"
         ],
         "enabled": true,
-        "dispatchTimeDays": 2
+        "dispatchTimeDays": 7
       },
       {
         "id": "prod-ring-1-sz14",
-        "sku": "GURU-RNG-001-SZ14",
-        "barcode": "890274276052",
+        "sku": "GURU-RNG-GOM-001-SZ14",
+        "barcode": "890858072302",
         "attributes": {
           "Ring Size": "14"
         },
-        "price": 4850,
-        "compareAtPrice": 5723,
-        "netWeightGrams": 4.9,
-        "grossWeightGrams": 5.8,
-        "stock": 5,
+        "price": 5230,
+        "compareAtPrice": 6200,
+        "netWeightGrams": 13.4,
+        "grossWeightGrams": 14.4,
+        "stock": 2,
         "images": [
-          "/products/Rings/1/image_1.png",
-          "/products/Rings/1/image_2.png"
+          "/products/Rings/gomedhika/image_1.png",
+          "/products/Rings/gomedhika/image_2.png"
         ],
         "enabled": true,
-        "dispatchTimeDays": 2
+        "dispatchTimeDays": 7
       },
       {
         "id": "prod-ring-1-sz16",
-        "sku": "GURU-RNG-001-SZ16",
-        "barcode": "890113529316",
+        "sku": "GURU-RNG-GOM-001-SZ16",
+        "barcode": "890858072303",
         "attributes": {
           "Ring Size": "16"
         },
-        "price": 4850,
-        "compareAtPrice": 5723,
-        "netWeightGrams": 4.9,
-        "grossWeightGrams": 5.8,
-        "stock": 5,
+        "price": 5230,
+        "compareAtPrice": 6200,
+        "netWeightGrams": 13.4,
+        "grossWeightGrams": 14.4,
+        "stock": 2,
         "images": [
-          "/products/Rings/1/image_1.png",
-          "/products/Rings/1/image_2.png"
+          "/products/Rings/gomedhika/image_1.png",
+          "/products/Rings/gomedhika/image_2.png"
         ],
         "enabled": true,
-        "dispatchTimeDays": 2
+        "dispatchTimeDays": 7
       },
       {
         "id": "prod-ring-1-sz18",
-        "sku": "GURU-RNG-001-SZ18",
-        "barcode": "890851707627",
+        "sku": "GURU-RNG-GOM-001-SZ18",
+        "barcode": "890858072304",
         "attributes": {
           "Ring Size": "18"
         },
-        "price": 4850,
-        "compareAtPrice": 5723,
-        "netWeightGrams": 4.9,
-        "grossWeightGrams": 5.8,
-        "stock": 5,
+        "price": 5230,
+        "compareAtPrice": 6200,
+        "netWeightGrams": 13.4,
+        "grossWeightGrams": 14.4,
+        "stock": 2,
         "images": [
-          "/products/Rings/1/image_1.png",
-          "/products/Rings/1/image_2.png"
+          "/products/Rings/gomedhika/image_1.png",
+          "/products/Rings/gomedhika/image_2.png"
         ],
         "enabled": true,
-        "dispatchTimeDays": 2
+        "dispatchTimeDays": 7
       },
       {
         "id": "prod-ring-1-sz20",
-        "sku": "GURU-RNG-001-SZ20",
-        "barcode": "890311351945",
+        "sku": "GURU-RNG-GOM-001-SZ20",
+        "barcode": "890858072305",
         "attributes": {
           "Ring Size": "20"
         },
-        "price": 4850,
-        "compareAtPrice": 5723,
-        "netWeightGrams": 4.9,
-        "grossWeightGrams": 5.8,
-        "stock": 5,
+        "price": 5230,
+        "compareAtPrice": 6200,
+        "netWeightGrams": 13.4,
+        "grossWeightGrams": 14.4,
+        "stock": 2,
         "images": [
-          "/products/Rings/1/image_1.png",
-          "/products/Rings/1/image_2.png"
+          "/products/Rings/gomedhika/image_1.png",
+          "/products/Rings/gomedhika/image_2.png"
         ],
         "enabled": true,
-        "dispatchTimeDays": 2
+        "dispatchTimeDays": 7
       }
     ],
-    "lowStockThreshold": 3,
-    "readyToShip": true,
-    "dispatchDays": 2,
+    "lowStockThreshold": 2,
+    "readyToShip": false,
+    "dispatchDays": 7,
     "returnEligible": true,
     "returnPolicyDays": 7,
     "codAvailable": true,
     "badges": [
-      "NEW",
-      "HALLMARKED",
-      "CERTIFIED",
-      "BEST_SELLER"
+      "NEW"
     ],
-    "rating": 4.8999999999999995,
-    "reviewCount": 20,
+    "rating": 5,
+    "reviewCount": 1,
     "status": "ACTIVE",
-    "createdAt": "2026-09-07T09:50:57.276Z",
-    "updatedAt": "2026-09-07T09:50:57.277Z",
-    "seoTitle": "Royal Navarathna Silver Solitaire Ring | Guru Diamonds Official",
-    "seoDescription": "Buy genuine Royal Navarathna Silver Solitaire Ring online at Guru Diamonds with 100% BIS Hallmarking & Free Insured Express Delivery across India."
+    "createdAt": "2026-11-03T08:00:00.000Z",
+    "updatedAt": "2026-11-03T08:00:00.000Z",
+    "seoTitle": "Royal Gomedhika Gemstone Ring | Guru Diamonds",
+    "seoDescription": "Explore the Royal Gomedhika Ring by Guru Diamonds, featuring a deep brown oval gemstone and intricate traditional detailing."
   },
   {
     "id": "prod-ring-2",
@@ -6486,5 +6475,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     "updatedAt": "2026-09-07T09:50:57.278Z",
     "seoTitle": "Sacred Shivling with Nandi Shrine Temple Idol | Guru Diamonds Official",
     "seoDescription": "Buy genuine Sacred Shivling with Nandi Shrine Temple Idol online at Guru Diamonds with 100% BIS Hallmarking & Free Insured Express Delivery across India."
-  }
+  },
+  ...SILVER_COLLECTION_PRODUCTS
 ];

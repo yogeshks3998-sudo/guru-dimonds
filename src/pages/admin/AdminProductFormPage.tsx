@@ -1,3 +1,4 @@
+import { supplierPublicationError } from '../../utils/supplierProducts';
 import React, { useState } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { useProductStore } from '../../stores/useProductStore';
@@ -100,7 +101,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
       tags: [],
       rating: 0,
       reviewCount: 0,
-      status: 'ACTIVE',
+      status: 'DRAFT',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -150,7 +151,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
 
   const handleRemoveImage = (index: number) => {
     const currentImages = formData.images || [];
-    if (currentImages.length <= 1) {
+    if (currentImages.length <= 1 && formData.status !== 'DRAFT') {
       return alert('Product must have at least one media image.');
     }
     const updated = currentImages.filter((_, i) => i !== index);
@@ -215,7 +216,11 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
     e.preventDefault();
     if (!formData.name) return alert('Please enter product name.');
     if (!formData.sku) return alert('Please enter SKU number.');
-    if (!formData.images?.length) return alert('Please upload at least one product image.');
+    if (formData.status !== 'DRAFT' && !formData.images?.length) return alert('Please upload at least one product image before publication.');
+    if (formData.status === 'ACTIVE' || formData.status === 'SCHEDULED') {
+      const error = supplierPublicationError(formData as Product);
+      if (error) return alert(error);
+    }
 
     const finalSlug = formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
@@ -396,6 +401,44 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
               </div>
             </div>
 
+            {formData.supplierReview && (
+              <section className="rounded-xl border border-[#D8C29D] p-4 space-y-3 break-words bg-[#FAF8F3]" aria-label="Supplier verification">
+                <h3 className="font-bold text-base text-[#1B1A18]">Supplier verification — {formData.supplierReview.state}</h3>
+                <p className="text-xs text-[#6F6A62]">Unpublished enquiry record. Zero tax and logistics fields are draft sentinels, not confirmed commercial terms. Colour is unconfirmed. For an inclusive quotation, enter the pre-GST base in Fixed Price Before GST; the pricing calculator adds GST.</p>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-xs text-[#7A1822]">Unresolved Discrepancies</h4>
+                  <ul className="list-disc pl-5 text-xs text-[#7A1822] space-y-0.5">{formData.supplierReview.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-xs text-[#B8893D]">Pending confirmation</h4>
+                  <ul className="list-disc pl-5 text-xs text-[#6F6A62] space-y-0.5">{formData.supplierReview.pendingFields.map((field) => <li key={field}>{field}</li>)}</ul>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-xs text-[#1B1A18]">Supplier pricing (unapproved; GST unknown)</h4>
+                  <dl className="text-xs space-y-1 bg-white p-3 rounded-lg border border-[#E7E1D7]">{Object.entries(formData.supplierReview.pricing).map(([key, value]) => <div key={key} className="flex flex-wrap justify-between gap-2 border-b border-dashed border-[#E7E1D7] pb-1"><dt className="font-medium text-[#6F6A62]">{key}:</dt><dd className="font-mono font-bold text-[#1B1A18]">{value === null ? 'Unknown' : String(value)}</dd></div>)}</dl>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-xs text-[#1B1A18]">Technical specifications</h4>
+                  <dl className="text-xs space-y-1 bg-white p-3 rounded-lg border border-[#E7E1D7]">{Object.entries(formData.supplierReview.specifications).map(([key, value]) => <div key={key} className="flex justify-between py-1 border-b border-dashed border-[#E7E1D7]"><dt className="font-bold text-[#6F6A62]">{key}:</dt><dd className="text-[#1B1A18]">{value}</dd></div>)}</dl>
+                </div>
+                <label className="block font-bold text-xs text-[#1B1A18]">Resolution notes
+                  <textarea className="block w-full min-h-24 border border-[#E7E1D7] bg-white rounded-lg p-2 text-xs mt-1" value={formData.supplierReview.resolutionNotes} onChange={(e) => setFormData({ ...formData, supplierReview: { ...formData.supplierReview!, resolutionNotes: e.target.value } })} />
+                </label>
+                <details className="text-xs bg-white p-3 rounded-lg border border-[#E7E1D7]"><summary className="font-bold cursor-pointer text-[#6F6A62]">Original supplier values (preserved)</summary><pre className="whitespace-pre-wrap break-words text-[11px] mt-2 text-[#6F6A62]">{JSON.stringify(formData.supplierReview.raw, null, 2)}</pre></details>
+                <details className="space-y-3 text-xs bg-white p-3 rounded-lg border border-[#E7E1D7]"><summary className="font-bold cursor-pointer text-[#1B1A18]">Verify and resolve supplier details</summary>
+                  <p className="text-[#6F6A62]">Keep the original values above. Update the product fields to verified values, document your evidence, then clear only the issues that have been resolved.</p>
+                  {(['issues', 'pendingFields', 'highlights'] as const).map((field) => <label className="block font-semibold text-[#1B1A18]" key={field}>{field}
+                    <textarea className="block w-full min-h-20 border border-[#E7E1D7] rounded-lg p-2 font-normal mt-1" value={formData.supplierReview![field].join('\n')} onChange={(e) => setFormData({ ...formData, supplierReview: { ...formData.supplierReview!, [field]: e.target.value.split('\n').filter(Boolean) } })} />
+                  </label>)}
+                  {Object.entries(formData.supplierReview.specifications).map(([key, value]) => <label key={key} className="block font-semibold text-[#1B1A18]">{key}<input className="block w-full border border-[#E7E1D7] rounded-lg p-2 font-normal mt-1" value={value} onChange={(e) => setFormData({ ...formData, supplierReview: { ...formData.supplierReview!, specifications: { ...formData.supplierReview!.specifications, [key]: e.target.value } } })} /></label>)}
+                  <label className="block font-semibold text-[#1B1A18]">Tax basis<select className="block border border-[#E7E1D7] rounded-lg p-2 mt-1 w-full" value={formData.supplierReview.pricing.gstBasis} onChange={(e) => setFormData({ ...formData, supplierReview: { ...formData.supplierReview!, pricing: { ...formData.supplierReview!.pricing, gstBasis: e.target.value as 'UNKNOWN' | 'INCLUSIVE' | 'EXCLUSIVE' } } })}><option value="UNKNOWN">Unknown</option><option value="INCLUSIVE">Inclusive in supplier quotation</option><option value="EXCLUSIVE">Exclusive in supplier quotation</option></select></label>
+                  {(['gstPercentage', 'gstAmount'] as const).map((key) => <label className="block font-semibold text-[#1B1A18]" key={key}>{key}<input type="number" min="0" step="0.01" className="block border border-[#E7E1D7] rounded-lg p-2 mt-1 w-full" value={formData.supplierReview!.pricing[key] ?? ''} onChange={(e) => setFormData({ ...formData, supplierReview: { ...formData.supplierReview!, pricing: { ...formData.supplierReview!.pricing, [key]: e.target.value === '' ? null : Number(e.target.value) } } })} /></label>)}
+                  <label className="block font-semibold text-[#1B1A18]">Review decision<select className="block border border-[#E7E1D7] rounded-lg p-2 mt-1 w-full" value={formData.supplierReview.state} onChange={(e) => setFormData({ ...formData, supplierReview: { ...formData.supplierReview!, state: e.target.value as 'PENDING' | 'APPROVED' } })}><option value="PENDING">Pending verification</option><option value="APPROVED">Verified and approved</option></select></label>
+                  <p className="text-[#6F6A62] italic">Customised products remain enquiry-only. Do not enable a purchase flow until sizing, stock and tax are verified.</p>
+                </details>
+              </section>
+            )}
+
             {/* Metal & Weight Parameters */}
             <div className="space-y-4 pt-4 border-t border-[#E7E1D7]">
               <h3 className="font-serif font-bold text-base text-[#1B1A18] border-b border-[#E7E1D7] pb-2">
@@ -429,6 +472,7 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                     <option value="14K">14K (585)</option>
                     <option value="999">999 Pure Silver</option>
                     <option value="925">925 Sterling Silver</option>
+                    <option value="UNVERIFIED">Unverified supplier purity (92)</option>
                   </select>
                 </div>
 
@@ -898,6 +942,12 @@ export const AdminProductFormPage: React.FC<AdminProductFormPageProps> = ({ prod
                   {formData.pricingMode}
                 </span>
               </div>
+
+              {formData.supplierReview && (
+                <p className="font-bold text-[#A67C32] text-xs bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+                  Simulation only — not an approved quotation. Supplier price, purity and GST need review.
+                </p>
+              )}
 
               <div className="space-y-2.5 bg-white p-4 rounded-xl border border-[#D8C29D] text-xs">
                 <div className="flex justify-between text-[#6F6A62]">

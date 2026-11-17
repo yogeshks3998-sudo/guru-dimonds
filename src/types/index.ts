@@ -1,7 +1,7 @@
 export type MetalType = 'GOLD' | 'SILVER' | 'PLATINUM' | 'DIAMOND';
 
 export type GoldPurity = '24K' | '22K' | '18K' | '14K';
-export type SilverPurity = '999' | '925';
+export type SilverPurity = '999' | '925' | 'UNVERIFIED';
 export type MetalPurity = GoldPurity | SilverPurity | '950'; // Platinum 950
 
 export interface MetalRate {
@@ -74,7 +74,35 @@ export interface ProductVariant {
   dispatchTimeDays: number;
 }
 
+/** Supplier statements are not verification evidence or approved retail prices. */
+export interface SupplierReview {
+  batch: string;
+  state: 'PENDING' | 'APPROVED';
+  raw: Record<string, string | number | null | string[]>;
+  issues: string[];
+  pendingFields: string[];
+  specifications: Record<string, string>;
+  highlights: string[];
+  pricing: {
+    suppliedMetalRate: number;
+    suppliedMetalValue: number;
+    calculatedMetalValue: number | null;
+    stoneOrBeadValue: number;
+    makingCharges: number;
+    suppliedComponentSubtotal: number;
+    weightBasedComponentSubtotal: number | null;
+    suppliedSellingPrice: number | null;
+    possibleSourceIntendedPrice?: number;
+    gstBasis: 'UNKNOWN' | 'INCLUSIVE' | 'EXCLUSIVE';
+    gstPercentage: number | null;
+    gstAmount: number | null;
+  };
+  purchaseMode: 'ENQUIRY' | 'STANDARD';
+  resolutionNotes: string;
+}
+
 export interface Product {
+  supplierReview?: SupplierReview;
   id: string;
   name: string;
   slug: string;
@@ -93,7 +121,7 @@ export interface Product {
   // Jewellery technical parameters
   metalType: MetalType;
   metalPurity: MetalPurity;
-  metalColor: 'Yellow' | 'Rose' | 'White' | 'Oxidized' | 'Dual Tone';
+  metalColor: 'Yellow' | 'Rose' | 'White' | 'Oxidized' | 'Dual Tone' | 'UNVERIFIED';
   grossWeightGrams: number;
   netWeightGrams: number;
   gemstones: GemstoneInfo[];

@@ -1,3 +1,4 @@
+import { canPurchaseProduct } from '../../../src/utils/supplierProducts';
 import type { Address, Order, OrderItem } from '../../../src/types';
 import { calculateJewelleryPrice } from '../../../src/utils/pricing';
 import { HttpError } from './http';
@@ -146,7 +147,7 @@ export const calculateCheckout = async (tx: any, input: CheckoutInput) => {
 
   for (const item of input.items) {
     const product = productsById.get(item.productId);
-    if (!product || product.status !== 'ACTIVE') {
+    if (!product || !canPurchaseProduct(product as any)) {
       throw new HttpError(400, `Product ${item.productId} is no longer available`);
     }
 

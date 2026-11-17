@@ -1,4 +1,6 @@
 import React from 'react';
+import { isProductActive } from '../utils/productFilters';
+import { useAuthStore } from '../stores/useAuthStore';
 import { useWishlistStore } from '../stores/useWishlistStore';
 import { useProductStore } from '../stores/useProductStore';
 import { ProductCard } from '../components/storefront/ProductCard';
@@ -8,8 +10,9 @@ import { Heart, Trash2 } from 'lucide-react';
 export const WishlistPage: React.FC = () => {
   const { wishlistIds, clearWishlist } = useWishlistStore();
   const { products } = useProductStore();
+  const { isAdminLoggedIn } = useAuthStore();
 
-  const wishlistedProducts = products.filter((p) => wishlistIds.includes(p.id));
+  const wishlistedProducts = products.filter((p) => wishlistIds.includes(p.id) && (isAdminLoggedIn || isProductActive(p)));
 
   return (
     <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">

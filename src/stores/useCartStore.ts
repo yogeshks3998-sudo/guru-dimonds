@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { canPurchaseProduct } from '../utils/supplierProducts';
 import { CartItem, Product, ProductVariant, Coupon } from '../types';
 import { calculateJewelleryPrice } from '../utils/pricing';
 import { useMetalRateStore } from './useMetalRateStore';
@@ -125,6 +126,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   addItem: ({ product, variant, selectedAttributes = {}, quantity = 1, customEngraving, giftWrap = false, giftMessage }) => {
+    if (!canPurchaseProduct(product)) return;
     const metalRates = useMetalRateStore.getState();
     const currentRate = metalRates.getRate(product.metalType, product.metalPurity);
 
