@@ -7,6 +7,7 @@ import { requireRole } from '../middleware/auth';
 import { supplierPublicationError, isDemoProduct } from '../../../src/utils/supplierProducts';
 import { isCanonicalCategory } from '../../../src/utils/productFilters';
 import { SUPPLIER_PRODUCT_DRAFTS } from '../../../src/data/supplierProductBatches';
+import { INITIAL_PRODUCTS } from '../../../src/data/mockProducts';
 
 function validateSupplierProduct(product: Product, previous?: Product) {
   const original = SUPPLIER_PRODUCT_DRAFTS.find((p) => p.id === product.id || p.sku === product.sku);
@@ -135,6 +136,24 @@ catalogRouter.get(
       .filter((p) => !isDemoProduct(p.id) && !isDemoProduct(p.sku) && p.status !== 'ARCHIVED')
       .map((product) => toProductResponse(product as unknown as Product));
 
+    if (sanitized.length === 0) {
+      let filtered = [...INITIAL_PRODUCTS];
+      if (category) {
+        filtered = filtered.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+      }
+      if (search) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(
+          (p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
+        );
+      }
+      if (status) {
+        filtered = filtered.filter((p) => p.status === status);
+      }
+      res.json(filtered);
+      return;
+    }
+
     res.json(sanitized);
   })
 );
@@ -165,6 +184,11 @@ catalogRouter.get(
     }
 
     if (!product || isDemoProduct(product.id) || isDemoProduct(product.sku) || product.status === 'ARCHIVED') {
+      const fallback = INITIAL_PRODUCTS.find((p) => p.slug === slug);
+      if (fallback) {
+        res.json(fallback);
+        return;
+      }
       throw new HttpError(404, 'Product not found');
     }
     res.json(toProductResponse(product as unknown as Product));

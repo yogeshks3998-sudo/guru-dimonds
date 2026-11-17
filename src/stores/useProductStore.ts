@@ -43,8 +43,8 @@ interface ProductState {
   duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
-const STORAGE_KEY = 'guru_diamonds_products_v4';
-const LEGACY_STORAGE_KEYS = ['guru_diamonds_products_v3', 'guru_diamonds_products_v2', 'guru_diamonds_products_v1', 'vedaara_products_v1'];
+const STORAGE_KEY = 'guru_diamonds_products_v6';
+const LEGACY_STORAGE_KEYS = ['guru_diamonds_products_v5', 'guru_diamonds_products_v4', 'guru_diamonds_products_v3', 'guru_diamonds_products_v2', 'guru_diamonds_products_v1', 'vedaara_products_v1'];
 
 function loadLocalProducts(): Product[] {
   try {
