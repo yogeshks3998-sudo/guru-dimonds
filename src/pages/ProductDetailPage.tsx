@@ -304,9 +304,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
 
           {supplier && (
             <div className="rounded-xl border border-[#D8C29D] bg-[#FAF8F3] p-4 text-sm space-y-2 break-words">
-              <strong>Draft — supplier information awaiting verification</strong>
+              <strong>{supplier.state === 'PENDING' ? 'Draft — supplier information awaiting verification' : 'Custom product enquiry'}</strong>
               <p>Price on enquiry. Purity, certificate evidence, warranty terms and GST remain unconfirmed.</p>
-              <p>{product.category === 'Rings' ? 'Custom ring sizing: enquire with the team; no ready-stock sizes are confirmed.' : 'Length: 28 inches (supplier statement).'}</p>
+              <p>{product.category === 'Rings' ? 'Custom ring sizing: enquire with the team; no ready-stock sizes are confirmed.' : supplier.specifications.Length ? `Length: ${supplier.specifications.Length} (supplier statement).` : 'Earring dimensions, fastening and package quantity require confirmation.'}</p>
               <button className="underline font-bold text-[#A67C32]" onClick={() => setShowPriceModal(true)}>Review supplier price breakdown</button>
               <ul className="list-disc pl-5 text-xs text-[#6F6A62]">{supplier.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}</ul>
             </div>
@@ -364,7 +364,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             </div>
             <div className="space-y-0.5">
               <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Lab Certification</span>
-              <span className="font-bold text-[#1B1A18]">{product.certificationAgency || 'SGL Certified'}</span>
+              <span className="font-bold text-[#1B1A18]">{product.certified ? product.certificationAgency || 'Certificate details pending' : supplier ? supplier.raw.certificationSupplied ? 'Availability claimed; proof pending' : 'Not supplied; availability unknown' : 'Not verified'}</span>
             </div>
           </div>
 
@@ -444,7 +444,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               className="text-[#7A1822] hover:underline flex items-center gap-1.5 p-1 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Ruler className="w-4 h-4 text-[#B8893D]" />
-              <span>{supplier ? (product.category === 'Rings' ? 'Custom sizing by enquiry' : 'Length: 28 inches') : 'Royal Sizing & Fit Guide'}</span>
+              <span>{supplier ? (product.category === 'Rings' ? 'Custom sizing by enquiry' : supplier.specifications.Length ? `Length: ${supplier.specifications.Length}` : 'Earring specifications by enquiry') : 'Royal Sizing & Fit Guide'}</span>
             </button>
             <button
               onClick={() => toggleCompare(product.id)}
@@ -624,7 +624,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
         {activeTab === 'certification' && (
           <div className="space-y-3 text-xs text-[#6F6A62] leading-relaxed">
             <p>{product.hallmarked ? `Hallmark details: ${product.hallmarkCenter || 'Evidence details pending'}.` : 'No verified hallmark details are recorded for this product.'}</p>
-            <p>{product.certified ? `Certificate agency: ${product.certificationAgency || 'Details pending'}.` : supplier ? 'The seller claims certification availability. No product-specific certificate has been verified.' : 'No verified certificate is recorded for this product.'}</p>
+            <p>{product.certified ? `Certificate agency: ${product.certificationAgency || 'Details pending'}.` : supplier ? supplier.raw.certificationSupplied ? 'The seller claims certification availability. No product-specific certificate has been verified.' : 'Certification information was not supplied. Availability and supporting evidence are unknown.' : 'No verified certificate is recorded for this product.'}</p>
           </div>
         )}
 

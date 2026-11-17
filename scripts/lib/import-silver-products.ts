@@ -4,11 +4,11 @@ import { INITIAL_CATEGORIES } from '../../src/data/mockData';
 import { isSameSupplierProduct } from '../../src/utils/supplierProducts';
 import { toProductCreateData } from '../../backend/src/utils/serializers';
 
-export function planSilverImport(existing: Product[]) {
+export function planSilverImport(existing: Product[], incoming: Product[] = SILVER_COLLECTION_PRODUCTS) {
   const seen = [...existing];
   const create: Product[] = [];
   const skip: { sku: string; existingId: string; reason: string }[] = [];
-  for (const product of SILVER_COLLECTION_PRODUCTS) {
+  for (const product of incoming) {
     const match = seen.find((p) => isSameSupplierProduct(p, product));
     if (match) skip.push({ sku: product.sku, existingId: match.id, reason: 'Identity, content or specification match; existing record preserved for manual review.' });
     else { create.push(product); seen.push(product); }
@@ -16,10 +16,10 @@ export function planSilverImport(existing: Product[]) {
   return { create, skip };
 }
 
-export async function applySilverImport(tx: any) {
+export async function applySilverImport(tx: any, incoming: Product[] = SILVER_COLLECTION_PRODUCTS) {
   // Caller owns serializable transaction. All duplicate checks occur before writes.
   const existing = await tx.product.findMany({ include: { variants: true } });
-  const plan = planSilverImport(existing);
+  const plan = planSilverImport(existing, incoming);
   const created: string[] = [];
   for (const product of plan.create) {
     let category = await tx.category.findFirst({ where: { name: { equals: product.category, mode: 'insensitive' } } });

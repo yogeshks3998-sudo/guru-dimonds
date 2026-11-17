@@ -5,10 +5,10 @@ import { toCategoryData, toCollectionData, toProductCreateData, toProductRespons
 import type { Category, Collection, Product } from '../../../src/types';
 import { requireRole } from '../middleware/auth';
 import { supplierPublicationError } from '../../../src/utils/supplierProducts';
-import { SILVER_COLLECTION_PRODUCTS } from '../../../src/data/silverCollectionProducts';
+import { SUPPLIER_PRODUCT_DRAFTS } from '../../../src/data/supplierProductBatches';
 
 function validateSupplierProduct(product: Product, previous?: Product) {
-  const original = SILVER_COLLECTION_PRODUCTS.find((p) => p.id === product.id || p.sku === product.sku);
+  const original = SUPPLIER_PRODUCT_DRAFTS.find((p) => p.id === product.id || p.sku === product.sku);
   const review = previous?.supplierReview || original?.supplierReview;
   if (review && !product.supplierReview) throw new HttpError(400, 'Supplier review metadata must be retained.');
   if (review && product.supplierReview) product.supplierReview.raw = review.raw;

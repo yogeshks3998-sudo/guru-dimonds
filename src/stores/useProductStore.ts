@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/mockProducts';
-import { SILVER_COLLECTION_PRODUCTS } from '../data/silverCollectionProducts';
+import { SUPPLIER_PRODUCT_DRAFTS } from '../data/supplierProductBatches';
 import { supplierPublicationError, isSameSupplierProduct, mergeMissingSupplierProducts } from '../utils/supplierProducts';
 import { productApi } from '../services/productApi';
 
@@ -45,7 +45,7 @@ function loadLocalProducts(): Product[] {
     if (!raw) return INITIAL_PRODUCTS;
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return mergeMissingSupplierProducts(parsed, SILVER_COLLECTION_PRODUCTS);
+      return mergeMissingSupplierProducts(parsed, SUPPLIER_PRODUCT_DRAFTS);
     }
   } catch {
     // ignore parse error

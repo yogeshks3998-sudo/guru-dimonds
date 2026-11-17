@@ -1,5 +1,5 @@
 import { Product } from '../types';
-import { SILVER_COLLECTION_PRODUCTS } from './silverCollectionProducts';
+import { SUPPLIER_PRODUCT_DRAFTS } from './supplierProductBatches';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -6476,5 +6476,5 @@ export const INITIAL_PRODUCTS: Product[] = [
     "seoTitle": "Sacred Shivling with Nandi Shrine Temple Idol | Guru Diamonds Official",
     "seoDescription": "Buy genuine Sacred Shivling with Nandi Shrine Temple Idol online at Guru Diamonds with 100% BIS Hallmarking & Free Insured Express Delivery across India."
   },
-  ...SILVER_COLLECTION_PRODUCTS
+  ...SUPPLIER_PRODUCT_DRAFTS
 ];

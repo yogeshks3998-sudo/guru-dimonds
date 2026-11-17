@@ -21,7 +21,7 @@ if (!useDatabase) {
   const { prisma } = await import('../backend/src/config/db');
   try {
     if (apply) {
-      const result = await prisma.$transaction(applySilverImport, { isolationLevel: 'Serializable', maxWait: 30000, timeout: 30000 });
+      const result = await prisma.$transaction((tx: any) => applySilverImport(tx), { isolationLevel: 'Serializable', maxWait: 30000, timeout: 30000 });
       console.log(JSON.stringify({ mode: 'database-apply', ...result }, null, 2));
     } else {
       const plan = planSilverImport(await prisma.product.findMany({ include: { variants: true } }));

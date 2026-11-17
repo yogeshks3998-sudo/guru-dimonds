@@ -167,7 +167,7 @@ export const CompareDrawer: React.FC = () => {
                 <div className="font-bold text-[#796A65]">Gemstones</div>
                 {comparedProducts.map((p) => (
                   <div key={p.id} className="text-[#281C18]">
-                    {p.supplierReview ? (p.supplierReview.specifications.Gemstone || p.supplierReview.specifications.Gemstones || p.supplierReview.specifications['Bead materials']) : p.gemstones.length > 0
+                    {p.supplierReview ? (p.supplierReview.specifications.Gemstone || p.supplierReview.specifications.Gemstones || p.supplierReview.specifications.Stones || p.supplierReview.specifications['Bead materials']) : p.gemstones.length > 0
                       ? p.gemstones.map((g) => `${g.type} (${g.weightCaratOrGrams} ct/g)`).join(', ')
                       : 'None'}
                   </div>
@@ -192,7 +192,7 @@ export const CompareDrawer: React.FC = () => {
                 {comparedProducts.map((p) => (
                   <div key={p.id} className="text-[#2E7D5B] font-bold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    {p.supplierReview ? 'Availability claimed; proof pending' : p.certificationAgency}
+                    {p.supplierReview ? (p.supplierReview.raw.certificationSupplied ? 'Availability claimed; proof pending' : 'Not supplied; availability unknown') : p.certificationAgency}
                   </div>
                 ))}
               </div>

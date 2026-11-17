@@ -36,7 +36,9 @@
     "test:vitest": "vitest run --config vitest.config.ts",
     "clean": "node -e \"fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('dist-server',{recursive:true,force:true})\"",
     "import:silver": "node --import tsx scripts/import-silver-products.ts",
-    "import:silver:dry-run": "node --import tsx scripts/import-silver-products.ts --dry-run"
+    "import:silver:dry-run": "node --import tsx scripts/import-silver-products.ts --dry-run",
+    "import:silver-studs": "node --import tsx scripts/import-silver-turtle-studs.ts",
+    "import:silver-studs:dry-run": "node --import tsx scripts/import-silver-turtle-studs.ts --dry-run"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
