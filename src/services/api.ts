@@ -1,4 +1,4 @@
-const DEFAULT_API_URL = import.meta.env?.PROD ? '/api' : 'http://localhost:5000/api';
+const DEFAULT_API_URL = import.meta.env?.PROD ? '/api' : 'http://localhost:5055/api';
 export const AUTH_TOKEN_KEY = 'guru_diamonds_auth_token_v1';
 export const LEGACY_AUTH_TOKEN_KEY = 'vedaara_auth_token_v1';
 

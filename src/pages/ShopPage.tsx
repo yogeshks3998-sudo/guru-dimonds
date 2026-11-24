@@ -95,6 +95,10 @@ export const ShopPage: React.FC = () => {
 
   // Sync selectedCategory from URL or global store
   useEffect(() => {
+    void useProductStore.getState().hydrateProducts();
+  }, []);
+
+  useEffect(() => {
     if (selectedCategory && !selectedCategories.includes(selectedCategory)) {
       setSelectedCategories([selectedCategory]);
     }
