@@ -43,8 +43,9 @@ interface ProductState {
   duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
-const STORAGE_KEY = 'guru_diamonds_products_v7';
+const STORAGE_KEY = 'guru_diamonds_products_v8';
 const LEGACY_STORAGE_KEYS = [
+  'guru_diamonds_products_v7',
   'guru_diamonds_products_v6',
   'guru_diamonds_products_v5',
   'guru_diamonds_products_v4',
@@ -78,7 +79,8 @@ function loadLocalProducts(): Product[] {
       const merged: Product[] = cleanProducts.map((p) => {
         const init = initialMap.get(p.id);
         if (!init) return p;
-        const isDraftOrMissingImages = !p.images?.length || p.status === 'DRAFT' || p.metalPurity === 'UNVERIFIED';
+        const hasOutdatedImages = p.images?.some((img) => img.includes('/products/rings/') || img.includes('/products/earrings/'));
+        const isDraftOrMissingImages = !p.images?.length || p.status === 'DRAFT' || p.metalPurity === 'UNVERIFIED' || hasOutdatedImages;
         if (isDraftOrMissingImages) {
           return {
             ...p,
@@ -170,7 +172,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
           const matched = localMap.get(sp.id);
           const init = initialMap.get(sp.id);
           const status = matched?.status && matched.status !== 'DRAFT' ? matched.status : sp.status;
-          const images = matched?.images && matched.images.length > 0 ? matched.images : (sp.images?.length ? sp.images : init?.images || []);
+          const hasValidMatchedImages = matched?.images && matched.images.length > 0 && !matched.images.some(i => i.includes('/products/rings/') || i.includes('/products/earrings/'));
+          const hasValidServerImages = sp.images && sp.images.length > 0 && !sp.images.some(i => i.includes('/products/rings/') || i.includes('/products/earrings/'));
+          const images = hasValidMatchedImages ? matched!.images : (hasValidServerImages ? sp.images : init?.images || []);
           return {
             ...sp,
             ...matched,
