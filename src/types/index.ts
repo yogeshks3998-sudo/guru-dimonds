@@ -1,7 +1,7 @@
 export type MetalType = 'GOLD' | 'SILVER' | 'PLATINUM' | 'DIAMOND';
 
 export type GoldPurity = '24K' | '22K' | '18K' | '14K';
-export type SilverPurity = '999' | '925';
+export type SilverPurity = '999' | '925' | 'UNVERIFIED';
 export type MetalPurity = GoldPurity | SilverPurity | '950'; // Platinum 950
 
 export interface MetalRate {
@@ -19,7 +19,7 @@ export interface MetalRate {
   updatedAt: string;
 }
 
-export type PricingMode = 'FIXED' | 'RATE_LINKED' | 'FORMULA' | 'MADE_TO_ORDER';
+export type PricingMode = 'FIXED' | 'RATE_LINKED' | 'FORMULA' | 'MADE_TO_ORDER' | 'ENQUIRY';
 
 export interface GemstoneInfo {
   type: string; // Emerald, Ruby, Sapphire, Diamond, Sphatika, Pearl, Rudraksha, etc.
@@ -74,7 +74,35 @@ export interface ProductVariant {
   dispatchTimeDays: number;
 }
 
+/** Supplier statements are not verification evidence or approved retail prices. */
+export interface SupplierReview {
+  batch: string;
+  state: 'PENDING' | 'APPROVED';
+  raw: Record<string, string | number | null | string[]>;
+  issues: string[];
+  pendingFields: string[];
+  specifications: Record<string, string>;
+  highlights: string[];
+  pricing: {
+    suppliedMetalRate: number;
+    suppliedMetalValue: number;
+    calculatedMetalValue: number | null;
+    stoneOrBeadValue: number;
+    makingCharges: number;
+    suppliedComponentSubtotal: number;
+    weightBasedComponentSubtotal: number | null;
+    suppliedSellingPrice: number | null;
+    possibleSourceIntendedPrice?: number;
+    gstBasis: 'UNKNOWN' | 'INCLUSIVE' | 'EXCLUSIVE';
+    gstPercentage: number | null;
+    gstAmount: number | null;
+  };
+  purchaseMode: 'ENQUIRY' | 'STANDARD';
+  resolutionNotes: string;
+}
+
 export interface Product {
+  supplierReview?: SupplierReview;
   id: string;
   name: string;
   slug: string;
@@ -93,7 +121,7 @@ export interface Product {
   // Jewellery technical parameters
   metalType: MetalType;
   metalPurity: MetalPurity;
-  metalColor: 'Yellow' | 'Rose' | 'White' | 'Oxidized' | 'Dual Tone';
+  metalColor: 'Yellow' | 'Rose' | 'White' | 'Oxidized' | 'Dual Tone' | 'UNVERIFIED';
   grossWeightGrams: number;
   netWeightGrams: number;
   gemstones: GemstoneInfo[];
@@ -128,7 +156,7 @@ export interface Product {
   codAvailable: boolean;
 
   // Marketing & Metadata
-  badges: ('NEW' | 'BEST_SELLER' | 'HALLMARKED' | 'CERTIFIED' | 'SALE' | 'LIMITED' | 'MADE_TO_ORDER')[];
+  badges: ('NEW' | 'BEST_SELLER' | 'HALLMARKED' | 'CERTIFIED' | 'SALE' | 'LIMITED' | 'MADE_TO_ORDER' | 'CALL_TO_ORDER')[];
   rating: number;
   reviewCount: number;
   status: 'DRAFT' | 'ACTIVE' | 'SCHEDULED' | 'HIDDEN' | 'ARCHIVED';
@@ -385,4 +413,105 @@ export interface CMSContent {
     facebook?: string;
     instagram?: string;
   };
+}
+
+export interface PricingRule {
+  id: string;
+  name: string;
+  ruleType: 'MAKING_CHARGE_ADJUSTMENT' | 'MARGIN_PERCENTAGE' | 'FIXED_ADJUSTMENT' | 'DISCOUNT_PERCENTAGE';
+  value: number;
+  active: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CategoryPricingRule {
+  id: string;
+  categoryId: string;
+  makingChargeAdjustment: number; // e.g. +200/g or +200 INR
+  marginPercentage: number; // e.g. +5%
+  fixedAdjustment: number; // e.g. +1000 INR for fixed items
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GemstoneRate {
+  id: string;
+  gemstoneType: string;
+  ratePerCarat: number;
+  effectiveDate: string;
+  active: boolean;
+  notes?: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PricingAuditLog {
+  id: string;
+  action: string;
+  entityType: 'CATEGORY' | 'PRODUCT' | 'METAL_RATE' | 'GEMSTONE_RATE' | 'PRICING_RULE' | 'BULK_OPERATION';
+  entityId: string;
+  previousValue?: Record<string, any> | null;
+  newValue?: Record<string, any> | null;
+  userId: string;
+  metadata?: Record<string, any> | null;
+  timestamp: string;
+}
+
+export type BulkAdjustmentType =
+  | 'MAKING_CHARGE_PER_GRAM'
+  | 'MAKING_CHARGE_PERCENTAGE'
+  | 'MAKING_CHARGE_FIXED'
+  | 'MARGIN_PERCENTAGE'
+  | 'FIXED_PRICE_AMOUNT'
+  | 'WASTAGE_PERCENTAGE';
+
+export interface BulkPricePreviewItem {
+  productId: string;
+  productName: string;
+  sku: string;
+  category: string;
+  metalType: MetalType;
+  metalPurity: MetalPurity;
+  netWeightGrams: number;
+  pricingMode: PricingMode;
+  oldPrice: number;
+  newPrice: number;
+  priceDifference: number;
+  percentageChange: number;
+  oldMakingChargeValue: number;
+  newMakingChargeValue: number;
+  oldFixedPrice?: number;
+  newFixedPrice?: number;
+}
+
+export interface BulkPricePreviewResponse {
+  category: string;
+  adjustmentType: BulkAdjustmentType;
+  adjustmentValue: number;
+  affectedProductsCount: number;
+  increasingProductsCount: number;
+  decreasingProductsCount: number;
+  unchangedProductsCount: number;
+  averagePriceChange: number;
+  totalEstimatedRevenueImpact: number;
+  items: BulkPricePreviewItem[];
+}
+
+export interface BulkPriceApplyRequest {
+  category: string;
+  adjustmentType: BulkAdjustmentType;
+  adjustmentValue: number;
+  reason?: string;
+  adminName?: string;
+}
+
+export interface BulkPriceApplyResponse {
+  success: boolean;
+  auditLogId: string;
+  updatedCount: number;
+  message: string;
 }

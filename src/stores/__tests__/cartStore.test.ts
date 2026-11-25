@@ -12,7 +12,16 @@ vi.mock('../useAuthStore', () => ({
 describe('useCartStore guest behavior', () => {
   it('persists guest cart items locally', () => {
     useCartStore.getState().clearCart();
-    useCartStore.getState().addItem({ product: INITIAL_PRODUCTS[0], quantity: 2 });
+    const purchasable = {
+      ...INITIAL_PRODUCTS[0],
+      status: 'ACTIVE' as const,
+      enabled: true,
+      pricingMode: 'FIXED' as const,
+      fixedPrice: 5000,
+      images: ['/real.jpg'],
+      supplierReview: undefined,
+    };
+    useCartStore.getState().addItem({ product: purchasable, quantity: 2 });
 
     expect(useCartStore.getState().items).toHaveLength(1);
     expect(useCartStore.getState().items[0].quantity).toBe(2);

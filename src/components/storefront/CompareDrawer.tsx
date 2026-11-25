@@ -1,3 +1,6 @@
+import { canPurchaseProduct } from '../../utils/supplierProducts';
+import { isProductActive } from '../../utils/productFilters';
+import { useAuthStore } from '../../stores/useAuthStore';
 import React from 'react';
 import { useCompareStore } from '../../stores/useCompareStore';
 import { useProductStore } from '../../stores/useProductStore';
@@ -12,11 +15,12 @@ export const CompareDrawer: React.FC = () => {
   const { compareIds, drawerOpen, setDrawerOpen, removeCompare, clearCompare } = useCompareStore();
   const { products } = useProductStore();
   const addItem = useCartStore((s) => s.addItem);
+  const { isAdminLoggedIn } = useAuthStore();
   const getRate = useMetalRateStore((s) => s.getRate);
 
   if (!drawerOpen) return null;
 
-  const comparedProducts = products.filter((p) => compareIds.includes(p.id));
+  const comparedProducts = products.filter((p) => compareIds.includes(p.id) && (isAdminLoggedIn || isProductActive(p)));
 
   return (
     <div className="fixed inset-0 z-50 bg-[#281C18]/60 backdrop-blur-sm flex justify-center items-end sm:items-center p-0 sm:p-4 animate-fadeIn">
@@ -113,10 +117,12 @@ export const CompareDrawer: React.FC = () => {
                       />
                       <h4 className="text-xs font-bold text-[#281C18] line-clamp-1">{p.name}</h4>
                       <p className="text-sm font-extrabold text-[#7A1822]">
-                        ₹{breakdown.finalPrice.toLocaleString('en-IN')}
+                        {p.supplierReview ? 'Price on enquiry' : `₹${breakdown.finalPrice.toLocaleString('en-IN')}`}
                       </p>
                       <button
+                        disabled={!canPurchaseProduct(p)}
                         onClick={() => {
+                          if (!canPurchaseProduct(p)) return;
                           addItem({ product: p });
                           setDrawerOpen(false);
                         }}
@@ -161,7 +167,7 @@ export const CompareDrawer: React.FC = () => {
                 <div className="font-bold text-[#796A65]">Gemstones</div>
                 {comparedProducts.map((p) => (
                   <div key={p.id} className="text-[#281C18]">
-                    {p.gemstones.length > 0
+                    {p.supplierReview ? (p.supplierReview.specifications.Gemstone || p.supplierReview.specifications.Gemstones || p.supplierReview.specifications.Stones || p.supplierReview.specifications['Bead materials']) : p.gemstones.length > 0
                       ? p.gemstones.map((g) => `${g.type} (${g.weightCaratOrGrams} ct/g)`).join(', ')
                       : 'None'}
                   </div>
@@ -186,7 +192,7 @@ export const CompareDrawer: React.FC = () => {
                 {comparedProducts.map((p) => (
                   <div key={p.id} className="text-[#2E7D5B] font-bold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    {p.certificationAgency}
+                    {p.supplierReview ? (p.supplierReview.raw.certificationSupplied ? 'Availability claimed; proof pending' : 'Not supplied; availability unknown') : p.certificationAgency}
                   </div>
                 ))}
               </div>
@@ -195,7 +201,7 @@ export const CompareDrawer: React.FC = () => {
                 <div className="font-bold text-[#796A65]">Return Policy</div>
                 {comparedProducts.map((p) => (
                   <div key={p.id} className="text-[#281C18]">
-                    {p.returnEligible ? `${p.returnPolicyDays || 15}-Day Exchange / Return` : 'Non-Returnable Custom Piece'}
+                    {p.supplierReview ? 'Terms pending verification' : p.returnEligible ? `${p.returnPolicyDays || 15}-Day Exchange / Return` : 'Non-Returnable Custom Piece'}
                   </div>
                 ))}
               </div>
@@ -205,7 +211,7 @@ export const CompareDrawer: React.FC = () => {
 
         {/* Footer */}
         <div className="p-4 bg-[#F4E4C8]/40 border-t border-[#E9D9C5] flex items-center justify-between text-xs text-[#796A65]">
-          <span>All prices are live rate-linked and inclusive of 3% GST.</span>
+          <span>{comparedProducts.some(p => p.supplierReview) ? 'Supplier listings are enquiry-only; prices and GST require confirmation.' : 'Displayed prices include the recorded GST rate.'}</span>
           <button
             onClick={() => setDrawerOpen(false)}
             className="px-5 py-1.5 bg-[#281C18] text-[#FFF9F0] text-xs font-bold rounded-xl"

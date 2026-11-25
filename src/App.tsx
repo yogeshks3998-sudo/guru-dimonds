@@ -53,6 +53,9 @@ const StaticContentPages = lazy(() => import('./pages/StaticContentPages'));
 const AdminDashboardPage = lazy(() =>
   import('./pages/admin/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage }))
 );
+const AdminPricingPage = lazy(() =>
+  import('./pages/admin/AdminPricingPage').then((module) => ({ default: module.AdminPricingPage }))
+);
 const AdminMetalRatesPage = lazy(() =>
   import('./pages/admin/AdminMetalRatesPage').then((module) => ({ default: module.AdminMetalRatesPage }))
 );
@@ -132,6 +135,7 @@ export function App() {
       );
     }
     if (currentPath === '/admin') return <AdminDashboardPage />;
+    if (currentPath === '/admin/pricing') return <AdminPricingPage />;
     if (currentPath === '/admin/metal-rates') return <AdminMetalRatesPage />;
     if (currentPath === '/admin/products') return <AdminProductsPage />;
     if (currentPath === '/admin/products/new') return <AdminProductFormPage />;

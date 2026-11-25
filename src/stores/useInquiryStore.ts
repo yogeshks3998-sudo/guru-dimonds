@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { inquiryApi, InquirySubmitPayload } from '../services/inquiryApi';
 
 export interface ContactInquiry {
   id: string;
@@ -10,116 +11,75 @@ export interface ContactInquiry {
   createdAt: string;
   status: 'NEW' | 'RESPONDED' | 'ARCHIVED';
   adminNotes?: string;
+  assignedTo?: string;
 }
-
-const STORAGE_KEY = 'guru_diamonds_contact_inquiries';
-
-const INITIAL_INQUIRIES: ContactInquiry[] = [
-  {
-    id: 'INQ-1001',
-    name: 'Yogesh K S',
-    contactNumber: '+91 78991 25449',
-    gmail: 'yogesh@gurudimonds.in',
-    requirement: 'Bespoke Custom Order',
-    message: 'Looking for a custom 925 Hallmarked silver pendant with natural emerald stone set in traditional antique carving.',
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    status: 'NEW',
-  },
-  {
-    id: 'INQ-1002',
-    name: 'Ananya Deshmukh',
-    contactNumber: '+91 98201 45892',
-    gmail: 'ananya.deshmukh@gmail.com',
-    requirement: '1 to 24 Mukhi Rudrakshas',
-    message: 'Need authentic Nepal 5-Mukhi and 14-Mukhi Rudraksha with X-Ray lab certification for personal wearing.',
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-    status: 'RESPONDED',
-    adminNotes: 'Contacted via WhatsApp. Sent lab certification samples.',
-  },
-  {
-    id: 'INQ-1003',
-    name: 'Rajesh Singhania',
-    contactNumber: '+91 98112 30848',
-    gmail: 'rajesh.singhania@gmail.com',
-    requirement: 'God Small Statues',
-    message: 'Inquiring about 500g pure 925 silver Lakshmi Ganesha idol set for Diwali gifting.',
-    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    status: 'RESPONDED',
-  }
-];
 
 interface InquiryState {
   inquiries: ContactInquiry[];
-  hydrateInquiries: () => void;
-  addInquiry: (inquiry: Omit<ContactInquiry, 'id' | 'createdAt' | 'status'>) => ContactInquiry;
-  updateInquiryStatus: (id: string, status: ContactInquiry['status'], notes?: string) => void;
-  deleteInquiry: (id: string) => void;
+  loading: boolean;
+  error: string | null;
+  total: number;
+  page: number;
+  hydrateInquiries: (params?: { page?: number; limit?: number; status?: string; search?: string }) => Promise<void>;
+  addInquiry: (inquiry: InquirySubmitPayload) => Promise<ContactInquiry>;
+  updateInquiryStatus: (id: string, status: ContactInquiry['status'], notes?: string) => Promise<void>;
+  deleteInquiry: (id: string) => Promise<void>;
 }
 
 export const useInquiryStore = create<InquiryState>((set, get) => ({
-  inquiries: (() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch {
-      // ignore
-    }
-    return INITIAL_INQUIRIES;
-  })(),
+  inquiries: [],
+  loading: false,
+  error: null,
+  total: 0,
+  page: 1,
 
-  hydrateInquiries: () => {
+  hydrateInquiries: async (params) => {
+    set({ loading: true, error: null });
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        set({ inquiries: JSON.parse(stored) });
-      } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_INQUIRIES));
-        set({ inquiries: INITIAL_INQUIRIES });
-      }
-    } catch {
-      set({ inquiries: INITIAL_INQUIRIES });
+      const res = await inquiryApi.getInquiries(params);
+      set({
+        inquiries: res.inquiries,
+        total: res.pagination.total,
+        page: res.pagination.page,
+        loading: false,
+      });
+    } catch (err) {
+      set({
+        loading: false,
+        error: err instanceof Error ? err.message : 'Unable to load inquiries',
+      });
     }
   },
 
-  addInquiry: (data) => {
-    const newInquiry: ContactInquiry = {
-      ...data,
-      id: `INQ-${Math.floor(1000 + Math.random() * 9000)}`,
-      createdAt: new Date().toISOString(),
-      status: 'NEW',
-    };
-
-    const updated = [newInquiry, ...get().inquiries];
-    set({ inquiries: updated });
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
-    return newInquiry;
+  addInquiry: async (data) => {
+    const res = await inquiryApi.submitInquiry(data);
+    const created = res.inquiry;
+    set((state) => ({ inquiries: [created, ...state.inquiries], total: state.total + 1 }));
+    return created;
   },
 
-  updateInquiryStatus: (id, status, notes) => {
-    const updated = get().inquiries.map((inq) =>
-      inq.id === id ? { ...inq, status, ...(notes !== undefined ? { adminNotes: notes } : {}) } : inq
-    );
-    set({ inquiries: updated });
+  updateInquiryStatus: async (id, status, notes) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch {
-      // ignore
+      const updated = await inquiryApi.updateInquiryStatus(id, status, notes);
+      set((state) => ({
+        inquiries: state.inquiries.map((inq) => (inq.id === id ? updated : inq)),
+      }));
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to update status' });
+      throw err;
     }
   },
 
-  deleteInquiry: (id) => {
-    const updated = get().inquiries.filter((inq) => inq.id !== id);
-    set({ inquiries: updated });
+  deleteInquiry: async (id) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch {
-      // ignore
+      await inquiryApi.deleteInquiry(id);
+      set((state) => ({
+        inquiries: state.inquiries.filter((inq) => inq.id !== id),
+        total: Math.max(0, state.total - 1),
+      }));
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to delete inquiry' });
+      throw err;
     }
   },
 }));

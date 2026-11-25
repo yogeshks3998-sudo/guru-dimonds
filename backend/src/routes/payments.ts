@@ -241,16 +241,34 @@ paymentsRouter.post(
 paymentsRouter.post(
   '/payments/webhook/razorpay',
   asyncHandler(async (req, res) => {
-    const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
-    const signature = String(req.headers['x-razorpay-signature'] || '');
-    if (env.razorpayWebhookSecret) {
-      const expected = crypto.createHmac('sha256', env.razorpayWebhookSecret).update(rawBody).digest('hex');
-      if (!signature || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))) {
-        throw new HttpError(400, 'Invalid webhook signature');
-      }
+    if (!env.razorpayWebhookSecret) {
+      throw new HttpError(500, 'Razorpay webhook signature verification is not configured');
     }
 
-    const body = JSON.parse(rawBody.toString('utf8'));
+    const rawBody = Buffer.isBuffer(req.body)
+      ? req.body
+      : Buffer.from(typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+    const signature = String(req.headers['x-razorpay-signature'] || '').trim();
+
+    if (!signature) {
+      throw new HttpError(400, 'Missing webhook signature');
+    }
+
+    const expected = crypto.createHmac('sha256', env.razorpayWebhookSecret).update(rawBody).digest('hex');
+    const expectedBuf = Buffer.from(expected, 'utf8');
+    const signatureBuf = Buffer.from(signature, 'utf8');
+
+    if (expectedBuf.length !== signatureBuf.length || !crypto.timingSafeEqual(expectedBuf, signatureBuf)) {
+      throw new HttpError(400, 'Invalid webhook signature');
+    }
+
+    let body: any;
+    try {
+      body = JSON.parse(rawBody.toString('utf8'));
+    } catch {
+      throw new HttpError(400, 'Malformed webhook payload');
+    }
+
     const event = String(body.event || '');
     const paymentEntity = body.payload?.payment?.entity;
     const razorpayOrderId = paymentEntity?.order_id ? String(paymentEntity.order_id) : '';
@@ -262,30 +280,38 @@ paymentsRouter.post(
           where: { payments: { some: { provider: 'RAZORPAY', providerOrderId: razorpayOrderId } } },
           include: orderInclude,
         });
+
         if (order && order.paymentStatus !== 'PAID') {
-          await tx.payment.updateMany({
-            where: { orderId: order.id, providerOrderId: razorpayOrderId },
-            data: {
-              providerPaymentId: razorpayPaymentId,
-              status: 'CAPTURED',
-              method: paymentEntity.method || order.paymentMethod,
-              rawPayload: body,
-            },
+          await markOrderPaid(tx, order, {
+            razorpayOrderId,
+            razorpayPaymentId,
+            rawPayload: body,
+            method: paymentEntity?.method ? String(paymentEntity.method) : order.paymentMethod,
           });
         }
       }, transactionOptions);
+    } else if (event === 'payment.failed' && razorpayOrderId) {
+      await prisma.payment.updateMany({
+        where: { providerOrderId: razorpayOrderId, provider: 'RAZORPAY' },
+        data: {
+          status: 'FAILED',
+          providerPaymentId: razorpayPaymentId || undefined,
+          rawPayload: body,
+        },
+      });
     }
 
     await prisma.emailLog.create({
       data: {
-        recipient: process.env.FROM_EMAIL || 'info@gurudimonds.in',
-        subject: 'Razorpay webhook received',
+        recipient: env.fromEmail || 'info@gurudiamonds.in',
+        subject: `Razorpay webhook received: ${event}`,
         template: 'razorpay_webhook',
         status: 'RECEIVED',
         provider: 'RAZORPAY',
         payload: { event, razorpayOrderId, razorpayPaymentId },
       },
     });
+
     res.json({ received: true });
   })
 );

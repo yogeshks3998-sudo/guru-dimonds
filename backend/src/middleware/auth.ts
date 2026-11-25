@@ -25,6 +25,17 @@ export const signAuthToken = (payload: AuthTokenPayload) =>
     expiresIn: '8h',
   });
 
+export const extractAuthToken = (req: Request): AuthTokenPayload | null => {
+  const header = req.headers.authorization;
+  const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
+  if (!token) return null;
+  try {
+    return jwt.verify(token, env.jwtSecret) as AuthTokenPayload;
+  } catch {
+    return null;
+  }
+};
+
 export const requireAuth = (req: Request, _res: Response, next: NextFunction) => {
   const header = req.headers.authorization;
   const token = header?.startsWith('Bearer ') ? header.slice(7) : null;

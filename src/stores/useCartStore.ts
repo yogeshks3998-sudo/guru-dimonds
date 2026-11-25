@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { canPurchaseProduct, isDemoProduct } from '../utils/supplierProducts';
 import { CartItem, Product, ProductVariant, Coupon } from '../types';
 import { calculateJewelleryPrice } from '../utils/pricing';
 import { useMetalRateStore } from './useMetalRateStore';
@@ -53,7 +54,16 @@ const getInitialItems = (): CartItem[] => {
     if (data && !localStorage.getItem(LOCAL_STORAGE_KEY)) {
       localStorage.setItem(LOCAL_STORAGE_KEY, data);
     }
-    return data ? JSON.parse(data) : [];
+    const parsed: CartItem[] = data ? JSON.parse(data) : [];
+    const cleanItems = parsed.filter((item) => {
+      const pid = item.productId || item.product?.id || '';
+      const psku = item.selectedVariant?.sku || item.product?.sku || '';
+      return !isDemoProduct(pid) && !isDemoProduct(psku);
+    });
+    if (cleanItems.length !== parsed.length) {
+      saveItems(cleanItems);
+    }
+    return cleanItems;
   } catch {
     return [];
   }
@@ -61,7 +71,12 @@ const getInitialItems = (): CartItem[] => {
 
 const saveItems = (items: CartItem[]) => {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+    const clean = items.filter((item) => {
+      const pid = item.productId || item.product?.id || '';
+      const psku = item.selectedVariant?.sku || item.product?.sku || '';
+      return !isDemoProduct(pid) && !isDemoProduct(psku);
+    });
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clean));
   } catch {
     // Ignore storage errors
   }
@@ -125,15 +140,16 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   addItem: ({ product, variant, selectedAttributes = {}, quantity = 1, customEngraving, giftWrap = false, giftMessage }) => {
+    if (!canPurchaseProduct(product)) return;
     const metalRates = useMetalRateStore.getState();
     const currentRate = metalRates.getRate(product.metalType, product.metalPurity);
 
     const priceBreakdown = calculateJewelleryPrice({
       pricingMode: product.pricingMode,
-      fixedPrice: variant ? variant.price : product.fixedPrice,
+      fixedPrice: product.pricingMode === 'FIXED' ? (product.fixedPrice ?? variant?.price ?? 0) : (product.fixedPrice || variant?.price || 0),
       metalType: product.metalType,
       purity: product.metalPurity,
-      netWeightGrams: variant ? variant.netWeightGrams : product.netWeightGrams,
+      netWeightGrams: (variant?.netWeightGrams !== undefined && variant.netWeightGrams > 0) ? variant.netWeightGrams : product.netWeightGrams,
       ratePerGram: currentRate,
       makingChargeType: product.makingChargeType,
       makingChargeValue: product.makingChargeValue,

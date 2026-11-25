@@ -10,81 +10,96 @@ import type {
   Product,
   ProductReview,
 } from '../../../src/types';
+import { SUPPLIER_PRODUCT_DRAFTS } from '../../../src/data/supplierProductBatches';
 
 type ProductRecord = Product & {
   variants?: Product['variants'];
 };
 
-export const toProductCreateData = (product: Product): Record<string, any> => ({
-  id: product.id,
-  name: product.name,
-  slug: product.slug,
-  sku: product.sku,
-  shortDescription: product.shortDescription,
-  description: product.description,
-  category: product.category,
-  subcategory: product.subcategory,
-  collection: product.collection,
-  tags: product.tags,
-  gender: product.gender,
-  occasion: product.occasion,
-  images: product.images,
-  videoUrl: product.videoUrl,
-  metalType: product.metalType,
-  metalPurity: product.metalPurity,
-  metalColor: product.metalColor,
-  grossWeightGrams: product.grossWeightGrams,
-  netWeightGrams: product.netWeightGrams,
-  gemstones: product.gemstones,
-  hallmarked: product.hallmarked,
-  hallmarkCenter: product.hallmarkCenter,
-  certified: product.certified,
-  certificationAgency: product.certificationAgency,
-  pricingMode: product.pricingMode,
-  fixedPrice: product.fixedPrice,
-  compareAtPrice: product.compareAtPrice,
-  makingChargeType: product.makingChargeType,
-  makingChargeValue: product.makingChargeValue,
-  wastagePercentage: product.wastagePercentage,
-  certificationCharge: product.certificationCharge,
-  packagingCharge: product.packagingCharge,
-  gstPercentage: product.gstPercentage,
-  totalStock: product.totalStock,
-  hasVariants: product.hasVariants,
-  variantAttributes: product.variantAttributes,
-  lowStockThreshold: product.lowStockThreshold,
-  readyToShip: product.readyToShip,
-  dispatchDays: product.dispatchDays,
-  returnEligible: product.returnEligible,
-  returnPolicyDays: product.returnPolicyDays,
-  codAvailable: product.codAvailable,
-  badges: product.badges,
-  rating: product.rating,
-  reviewCount: product.reviewCount,
-  status: product.status,
-  seoTitle: product.seoTitle,
-  seoDescription: product.seoDescription,
-  createdAt: new Date(product.createdAt),
-  updatedAt: new Date(product.updatedAt),
-});
+export const toProductCreateData = (product: Product): Record<string, any> => {
+  const data: Record<string, any> = {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    sku: product.sku,
+    shortDescription: product.shortDescription,
+    description: product.description,
+    category: product.category,
+    subcategory: product.subcategory,
+    collection: product.collection,
+    tags: product.tags,
+    gender: product.gender,
+    occasion: product.occasion,
+    images: product.images,
+    videoUrl: product.videoUrl,
+    metalType: product.metalType,
+    metalPurity: product.metalPurity,
+    metalColor: product.metalColor,
+    grossWeightGrams: product.grossWeightGrams,
+    netWeightGrams: product.netWeightGrams,
+    gemstones: product.gemstones,
+    hallmarked: product.hallmarked,
+    hallmarkCenter: product.hallmarkCenter,
+    certified: product.certified,
+    certificationAgency: product.certificationAgency,
+    pricingMode: product.pricingMode,
+    fixedPrice: product.fixedPrice,
+    compareAtPrice: product.compareAtPrice,
+    makingChargeType: product.makingChargeType,
+    makingChargeValue: product.makingChargeValue,
+    wastagePercentage: product.wastagePercentage,
+    certificationCharge: product.certificationCharge,
+    packagingCharge: product.packagingCharge,
+    gstPercentage: product.gstPercentage,
+    totalStock: product.totalStock,
+    hasVariants: product.hasVariants,
+    variantAttributes: product.variantAttributes,
+    lowStockThreshold: product.lowStockThreshold,
+    readyToShip: product.readyToShip,
+    dispatchDays: product.dispatchDays,
+    returnEligible: product.returnEligible,
+    returnPolicyDays: product.returnPolicyDays,
+    codAvailable: product.codAvailable,
+    badges: product.badges,
+    rating: product.rating,
+    reviewCount: product.reviewCount,
+    status: product.status,
+    seoTitle: product.seoTitle,
+    seoDescription: product.seoDescription,
+    createdAt: new Date(product.createdAt),
+    updatedAt: new Date(product.updatedAt),
+  };
+  if (product.supplierReview !== undefined && product.supplierReview !== null) {
+    data.supplierReview = product.supplierReview;
+  }
+  return data;
+};
 
-export const toProductResponse = (product: ProductRecord): Product => ({
-  ...product,
-  tags: product.tags || [],
-  occasion: product.occasion || [],
-  images: product.images || [],
-  gemstones: product.gemstones || [],
-  variantAttributes: product.variantAttributes || [],
-  badges: product.badges || [],
-  variants: product.variants || [],
-  createdAt: new Date(product.createdAt).toISOString(),
-  updatedAt: new Date(product.updatedAt).toISOString(),
-}) as Product;
+export const toProductResponse = (product: ProductRecord): Product => {
+  const supplierDraft = SUPPLIER_PRODUCT_DRAFTS.find((p) => p.id === product.id || p.sku === product.sku);
+  const supplierReview = product.supplierReview || supplierDraft?.supplierReview;
+  return {
+    ...product,
+    ...(supplierReview ? { supplierReview } : {}),
+    tags: product.tags || [],
+    occasion: product.occasion || [],
+    images: product.images || [],
+    gemstones: product.gemstones || [],
+    variantAttributes: product.variantAttributes || [],
+    badges: product.badges || [],
+    variants: product.variants || [],
+    createdAt: new Date(product.createdAt).toISOString(),
+    updatedAt: new Date(product.updatedAt).toISOString(),
+  } as Product;
+};
 
-export const toCategoryData = (category: Category): Record<string, any> => ({
-  ...category,
-  subcategories: category.subcategories,
-});
+export const toCategoryData = (category: Category): Record<string, any> => {
+  const { enabled, ...rest } = category;
+  return {
+    ...rest,
+    subcategories: category.subcategories,
+  };
+};
 
 export const toCollectionData = (collection: Collection): Record<string, any> => ({
   ...collection,

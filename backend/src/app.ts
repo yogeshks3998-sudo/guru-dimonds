@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import path from 'node:path';
+import { env } from './config/env';
 import { authRouter } from './routes/auth';
 import { cartRouter } from './routes/cart';
 import { catalogRouter } from './routes/catalog';
@@ -14,16 +15,70 @@ import { paymentsRouter } from './routes/payments';
 import { ratesRouter } from './routes/rates';
 import { wishlistRouter } from './routes/wishlist';
 import { invoicesRouter } from './routes/invoices';
+import { pricingRouter } from './routes/pricing';
+import { inquiriesRouter } from './routes/inquiries';
+import { seoRouter } from './routes/seo';
 import { HttpError } from './utils/http';
 
 export const app = express();
 
-app.use(cors());
+// Trust first reverse proxy hop (Render / Cloudflare) to ensure accurate client IP resolution
+app.set('trust proxy', 1);
+
+const configuredOrigins = [
+  env.appUrl,
+  'https://gurudiamonds.in',
+  'https://www.gurudiamonds.in',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'http://localhost:5055',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:5055',
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow non-browser requests (e.g. server-to-server Razorpay webhooks, curl, Jest test runner)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (
+        configuredOrigins.includes(origin) ||
+        (env.nodeEnv !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
+      ) {
+        callback(null, true);
+        return;
+      }
+      callback(new HttpError(403, `CORS policy: origin ${origin} is not allowed`));
+    },
+    credentials: true,
+  })
+);
 app.use('/products', express.static(path.resolve('public/products')));
 app.use('/categories', express.static(path.resolve('public/categories')));
 app.use('/api/payments/webhook/razorpay', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
 app.use('/api/health', healthRouter);
+app.get(['/', '/api'], (_req, res) => {
+  res.json({
+    service: 'guru-diamonds-api',
+    status: 'online',
+    message: 'Guru Diamonds API Server is running.',
+    frontend: 'http://localhost:5173',
+    documentation: {
+      health: '/api/health',
+      products: '/api/products',
+      categories: '/api/categories',
+      rates: '/api/rates',
+      sitemap: '/api/sitemap.xml',
+    },
+  });
+});
 app.use('/api', authRouter);
 app.use('/api', cartRouter);
 app.use('/api', catalogRouter);
@@ -36,6 +91,10 @@ app.use('/api', paymentsRouter);
 app.use('/api', ratesRouter);
 app.use('/api', wishlistRouter);
 app.use('/api', invoicesRouter);
+app.use('/api', pricingRouter);
+app.use('/api', inquiriesRouter);
+app.use('/api', seoRouter);
+app.use(seoRouter);
 
 app.use((req, _res, next) => {
   if (req.path.startsWith('/api')) {

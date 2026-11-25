@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 
 export const AdminCategoriesPage: React.FC = () => {
-  const { categories, toggleCategoryStatus, addCategory, updateCategory, deleteCategory } = useCategoryStore();
+  const { categories, toggleCategoryStatus, disableEmptyCategories, addCategory, updateCategory, deleteCategory } = useCategoryStore();
   const { products } = useProductStore();
   const { adminUser } = useAuthStore();
   const { showToast } = useToast();
@@ -63,6 +63,18 @@ export const AdminCategoriesPage: React.FC = () => {
   const activeCount = categories.filter((c) => c.enabled !== false).length;
   const inactiveCount = categories.length - activeCount;
   const totalProductsLinked = Object.values(categoryCounts).reduce<number>((a, b) => a + Number(b), 0);
+  const emptyCategoriesCount = useMemo(() => {
+    return categories.filter((cat) => (categoryCounts[cat.id] || 0) === 0 && cat.enabled !== false).length;
+  }, [categories, categoryCounts]);
+
+  const handleTurnOffEmpty = async () => {
+    try {
+      await disableEmptyCategories(products);
+      showToast('Empty Categories Updated', 'Categories with 0 products are now turned OFF.');
+    } catch {
+      alert('Failed to update empty categories.');
+    }
+  };
 
   // Filtered categories
   const filteredCategories = useMemo(() => {
@@ -226,14 +238,29 @@ export const AdminCategoriesPage: React.FC = () => {
             </p>
           </div>
 
-          {canManage && (
-            <button
-              onClick={openAddModal}
-              className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all shrink-0"
-            >
-              <Plus className="w-4 h-4" /> Add New Category
-            </button>
-          )}
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {canManage && emptyCategoriesCount > 0 && (
+              <button
+                type="button"
+                onClick={handleTurnOffEmpty}
+                className="px-4 py-3 bg-[#FAF8F3] hover:bg-[#F2ECE1] text-[#7A1822] border border-[#D8C29D] text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs flex items-center gap-2 transition-all cursor-pointer"
+                title="Automatically turn OFF all categories that currently have 0 products"
+              >
+                <XCircle className="w-4 h-4 text-[#B43C3C]" />
+                <span>Turn OFF Empty ({emptyCategoriesCount})</span>
+              </button>
+            )}
+
+            {canManage && (
+              <button
+                type="button"
+                onClick={openAddModal}
+                className="px-6 py-3 bg-[#A67C32] hover:bg-[#8e6828] text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg flex items-center gap-2 transition-all shrink-0 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Add New Category
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Stats Summary Cards */}
@@ -394,7 +421,7 @@ export const AdminCategoriesPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleToggle(cat)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs ${
                       isEnabled
                         ? 'bg-[#E6F4EA] hover:bg-[#d4edd9] text-[#2E7D5B] border border-[#2E7D5B]/30'
                         : 'bg-[#FCE8E6] hover:bg-[#f8d4d1] text-[#B43C3C] border border-[#B43C3C]/30'
@@ -402,11 +429,11 @@ export const AdminCategoriesPage: React.FC = () => {
                     title={isEnabled ? 'Click to hide this category from storefront' : 'Click to enable in storefront'}
                   >
                     <span
-                      className={`w-3.5 h-3.5 rounded-full inline-block ${
+                      className={`w-3.5 h-3.5 rounded-full inline-block transition-colors ${
                         isEnabled ? 'bg-[#2E7D5B]' : 'bg-[#B43C3C]'
                       }`}
                     />
-                    {isEnabled ? 'Turn OFF' : 'Turn ON'}
+                    <span>{isEnabled ? 'Visible (ON)' : 'Hidden (OFF)'}</span>
                   </button>
 
                   <div className="flex items-center gap-1.5">

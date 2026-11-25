@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { isDemoProduct } from '../utils/supplierProducts';
 
 interface CompareState {
   compareIds: string[];
@@ -19,7 +20,12 @@ const getInitialCompare = (): string[] => {
     if (data && !localStorage.getItem(LOCAL_KEY)) {
       localStorage.setItem(LOCAL_KEY, data);
     }
-    return data ? JSON.parse(data) : [];
+    const parsed: string[] = data ? JSON.parse(data) : [];
+    const clean = parsed.filter((id) => !isDemoProduct(id));
+    if (clean.length !== parsed.length) {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(clean));
+    }
+    return clean;
   } catch {
     return [];
   }
@@ -27,7 +33,8 @@ const getInitialCompare = (): string[] => {
 
 const saveCompare = (ids: string[]) => {
   try {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(ids));
+    const clean = ids.filter((id) => !isDemoProduct(id));
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(clean));
   } catch {}
 };
 

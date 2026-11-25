@@ -1,6 +1,9 @@
-import { env } from './config/env';
+import { env, validateProductionEnv } from './config/env';
 import { prisma } from './config/db';
 import { app } from './app';
+
+// Fail-fast validation of required production configuration
+validateProductionEnv();
 
 const server = app.listen(env.port, () => {
   console.log(`Guru Diamonds API listening on http://localhost:${env.port}`);

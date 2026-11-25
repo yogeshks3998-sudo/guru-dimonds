@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useProductStore } from '../stores/useProductStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { useMetalRateStore } from '../stores/useMetalRateStore';
 import { ProductCard } from '../components/storefront/ProductCard';
 import { calculateJewelleryPrice } from '../utils/pricing';
-import { productMatchesCategory } from '../utils/productFilters';
+import { isProductActive, productMatchesCategory, isCanonicalCategory } from '../utils/productFilters';
+import { isDemoProduct } from '../utils/supplierProducts';
 import { useCategoryStore } from '../stores/useCategoryStore';
 import { Product } from '../types';
 import {
@@ -11,8 +13,6 @@ import {
   X,
   Search,
   RotateCcw,
-  LayoutGrid,
-  List,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { navigateTo } from '../utils/navigation';
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 24;
 
 const GEMSTONE_OPTIONS = [
   'Ruby',
@@ -68,6 +68,7 @@ export const ShopPage: React.FC = () => {
     resetFilters: resetStoreFilters,
   } = useProductStore();
 
+  const { isAdminLoggedIn } = useAuthStore();
   const { getRate } = useMetalRateStore();
   const { categories } = useCategoryStore();
 
@@ -75,7 +76,7 @@ export const ShopPage: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     selectedCategory ? [selectedCategory] : []
   );
-  const [priceRange, setPriceRange] = useState<[number, number]>([500, 50000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [selectedGemstones, setSelectedGemstones] = useState<string[]>([]);
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
@@ -90,10 +91,13 @@ export const ShopPage: React.FC = () => {
   });
 
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
 
   // Sync selectedCategory from URL or global store
+  useEffect(() => {
+    void useProductStore.getState().hydrateProducts();
+  }, []);
+
   useEffect(() => {
     if (selectedCategory && !selectedCategories.includes(selectedCategory)) {
       setSelectedCategories([selectedCategory]);
@@ -105,13 +109,17 @@ export const ShopPage: React.FC = () => {
   };
 
   const activeCategories = useMemo(
-    () => categories.filter((c) => c.enabled !== false),
+    () => categories.filter((c) => c.enabled !== false && isCanonicalCategory(c)),
     [categories]
   );
 
-  // Dynamic product count for each category
+  // Dynamic product count for each category matching visible items
   const getCategoryCount = (categoryName: string) => {
-    return products.filter((p) => productMatchesCategory(p, categoryName)).length;
+    return products.filter((p) => {
+      if (isDemoProduct(p)) return false;
+      if (!isAdminLoggedIn && !isProductActive(p)) return false;
+      return productMatchesCategory(p, categoryName);
+    }).length;
   };
 
   // Toggle handlers for multi-select
@@ -157,7 +165,7 @@ export const ShopPage: React.FC = () => {
     setSelectedGemstones([]);
     setSelectedOccasions([]);
     setSelectedAvailability([]);
-    setPriceRange([500, 50000]);
+    setPriceRange([0, 100000]);
     setSearchQuery('');
     resetStoreFilters();
     setCurrentPage(1);
@@ -210,6 +218,11 @@ export const ShopPage: React.FC = () => {
   // Calculate live price and filter products
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
+      // Exclude demo products
+      if (isDemoProduct(product)) return false;
+      // Exclude unpublished drafts from customer catalogue view
+      if (!isAdminLoggedIn && !isProductActive(product)) return false;
+
       // 1. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -264,25 +277,27 @@ export const ShopPage: React.FC = () => {
       }
 
       // 10. Live Price Range
-      const currentRate = getRate(product.metalType, product.metalPurity);
-      const calcPrice = calculateJewelleryPrice({
-        pricingMode: product.pricingMode,
-        fixedPrice: product.fixedPrice,
-        metalType: product.metalType,
-        purity: product.metalPurity,
-        netWeightGrams: product.netWeightGrams,
-        ratePerGram: currentRate,
-        makingChargeType: product.makingChargeType,
-        makingChargeValue: product.makingChargeValue,
-        wastagePercentage: product.wastagePercentage,
-        gemstones: product.gemstones,
-        certificationCharge: product.certificationCharge,
-        packagingCharge: product.packagingCharge,
-        gstPercentage: product.gstPercentage,
-      }).finalPrice;
+      if (product.pricingMode !== 'ENQUIRY') {
+        const currentRate = getRate(product.metalType, product.metalPurity);
+        const calcPrice = calculateJewelleryPrice({
+          pricingMode: product.pricingMode,
+          fixedPrice: product.fixedPrice,
+          metalType: product.metalType,
+          purity: product.metalPurity,
+          netWeightGrams: product.netWeightGrams,
+          ratePerGram: currentRate,
+          makingChargeType: product.makingChargeType,
+          makingChargeValue: product.makingChargeValue,
+          wastagePercentage: product.wastagePercentage,
+          gemstones: product.gemstones,
+          certificationCharge: product.certificationCharge,
+          packagingCharge: product.packagingCharge,
+          gstPercentage: product.gstPercentage,
+        }).finalPrice;
 
-      if (calcPrice < priceRange[0] || calcPrice > priceRange[1]) {
-        return false;
+        if (calcPrice < priceRange[0] || calcPrice > priceRange[1]) {
+          return false;
+        }
       }
 
       return true;
@@ -302,6 +317,26 @@ export const ShopPage: React.FC = () => {
     getRate,
   ]);
 
+  // Helper to compute live final price for accurate sorting
+  const getProductLivePrice = (p: Product) => {
+    const rate = getRate(p.metalType, p.metalPurity);
+    return calculateJewelleryPrice({
+      pricingMode: p.pricingMode,
+      fixedPrice: p.fixedPrice,
+      metalType: p.metalType,
+      purity: p.metalPurity,
+      netWeightGrams: p.netWeightGrams,
+      ratePerGram: rate,
+      makingChargeType: p.makingChargeType,
+      makingChargeValue: p.makingChargeValue,
+      wastagePercentage: p.wastagePercentage,
+      gemstones: p.gemstones,
+      certificationCharge: p.certificationCharge,
+      packagingCharge: p.packagingCharge,
+      gstPercentage: p.gstPercentage,
+    }).finalPrice;
+  };
+
   // Sort Products
   const sortedProducts = useMemo(() => {
     const list = [...filteredProducts];
@@ -312,14 +347,14 @@ export const ShopPage: React.FC = () => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     } else if (sortBy === 'PRICE_LOW_HIGH') {
-      list.sort((a, b) => a.grossWeightGrams - b.grossWeightGrams);
+      list.sort((a, b) => getProductLivePrice(a) - getProductLivePrice(b));
     } else if (sortBy === 'PRICE_HIGH_LOW') {
-      list.sort((a, b) => b.grossWeightGrams - a.grossWeightGrams);
+      list.sort((a, b) => getProductLivePrice(b) - getProductLivePrice(a));
     } else if (sortBy === 'RATING') {
       list.sort((a, b) => b.rating - a.rating);
     }
     return list;
-  }, [filteredProducts, sortBy]);
+  }, [filteredProducts, sortBy, getRate]);
 
   // Pagination calculations (Image 2)
   const totalPages = Math.max(1, Math.ceil(sortedProducts.length / ITEMS_PER_PAGE));
@@ -383,7 +418,7 @@ export const ShopPage: React.FC = () => {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => setFilterDrawerOpen(!filterDrawerOpen)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#FAF8F3] hover:bg-[#FAF3E6] border border-[#E7E1D7] text-[#1B1A18] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#FAF8F3] hover:bg-[#FAF3E6] border border-[#E7E1D7] text-[#1B1A18] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors lg:hidden"
           >
             <SlidersHorizontal className="w-4 h-4 text-[#A67C32]" />
             <span>Filters</span>
@@ -408,22 +443,7 @@ export const ShopPage: React.FC = () => {
           </span>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-[#6F6A62] absolute left-3 top-2.5" />
-          <input
-            type="text"
-            placeholder="Search silver rings, maalas, gemstones..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1B1A18] focus:outline-none focus:border-[#A67C32]"
-          />
-        </div>
-
-        {/* Sorting Dropdown & View Mode */}
+        {/* Sorting Dropdown */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
           <select
             value={sortBy}
@@ -439,23 +459,6 @@ export const ShopPage: React.FC = () => {
             <option value="PRICE_HIGH_LOW">Sort by: Price (High to Low)</option>
             <option value="RATING">Sort by: Highest Rated</option>
           </select>
-
-          <div className="flex items-center border border-[#E7E1D7] rounded-xl overflow-hidden bg-[#FAF8F3]">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-[#3E1616] text-white' : 'text-[#6F6A62]'}`}
-              title="Grid View"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-[#3E1616] text-white' : 'text-[#6F6A62]'}`}
-              title="List View"
-            >
-              <List className="w-4 h-4" />
-            </button>
-          </div>
         </div>
       </div>
 
@@ -532,14 +535,23 @@ export const ShopPage: React.FC = () => {
 
       {/* Main Grid + Filter Sidebar Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start relative">
-        {/* Filter Sidebar (Desktop Sticky / Mobile toggleable) - Exactly matching Image 1 */}
+        {/* Mobile Filter Drawer Backdrop */}
+        {filterDrawerOpen && (
+          <div
+            onClick={() => setFilterDrawerOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 lg:hidden"
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Filter Sidebar (Desktop Sticky / Mobile toggleable) */}
         <aside
           className={`${filterDrawerOpen
-              ? 'fixed inset-x-4 top-20 z-50 max-h-[90vh] overflow-y-auto lg:static lg:inset-auto lg:top-auto lg:z-auto lg:max-h-none'
+              ? 'fixed inset-x-4 top-20 z-50 max-h-[85vh] overflow-y-auto lg:z-auto'
               : 'hidden lg:block'
-            } lg:col-span-1 self-start`}
+            } lg:col-span-1 lg:sticky lg:top-32 self-start`}
         >
-          <div className="bg-white border border-[#E7E1D7] rounded-2xl p-5 sm:p-6 space-y-5 shadow-xs">
+          <div className="bg-white border border-[#E7E1D7] rounded-2xl p-5 sm:p-6 space-y-5 shadow-xs lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto overscroll-contain">
             {/* Header: Filters & Clear All */}
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E1D7]">
               <h3 className="font-serif font-bold text-lg text-[#1B1A18]">Filters</h3>
@@ -624,7 +636,7 @@ export const ShopPage: React.FC = () => {
                   <div className="relative pt-1 pb-1">
                     <input
                       type="range"
-                      min={500}
+                      min={0}
                       max={100000}
                       step={500}
                       value={priceRange[1]}
@@ -791,24 +803,34 @@ export const ShopPage: React.FC = () => {
           {sortedProducts.length === 0 ? (
             <div className="bg-white border border-[#E7E1D7] rounded-2xl p-12 text-center space-y-4 shadow-xs">
               <Search className="w-12 h-12 text-[#A67C32] mx-auto opacity-50" />
-              <h3 className="font-serif font-bold text-xl text-[#1B1A18]">No Jewellery Matches Your Filter</h3>
+              <h3 className="font-serif font-bold text-xl text-[#1B1A18]">
+                {activeFiltersCount > 0 ? 'No Jewellery Matches Your Filter' : 'New Collections Arriving Soon'}
+              </h3>
               <p className="text-xs text-[#6F6A62] max-w-sm mx-auto">
-                Try resetting selected categories, price range, or gemstone filters to explore the rest of the collection.
+                {activeFiltersCount > 0
+                  ? 'Try resetting selected categories, price range, or gemstone filters to explore the rest of the collection.'
+                  : 'Our handcrafted 925 sterling silver creations, spiritual maalas and certified gemstone rings are currently being verified and curated. Please check back shortly or contact our master artisans for bespoke jewellery.'}
               </p>
-              <button
-                onClick={handleClearAll}
-                className="px-6 py-2.5 bg-[#3E1616] hover:bg-[#2A0F0F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md"
-              >
-                Reset All Filters
-              </button>
+              {activeFiltersCount > 0 ? (
+                <button
+                  onClick={handleClearAll}
+                  className="px-6 py-2.5 bg-[#3E1616] hover:bg-[#2A0F0F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
+                >
+                  Reset All Filters
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigateTo('/contact')}
+                  className="px-6 py-2.5 bg-[#3E1616] hover:bg-[#2A0F0F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
+                >
+                  Contact For Custom Jewellery
+                </button>
+              )}
             </div>
           ) : (
             <>
               {/* Product Cards Grid */}
-              <div
-                className={`grid gap-3 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
-                  }`}
-              >
+              <div className="grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
                 {paginatedProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

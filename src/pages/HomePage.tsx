@@ -15,6 +15,7 @@ import { NavarathnaGemstonesShowcase } from '../components/storefront/Navarathna
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { CubeButton } from '../components/ui/CubeButton';
 import { isGemstoneProduct, productMatchesCategory } from '../utils/productFilters';
+import { isDemoProduct } from '../utils/supplierProducts';
 const spiritualCollectionImage = 'https://images.unsplash.com/photo-1611591475281-a120023a105f?auto=format&fit=crop&w=800&q=80';
 import {
   ShieldCheck,
@@ -89,7 +90,8 @@ export const HomePage: React.FC = () => {
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const activeHeroSlide = heroSlides[activeHeroIndex] || heroSlides[0];
 
-  const activeProducts = products.filter((product) => product.status === 'ACTIVE');
+  const nonDemoProducts = products.filter((p) => !isDemoProduct(p));
+  const activeProducts = nonDemoProducts.filter((product) => product.status === 'ACTIVE' && product.enabled !== false);
   const rankedActiveProducts = [...activeProducts].sort((a, b) => {
     const ratingDifference = (b.rating || 0) - (a.rating || 0);
     if (ratingDifference !== 0) return ratingDifference;
@@ -102,14 +104,14 @@ export const HomePage: React.FC = () => {
       : rankedActiveProducts
   ).slice(0, 4);
 
-  const ringsList = products
+  const ringsList = nonDemoProducts
     .filter((p) => p.status === 'ACTIVE' && productMatchesCategory(p, 'Rings'))
     .slice(0, 4);
-  const neckJewelleryList = products
+  const neckJewelleryList = nonDemoProducts
     .filter((p) => p.status === 'ACTIVE' && productMatchesCategory(p, 'Neck Jewellery'))
     .slice(0, 4);
-  const gemstonesList = products.filter((p) => p.category === 'Gemstones' && p.status === 'ACTIVE').slice(0, 4);
-  const godStatuesList = products.filter((p) => p.category === 'God Small Statues' && p.status === 'ACTIVE').slice(0, 4);
+  const gemstonesList = nonDemoProducts.filter((p) => p.category === 'Gemstones' && p.status === 'ACTIVE').slice(0, 4);
+  const godStatuesList = nonDemoProducts.filter((p) => p.category === 'God Small Statues' && p.status === 'ACTIVE').slice(0, 4);
 
   // Single representative product from each distinct category for auto-moving bestseller slots
   const allCategoryNames = [
@@ -1067,48 +1069,34 @@ export const HomePage: React.FC = () => {
           {/* Cards Asymmetric Grid: Card 1 is extra wide (50%), accompanied by 2 product cards (25% each) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 lg:gap-6 items-stretch">
 
-            {/* Card 1: Extra-Wide Featured Dark Hero Pendant Card (Navigates to Pendants) */}
+            {/* Card 1: Extra-Wide Featured Dark Hero Card (Navigates to Shop) */}
             <div
               onClick={() => {
-                setSelectedCategory('Pendants');
                 navigateTo('/shop');
               }}
               className="md:col-span-2 lg:col-span-6 relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 group cursor-pointer bg-[#200407] min-h-[420px] flex flex-col justify-between p-6 sm:p-8 border border-[#4A1118]"
             >
-              {/* Background Image of Ganesha Om Divine Pendant on rock positioned prominently on the right */}
               <img
-                src="/bestseller-featured-pendant.png"
-                alt="Divine Omkara Diamond Studded Silver Pendant"
-                className="absolute inset-0 w-full h-full object-cover object-[80%_center] group-hover:scale-106 transition-transform duration-700 ease-out"
+                src="/hero/hero1.png"
+                alt="Guru Diamonds Pure 925 Silver Jewellery"
+                className="absolute inset-0 w-full h-full object-cover object-[80%_center] group-hover:scale-106 transition-transform duration-700 ease-out opacity-85"
               />
-              {/* Soft dark gradient on left half to give text high contrast while clearly revealing the pendant on the right */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#1F0407]/95 via-[#1F0407]/70 to-[#1F0407]/30 sm:bg-gradient-to-r sm:from-[#1F0407]/95 sm:via-[#1F0407]/75 sm:to-transparent pointer-events-none" />
 
-              {/* Top Badge */}
               <div className="relative z-10">
                 <span className="bg-[#D4A759] text-[#1B1107] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.14em] px-3 py-1 rounded-sm shadow-sm inline-block">
-                  BEST SELLER
+                  AUTHENTIC CRAFTSMANSHIP
                 </span>
               </div>
 
-              {/* Bottom Content Area (Comfortably fits on the left side) */}
               <div className="relative z-10 space-y-4 max-w-[280px] sm:max-w-[340px] pt-12 sm:pt-16">
                 <div>
                   <h3 className="font-serif text-xl sm:text-2xl lg:text-3xl font-medium text-[#FFFDF9] leading-snug group-hover:text-[#E5BA78] transition-colors">
-                    Divine Omkara Diamond Studded Silver Pendant
+                    Heritage Silver Jewellery & Spiritual Maalas
                   </h3>
                   <p className="text-[11px] sm:text-xs uppercase tracking-[0.18em] text-[#D8B474] font-semibold mt-2">
-                    925 SILVER | WHITE
+                    925 STERLING SILVER | CERTIFIED GEMSTONES
                   </p>
-                </div>
-
-                <div className="flex items-baseline gap-2 pt-1">
-                  <span className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-white tracking-tight">
-                    ₹3,914
-                  </span>
-                  <span className="text-sm sm:text-base text-[#D1B59F] line-through font-normal">
-                    ₹4,606
-                  </span>
                 </div>
 
                 <div className="pt-2">
@@ -1116,7 +1104,7 @@ export const HomePage: React.FC = () => {
                     type="button"
                     className="inline-flex items-center gap-2 px-6 sm:px-7 py-3 rounded-sm bg-white hover:bg-[#FAF0E6] text-[#280409] text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] shadow-md group-hover:gap-3.5 transition-all cursor-pointer"
                   >
-                    <span>VIEW PRODUCT</span>
+                    <span>EXPLORE CATALOGUE</span>
                     <ArrowRight className="w-3.5 h-3.5 text-[#280409]" />
                   </button>
                 </div>
@@ -1124,13 +1112,13 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Auto-moving 2nd & 3rd Cards Across All Categories (2-Column on Mobile) */}
-            <div
-              className="md:col-span-2 lg:col-span-6 grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-5 relative pb-8 group/bestseller-carousel items-stretch"
-              onMouseEnter={() => setIsBestsellerPaused(true)}
-              onMouseLeave={() => setIsBestsellerPaused(false)}
-            >
-              {/* Product Slot 1 */}
-              {categoryShowcaseProducts.length > 0 && (
+            {categoryShowcaseProducts.length > 0 ? (
+              <div
+                className="md:col-span-2 lg:col-span-6 grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-5 relative pb-8 group/bestseller-carousel items-stretch"
+                onMouseEnter={() => setIsBestsellerPaused(true)}
+                onMouseLeave={() => setIsBestsellerPaused(false)}
+              >
+                {/* Product Slot 1 */}
                 <div
                   key={`slot1-${categoryShowcaseProducts[bestsellerSlideIndex % categoryShowcaseProducts.length]?.id}`}
                   className="flex flex-col h-full transition-all duration-500 ease-out"
@@ -1139,52 +1127,66 @@ export const HomePage: React.FC = () => {
                     product={categoryShowcaseProducts[bestsellerSlideIndex % categoryShowcaseProducts.length]}
                   />
                 </div>
-              )}
 
-              {/* Product Slot 2 */}
-              {categoryShowcaseProducts.length > 1 && (
-                <div
-                  key={`slot2-${categoryShowcaseProducts[(bestsellerSlideIndex + 1) % categoryShowcaseProducts.length]?.id}`}
-                  className="flex flex-col h-full transition-all duration-500 ease-out"
-                >
-                  <ProductCard
-                    product={categoryShowcaseProducts[(bestsellerSlideIndex + 1) % categoryShowcaseProducts.length]}
-                  />
-                </div>
-              )}
+                {/* Product Slot 2 */}
+                {categoryShowcaseProducts.length > 1 && (
+                  <div
+                    key={`slot2-${categoryShowcaseProducts[(bestsellerSlideIndex + 1) % categoryShowcaseProducts.length]?.id}`}
+                    className="flex flex-col h-full transition-all duration-500 ease-out"
+                  >
+                    <ProductCard
+                      product={categoryShowcaseProducts[(bestsellerSlideIndex + 1) % categoryShowcaseProducts.length]}
+                    />
+                  </div>
+                )}
 
-              {/* Floating Slide Navigation Controls on Right */}
-              <div className="absolute bottom-0 right-0 flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2 z-10 pt-1">
-                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#9A622A] truncate max-w-[200px]">
-                  {categoryShowcaseProducts[bestsellerSlideIndex % categoryShowcaseProducts.length]?.category || 'Category'} &{' '}
-                  {categoryShowcaseProducts[(bestsellerSlideIndex + 1) % categoryShowcaseProducts.length]?.category || 'Jewellery'}
-                </span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setBestsellerSlideIndex((prev) =>
-                        prev === 0 ? categoryShowcaseProducts.length - 1 : prev - 1
-                      )
-                    }
-                    className="w-6 h-6 rounded-full bg-white border border-[#E0D0BE] flex items-center justify-center text-[#281C18] hover:bg-[#7A1822] hover:text-white transition-all shadow-2xs cursor-pointer"
-                    aria-label="Previous Category"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setBestsellerSlideIndex((prev) => (prev + 1) % categoryShowcaseProducts.length)
-                    }
-                    className="w-6 h-6 rounded-full bg-white border border-[#E0D0BE] flex items-center justify-center text-[#281C18] hover:bg-[#7A1822] hover:text-white transition-all shadow-2xs cursor-pointer"
-                    aria-label="Next Category"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                {/* Floating Slide Navigation Controls on Right */}
+                <div className="absolute bottom-0 right-0 flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2 z-10 pt-1">
+                  <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#9A622A] truncate max-w-[200px]">
+                    {categoryShowcaseProducts[bestsellerSlideIndex % categoryShowcaseProducts.length]?.category || 'Category'} &{' '}
+                    {categoryShowcaseProducts[(bestsellerSlideIndex + 1) % categoryShowcaseProducts.length]?.category || 'Jewellery'}
+                  </span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBestsellerSlideIndex((prev) =>
+                          prev === 0 ? categoryShowcaseProducts.length - 1 : prev - 1
+                        )
+                      }
+                      className="w-6 h-6 rounded-full bg-white border border-[#E0D0BE] flex items-center justify-center text-[#281C18] hover:bg-[#7A1822] hover:text-white transition-all shadow-2xs cursor-pointer"
+                      aria-label="Previous Category"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBestsellerSlideIndex((prev) => (prev + 1) % categoryShowcaseProducts.length)
+                      }
+                      className="w-6 h-6 rounded-full bg-white border border-[#E0D0BE] flex items-center justify-center text-[#281C18] hover:bg-[#7A1822] hover:text-white transition-all shadow-2xs cursor-pointer"
+                      aria-label="Next Category"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="md:col-span-2 lg:col-span-6 flex flex-col justify-center items-center text-center p-8 bg-white border border-[#E7E1D7] rounded-2xl shadow-xs">
+                <Sparkles className="w-10 h-10 text-[#A67C32] mb-3 opacity-60" />
+                <h4 className="font-serif font-bold text-lg text-[#1B1A18]">Curated Collections In Verification</h4>
+                <p className="text-xs text-[#6F6A62] max-w-xs mt-1">
+                  Our master craftsmen are currently verifying weights, purity, and certification for upcoming silver releases.
+                </p>
+                <button
+                  onClick={() => navigateTo('/shop')}
+                  className="mt-4 px-5 py-2 bg-[#3E1616] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#2A0F0F] transition-all cursor-pointer"
+                >
+                  View All Categories
+                </button>
+              </div>
+            )}
 
           </div>
         </div>
@@ -1322,85 +1324,89 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 4. Handcrafted Rings Collection Showcase */}
-      <section className="bg-[#FBF6EE] py-14 sm:py-24 border-y border-[#E9D9C5]/80">
-        <div className="max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between border-b border-[#E9D9C5] pb-5 gap-4 text-center sm:text-left">
-            <div className="space-y-1 w-full sm:w-auto">
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="text-xs font-bold uppercase tracking-widest text-[#7A1822]">
-                  Timeless Masterpieces
-                </span>
-                <span className="h-[1px] w-8 sm:w-12 bg-[#7A1822]/40" />
+      {ringsList.length > 0 && (
+        <section className="bg-[#FBF6EE] py-14 sm:py-24 border-y border-[#E9D9C5]/80">
+          <div className="max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between border-b border-[#E9D9C5] pb-5 gap-4 text-center sm:text-left">
+              <div className="space-y-1 w-full sm:w-auto">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#7A1822]">
+                    Timeless Masterpieces
+                  </span>
+                  <span className="h-[1px] w-8 sm:w-12 bg-[#7A1822]/40" />
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#281C18]">
+                  Handcrafted Rings Collection
+                </h2>
+                <p className="text-xs sm:text-sm text-[#796A65] max-w-2xl mx-auto sm:mx-0">
+                  Exquisitely crafted 925 sterling silver and astrological gemstone rings designed for elegance, power, and prestige.
+                </p>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#281C18]">
-                Handcrafted Rings Collection
-              </h2>
-              <p className="text-xs sm:text-sm text-[#796A65] max-w-2xl mx-auto sm:mx-0">
-                Exquisitely crafted 925 sterling silver and astrological gemstone rings designed for elegance, power, and prestige.
-              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('Rings');
+                  navigateTo('/shop');
+                }}
+                className="btn-12 btn-12-burgundy shrink-0 cursor-pointer self-center sm:self-auto"
+              >
+                <span>Explore Rings</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCategory('Rings');
-                navigateTo('/shop');
-              }}
-              className="btn-12 btn-12-burgundy shrink-0 cursor-pointer self-center sm:self-auto"
-            >
-              <span>Explore Rings</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {ringsList.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              {ringsList.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 4.5. Certified Precious Gemstones & Navarathna Showcase */}
       <NavarathnaGemstonesShowcase />
 
       {/* 5. Handcrafted Neck Jewellery Collection Showcase */}
-      <section className="relative w-full bg-[#FAF6F0] py-14 sm:py-24 border-b border-[#E9D9C5] overflow-hidden">
-        <div className="relative z-10 max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between border-b border-[#E9D9C5]/80 pb-5 gap-4 text-center sm:text-left">
-            <div className="space-y-1 w-full sm:w-auto">
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.25em] text-[#7A1822]">
-                  Timeless Elegance
-                </span>
-                <span className="h-[1px] w-8 sm:w-12 bg-[#7A1822]/40" />
+      {neckJewelleryList.length > 0 && (
+        <section className="relative w-full bg-[#FAF6F0] py-14 sm:py-24 border-b border-[#E9D9C5] overflow-hidden">
+          <div className="relative z-10 max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between border-b border-[#E9D9C5]/80 pb-5 gap-4 text-center sm:text-left">
+              <div className="space-y-1 w-full sm:w-auto">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.25em] text-[#7A1822]">
+                    Timeless Elegance
+                  </span>
+                  <span className="h-[1px] w-8 sm:w-12 bg-[#7A1822]/40" />
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1B1A18] tracking-tight">
+                  Handcrafted Neck Jewellery Collection
+                </h2>
+                <p className="text-xs sm:text-sm text-[#6F6A62] max-w-2xl mx-auto sm:mx-0">
+                  Exquisite 925 sterling silver necklaces, malas, and sacred pendants designed for timeless beauty and spiritual grace.
+                </p>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1B1A18] tracking-tight">
-                Handcrafted Neck Jewellery Collection
-              </h2>
-              <p className="text-xs sm:text-sm text-[#6F6A62] max-w-2xl mx-auto sm:mx-0">
-                Exquisite 925 sterling silver necklaces, malas, and sacred pendants designed for timeless beauty and spiritual grace.
-              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('Neck Jewellery');
+                  navigateTo('/shop');
+                }}
+                className="btn-12 btn-12-burgundy shrink-0 cursor-pointer self-center sm:self-auto"
+              >
+                <span>Explore Neck Jewellery</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCategory('Neck Jewellery');
-                navigateTo('/shop');
-              }}
-              className="btn-12 btn-12-burgundy shrink-0 cursor-pointer self-center sm:self-auto"
-            >
-              <span>Explore Neck Jewellery</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {neckJewelleryList.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              {neckJewelleryList.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 6. Bespoke Customisation Service Banner (Left-Aligned with Reference Layout) */}
       <section className="relative w-full bg-[url('/bespoke-custom-bg.png')] bg-cover bg-center lg:bg-right bg-no-repeat text-[#FFF9F0] py-18 sm:py-24 lg:py-28 border-y border-[#B8893D]/40 overflow-hidden">
@@ -1503,38 +1509,40 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 7. God Statues & Devotional Artifacts Feature */}
-      <section className="bg-[#F3DDD7] py-14 sm:py-24 border-b border-[#E9D9C5]">
-        <div className="max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between border-b border-[#E9D9C5] pb-5 gap-4 text-center sm:text-left">
-            <div className="space-y-1 w-full sm:w-auto">
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="text-xs font-bold uppercase tracking-widest text-[#7A1822]">Puja & Devotional</span>
-                <span className="h-[1px] w-8 sm:w-12 bg-[#7A1822]/40" />
+      {godStatuesList.length > 0 && (
+        <section className="bg-[#F3DDD7] py-14 sm:py-24 border-b border-[#E9D9C5]">
+          <div className="max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between border-b border-[#E9D9C5] pb-5 gap-4 text-center sm:text-left">
+              <div className="space-y-1 w-full sm:w-auto">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#7A1822]">Puja & Devotional</span>
+                  <span className="h-[1px] w-8 sm:w-12 bg-[#7A1822]/40" />
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#281C18]">God Small Statues & Silver Pendants</h2>
+                <p className="text-xs sm:text-sm text-[#796A65] max-w-2xl mx-auto sm:mx-0">
+                  Pure 925 hallmarked silver idols and sacred devotional accessories crafted for auspicious home mandirs and divine gifting.
+                </p>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#281C18]">God Small Statues & Silver Pendants</h2>
-              <p className="text-xs sm:text-sm text-[#796A65] max-w-2xl mx-auto sm:mx-0">
-                Pure 925 hallmarked silver idols and sacred devotional accessories crafted for auspicious home mandirs and divine gifting.
-              </p>
+              <button
+                onClick={() => {
+                  setSelectedCategory('God Small Statues');
+                  navigateTo('/shop');
+                }}
+                className="btn-12 btn-12-burgundy shrink-0 cursor-pointer self-center sm:self-auto"
+              >
+                <span>View Statues & Idols</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              onClick={() => {
-                setSelectedCategory('God Small Statues');
-                navigateTo('/shop');
-              }}
-              className="btn-12 btn-12-burgundy shrink-0 cursor-pointer self-center sm:self-auto"
-            >
-              <span>View Statues & Idols</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {godStatuesList.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              {godStatuesList.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 7.5. What Others Say (Testimonials Carousel) */}
       <TestimonialCarousel />

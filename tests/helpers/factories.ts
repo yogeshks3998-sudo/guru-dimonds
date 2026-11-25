@@ -112,5 +112,7 @@ export const orderFactory = (overrides: Partial<Order> = {}): Order => {
     metalRateSnapshotAtPlacement: overrides.metalRateSnapshotAtPlacement || { GOLD_24K: 7450 },
     history: overrides.history || [{ status: 'CONFIRMED', timestamp: now, note: 'Jest order', updatedBy: 'Jest' }],
     gstInvoiceNumber: overrides.gstInvoiceNumber || `INV-JEST-${Date.now()}`,
+    courierPartner: overrides.courierPartner,
+    trackingNumber: overrides.trackingNumber,
   };
 };

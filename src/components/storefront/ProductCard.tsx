@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { canPurchaseProduct } from '../../utils/supplierProducts';
 import { Product } from '../../types';
 import { calculateJewelleryPrice } from '../../utils/pricing';
 import { useMetalRateStore } from '../../stores/useMetalRateStore';
@@ -9,14 +10,19 @@ import { formatINR } from '../../utils/formatters';
 import { navigateTo } from '../../utils/navigation';
 import { Badge } from '../ui/Badge';
 import { ImageWithFallback } from '../ui/ImageWithFallback';
-import { Heart, Star, Eye, ShoppingBag } from 'lucide-react';
+import { Heart, Star, Eye, ShoppingBag, Phone } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
   onQuickView?: (product: Product) => void;
+  imageAspectRatio?: '1:1' | '4:5';
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onQuickView,
+  imageAspectRatio = '1:1',
+}) => {
   const [isHovered, setIsHovered] = useState(false);
   const { getRate } = useMetalRateStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
@@ -49,12 +55,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!canPurchaseProduct(product)) return;
     addItem({ product, quantity: 1 });
     showToast('Added to Cart', `${product.name} added to your shopping bag.`);
   };
 
   // Single most relevant badge to keep card clean and uncluttered
   const primaryBadge = (() => {
+    if (product.pricingMode === 'ENQUIRY' || product.badges?.includes('CALL_TO_ORDER')) {
+      return { label: 'CALL TO ORDER', variant: 'gold' as const };
+    }
     if (product.badges?.includes('BEST_SELLER')) {
       return { label: 'BEST SELLER', variant: 'gold' as const };
     }
@@ -80,8 +90,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
     return null;
   })();
 
-  const primaryImg = product.images[0] || 'https://images.unsplash.com/photo-1611591475281-a120023a105f?auto=format&fit=crop&w=600&q=80';
+  const primaryImg = product.images[0] || '/images/product-placeholder.svg';
   const secondaryImg = product.images[1] || primaryImg;
+  const hasSecondary = Boolean(product.images[1] && product.images[1] !== primaryImg);
 
   return (
     <div
@@ -90,15 +101,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
       onMouseLeave={() => setIsHovered(false)}
       className="group relative bg-[#FFFFFF] border border-[#E9D9C5] rounded-2xl overflow-hidden hover:shadow-xl hover:border-[#B8893D]/60 transition-all duration-300 flex flex-col h-full cursor-pointer"
     >
-      {/* Product Image Area */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#FFF9F0]">
+      {/* Product Image Area: 1:1 Aspect Ratio by default */}
+      <div className={`relative ${imageAspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-square'} overflow-hidden bg-[#FFF9F0]`}>
+        {/* Main Product Image (1st Image) */}
         <ImageWithFallback
-          src={isHovered ? secondaryImg : primaryImg}
-          fallbackSrc={primaryImg}
+          src={primaryImg}
+          fallbackSrc="/images/product-placeholder.svg"
           alt={product.name}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          className={`w-full h-full object-cover object-center transition-all duration-500 group-hover:scale-105 ${
+            hasSecondary ? 'group-hover:opacity-0' : ''
+          }`}
           loading="lazy"
         />
+
+        {/* Hover Secondary Image (2nd Image) */}
+        {hasSecondary && (
+          <ImageWithFallback
+            src={secondaryImg}
+            fallbackSrc={primaryImg}
+            alt={`${product.name} - Alternate View`}
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 pointer-events-none"
+            loading="lazy"
+          />
+        )}
 
         {/* Single Primary Badge */}
         {primaryBadge && (
@@ -148,12 +173,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           {/* Metal & Purity tag */}
           <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-[#796A65] font-medium tracking-wider uppercase mb-1">
             <span className="truncate max-w-[75%]">
-              {product.metalPurity} {product.metalType}
+              {product.metalPurity === 'UNVERIFIED' ? 'Purity pending' : product.metalPurity} {product.metalType}
             </span>
             <div className="flex items-center gap-0.5 sm:gap-1 text-[#B8893D] shrink-0">
               <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
               <span className="font-bold text-[#281C18]">
-                {typeof product.rating === 'number' ? Number(product.rating).toFixed(1) : product.rating || '5.0'}
+                {product.reviewCount ? Number(product.rating).toFixed(1) : 'No reviews'}
               </span>
             </div>
           </div>
@@ -166,23 +191,47 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
         {/* Price & Action */}
         <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-[#E9D9C5] flex items-center justify-between gap-1">
           <div className="min-w-0">
-            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap min-h-[1.25rem] sm:min-h-[1.5rem]">
-              <span className="text-xs sm:text-base font-bold text-[#7A1822]">{formatINR(finalPrice)}</span>
-              {compareAt && compareAt > finalPrice && (
-                <span className="text-[10px] sm:text-xs text-[#796A65] line-through">{formatINR(compareAt)}</span>
-              )}
-            </div>
-            <span className="text-[9px] sm:text-[10px] text-[#2E7D5B] font-semibold block truncate">3% GST Included</span>
+            {product.pricingMode === 'ENQUIRY' ? (
+              <>
+                <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap min-h-[1.25rem] sm:min-h-[1.5rem]">
+                  <span className="text-xs sm:text-sm font-bold text-[#7A1822]">Contact for Price / Order</span>
+                </div>
+                <span className="text-[9px] sm:text-[10px] text-[#B8893D] font-semibold block truncate">Direct Artisan Consultation</span>
+              </>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap min-h-[1.25rem] sm:min-h-[1.5rem]">
+                  <span className="text-xs sm:text-base font-bold text-[#7A1822]">{product.supplierReview ? 'Price on enquiry' : formatINR(finalPrice)}</span>
+                  {compareAt && compareAt > finalPrice && (
+                    <span className="text-[10px] sm:text-xs text-[#796A65] line-through">{formatINR(compareAt)}</span>
+                  )}
+                </div>
+                <span className="text-[9px] sm:text-[10px] text-[#2E7D5B] font-semibold block truncate">{product.supplierReview ? 'GST pending confirmation' : `${product.gstPercentage}% GST Included`}</span>
+              </>
+            )}
           </div>
 
-          <button
-            onClick={handleAddToCart}
-            className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0 cursor-pointer"
-            aria-label="Add to cart"
-            title="Add to shopping bag"
-          >
-            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </button>
+          {product.pricingMode === 'ENQUIRY' ? (
+            <a
+              href="tel:+917899125449"
+              onClick={(e) => e.stopPropagation()}
+              className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group/btn"
+              aria-label="Call to order"
+              title="Call to Order: +91 78991 25449"
+            >
+              <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#B8893D] group-hover/btn:text-[#FFF9F0]" />
+            </a>
+          ) : (
+            <button
+              disabled={!canPurchaseProduct(product)}
+              onClick={handleAddToCart}
+              className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0 cursor-pointer"
+              aria-label="Add to cart"
+              title="Add to shopping bag"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>

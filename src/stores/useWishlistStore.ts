@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Product } from '../types';
 import { wishlistApi } from '../services/wishlistApi';
 import { hasCustomerApiSession } from './useAuthStore';
+import { isDemoProduct } from '../utils/supplierProducts';
 
 interface WishlistState {
   wishlistIds: string[];
@@ -22,9 +23,14 @@ const getInitialWishlist = (): string[] => {
     if (d && !localStorage.getItem(LOCAL_KEY)) {
       localStorage.setItem(LOCAL_KEY, d);
     }
-    return d ? JSON.parse(d) : ['prod-1', 'prod-3']; // Default sample items
+    const parsed: string[] = d ? JSON.parse(d) : [];
+    const clean = parsed.filter((id) => !isDemoProduct(id));
+    if (clean.length !== parsed.length) {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(clean));
+    }
+    return clean;
   } catch {
-    return ['prod-1', 'prod-3'];
+    return [];
   }
 };
 

@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { Product } from '../types';
-import { INITIAL_PRODUCTS } from '../data/mockProducts';
+import { INITIAL_PRODUCTS, ALL_CATALOGUE_PRODUCTS } from '../data/mockProducts';
+import { SUPPLIER_PRODUCT_DRAFTS } from '../data/supplierProductBatches';
+import {
+  supplierPublicationError,
+  isSameSupplierProduct,
+  mergeMissingSupplierProducts,
+  isDemoProduct,
+  filterRetainedProducts,
+} from '../utils/supplierProducts';
 import { productApi } from '../services/productApi';
 
 interface ProductState {
@@ -35,25 +43,84 @@ interface ProductState {
   duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
-const STORAGE_KEY = 'guru_diamonds_products_v2';
+const STORAGE_KEY = 'guru_diamonds_products_v10';
+const LEGACY_STORAGE_KEYS = [
+  'guru_diamonds_products_v9',
+  'guru_diamonds_products_v8',
+  'guru_diamonds_products_v7',
+  'guru_diamonds_products_v6',
+  'guru_diamonds_products_v5',
+  'guru_diamonds_products_v4',
+  'guru_diamonds_products_v3',
+  'guru_diamonds_products_v2',
+  'guru_diamonds_products_v1',
+  'vedaara_products_v1',
+];
 
 function loadLocalProducts(): Product[] {
   try {
+    // Thoroughly remove all legacy caches from older versions
+    for (const legacyKey of LEGACY_STORAGE_KEYS) {
+      try {
+        localStorage.removeItem(legacyKey);
+      } catch {}
+    }
+
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return INITIAL_PRODUCTS;
+    if (!raw) {
+      saveLocalProducts(ALL_CATALOGUE_PRODUCTS);
+      return ALL_CATALOGUE_PRODUCTS;
+    }
+
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+      const cleanProducts = filterRetainedProducts(parsed);
+      const initialMap = new Map(ALL_CATALOGUE_PRODUCTS.map((p) => [p.id, p]));
+
+      // Merge cached products while ensuring real images, active status, and pricing are preserved
+      const merged: Product[] = cleanProducts.map((p) => {
+        const init = initialMap.get(p.id);
+        if (!init) return p;
+        const hasOutdatedImages = p.images?.some((img) => img.includes('/products/rings/') || img.includes('/products/earrings/'));
+        const isDraftOrMissingImages = !p.images?.length || p.status === 'DRAFT' || p.metalPurity === 'UNVERIFIED' || hasOutdatedImages;
+        if (isDraftOrMissingImages) {
+          return {
+            ...p,
+            ...init,
+            images: init.images,
+            status: 'ACTIVE' as const,
+            enabled: true,
+            fixedPrice: p.fixedPrice || init.fixedPrice,
+            metalColor: init.metalColor,
+            metalPurity: init.metalPurity,
+            variants: init.variants,
+            supplierReview: init.supplierReview,
+          };
+        }
+        return p;
+      });
+
+      // Add any missing products from ALL_CATALOGUE_PRODUCTS
+      for (const init of ALL_CATALOGUE_PRODUCTS) {
+        if (!merged.some((m) => m.id === init.id)) {
+          merged.push(init);
+        }
+      }
+
+      saveLocalProducts(merged);
+      return merged;
     }
   } catch {
     // ignore parse error
   }
-  return INITIAL_PRODUCTS;
+  saveLocalProducts(ALL_CATALOGUE_PRODUCTS);
+  return ALL_CATALOGUE_PRODUCTS;
 }
 
 function saveLocalProducts(prods: Product[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(prods));
+    const clean = filterRetainedProducts(prods);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
   } catch {
     // ignore quota error
   }
@@ -96,35 +163,47 @@ export const useProductStore = create<ProductState>((set, get) => ({
   hydrateProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const serverProducts = await productApi.listProducts();
+      const rawServerProducts = await productApi.listProducts();
+      const serverProducts = filterRetainedProducts(rawServerProducts || []);
       if (serverProducts && serverProducts.length > 0) {
+        const initialMap = new Map(ALL_CATALOGUE_PRODUCTS.map((p) => [p.id, p]));
         const local = get().products;
         const localMap = new Map(local.map((p) => [p.id, p]));
 
-        // Merge server products with local toggle status / enabled states
-        const merged = serverProducts.map((sp) => {
+        const merged: Product[] = serverProducts.map((sp) => {
           const matched = localMap.get(sp.id);
+          const init = initialMap.get(sp.id);
+          const status = matched?.status && matched.status !== 'DRAFT' ? matched.status : sp.status;
+          const hasValidMatchedImages = matched?.images && matched.images.length > 0 && !matched.images.some(i => i.includes('/products/rings/') || i.includes('/products/earrings/'));
+          const hasValidServerImages = sp.images && sp.images.length > 0 && !sp.images.some(i => i.includes('/products/rings/') || i.includes('/products/earrings/'));
+          const images = hasValidMatchedImages ? matched!.images : (hasValidServerImages ? sp.images : init?.images || []);
           return {
             ...sp,
-            status: matched?.status !== undefined ? matched.status : sp.status,
-            enabled: matched?.enabled !== undefined ? matched.enabled : (sp.enabled !== undefined ? sp.enabled : sp.status === 'ACTIVE'),
+            ...matched,
+            status,
+            enabled: matched?.enabled !== undefined ? matched.enabled : sp.enabled,
+            images,
+            fixedPrice: matched?.fixedPrice || sp.fixedPrice || init?.fixedPrice,
+            supplierReview: init?.supplierReview || sp.supplierReview,
           };
         });
 
-        // Retain any locally added products not on server
-        const serverIds = new Set(serverProducts.map((s) => s.id));
-        const extraLocal = local.filter((l) => !serverIds.has(l.id));
-        const finalProducts = [...merged, ...extraLocal];
+        // Ensure all catalogue products are present
+        for (const init of ALL_CATALOGUE_PRODUCTS) {
+          if (!merged.some((m) => m.id === init.id)) {
+            merged.push(init);
+          }
+        }
 
-        saveLocalProducts(finalProducts);
-        set({ products: finalProducts, loading: false });
+        saveLocalProducts(merged);
+        set({ products: merged, loading: false });
       } else {
-        const fallback = get().products.length ? get().products : INITIAL_PRODUCTS;
+        const fallback = get().products.length ? filterRetainedProducts(get().products) : ALL_CATALOGUE_PRODUCTS;
         saveLocalProducts(fallback);
         set({ products: fallback, loading: false });
       }
     } catch (error) {
-      const fallback = get().products.length ? get().products : INITIAL_PRODUCTS;
+      const fallback = get().products.length ? filterRetainedProducts(get().products) : ALL_CATALOGUE_PRODUCTS;
       set({
         products: fallback,
         loading: false,
@@ -153,6 +232,25 @@ export const useProductStore = create<ProductState>((set, get) => ({
     const nextProduct = get().products.find((p) => p.id === id);
     if (!nextProduct) throw new Error('Product not found');
     const merged: Product = { ...nextProduct, ...updatedFields, updatedAt: new Date().toISOString() };
+    if (nextProduct.supplierReview) {
+      merged.supplierReview = { ...(updatedFields.supplierReview || nextProduct.supplierReview), raw: nextProduct.supplierReview.raw };
+    }
+    if (merged.status === 'ACTIVE' || merged.status === 'SCHEDULED') {
+      const error = supplierPublicationError(merged);
+      if (error) throw new Error(error);
+    }
+
+    // Synchronize variant pricing and weights so variants don't retain stale disconnected values
+    if (merged.variants && merged.variants.length > 0) {
+      merged.variants = merged.variants.map((v) => ({
+        ...v,
+        price: updatedFields.fixedPrice !== undefined ? updatedFields.fixedPrice : (merged.fixedPrice || v.price),
+        compareAtPrice: updatedFields.compareAtPrice !== undefined ? updatedFields.compareAtPrice : (merged.compareAtPrice || v.compareAtPrice),
+        netWeightGrams: updatedFields.netWeightGrams !== undefined ? updatedFields.netWeightGrams : (merged.netWeightGrams || v.netWeightGrams),
+        grossWeightGrams: updatedFields.grossWeightGrams !== undefined ? updatedFields.grossWeightGrams : (merged.grossWeightGrams || v.grossWeightGrams),
+      }));
+    }
+
     const updatedProducts = get().products.map((p) => (p.id === id ? merged : p));
 
     saveLocalProducts(updatedProducts);

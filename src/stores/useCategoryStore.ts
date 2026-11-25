@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { Category } from '../types';
+import { Category, Product } from '../types';
 import { INITIAL_CATEGORIES } from '../data/mockData';
 import { productApi } from '../services/productApi';
+import { productMatchesCategory } from '../utils/productFilters';
 
-const STORAGE_KEY = 'guru_diamonds_categories_v2';
+const STORAGE_KEY = 'guru_diamonds_categories_v3';
 
 interface CategoryState {
   categories: Category[];
@@ -13,6 +14,7 @@ interface CategoryState {
   // Actions
   hydrateCategories: () => Promise<void>;
   toggleCategoryStatus: (id: string) => Promise<void>;
+  disableEmptyCategories: (products: Product[]) => Promise<void>;
   addCategory: (data: Partial<Category>) => Promise<Category>;
   updateCategory: (id: string, updated: Partial<Category>) => Promise<Category>;
   deleteCategory: (id: string) => Promise<void>;
@@ -106,6 +108,16 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch {
       // Offline / dev fallback: local update already saved
     }
+  },
+
+  disableEmptyCategories: async (products: Product[]) => {
+    const current = get().categories;
+    const updated = current.map((cat) => {
+      const count = products.filter((p) => productMatchesCategory(p, cat.name)).length;
+      return count === 0 ? { ...cat, enabled: false } : cat;
+    });
+    set({ categories: updated });
+    saveLocalCategories(updated);
   },
 
   addCategory: async (data: Partial<Category>) => {

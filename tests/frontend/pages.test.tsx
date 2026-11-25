@@ -42,6 +42,8 @@ describe('Frontend page rendering', () => {
   it('Home Page renders signature bestsellers when products do not have bestseller badges', () => {
     const productsWithoutBestsellerBadges = INITIAL_PRODUCTS.slice(0, 4).map((product) => ({
       ...product,
+      status: 'ACTIVE' as const,
+      enabled: true,
       badges: product.badges.filter((badge) => badge !== 'BEST_SELLER'),
     }));
     useProductStore.setState({ products: productsWithoutBestsellerBadges });
@@ -55,8 +57,8 @@ describe('Frontend page rendering', () => {
   it('Shop Page renders catalogue controls', () => {
     renderWithProviders(<ShopPage />);
 
-    expect(screen.getByRole('heading', { name: /Gemstones & Jewellery Catalogue/i })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Search gold rings/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Gemstones &.*Jewellery Catalogue/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Filters/i })).toBeInTheDocument();
   });
 
   it('Product Detail renders a selected product', () => {
@@ -99,7 +101,7 @@ describe('Frontend page rendering', () => {
   it('Products Table renders product catalogue admin page', () => {
     renderWithProviders(<AdminProductsPage />);
 
-    expect(screen.getByRole('heading', { name: /Jewellery Product Catalog/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Product Catalogue/i })).toBeInTheDocument();
     expect(screen.getByText(/Total Catalog Items/i)).toBeInTheDocument();
   });
 

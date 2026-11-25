@@ -1,0 +1,782 @@
+[
+  {
+    "index": 1,
+    "id": "prod-ring-1",
+    "sku": "GURU-RNG-GOM-001",
+    "slug": "royal-gomedhika-gemstone-ring",
+    "name": "Royal Gomedhika Hessonite Gemstone Ring",
+    "category": "Rings",
+    "subcategory": "Gemstone Rings",
+    "variantsCount": 5,
+    "images": [
+      "/products/Rings/gomedhika/image_1.png",
+      "/products/Rings/gomedhika/image_2.png"
+    ]
+  },
+  {
+    "index": 2,
+    "id": "prod-ring-2",
+    "sku": "GURU-RNG-002",
+    "slug": "imperial-emerald-cut-925-silver-ring",
+    "name": "Imperial Emerald Cut 925 Silver Ring",
+    "category": "Rings",
+    "subcategory": "Solitaire rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/2/image_1.png",
+      "/products/Rings/2/image_2.png"
+    ]
+  },
+  {
+    "index": 3,
+    "id": "prod-ring-3",
+    "sku": "GURU-RNG-003",
+    "slug": "solitaire-diamond-illusion-setting-band",
+    "name": "Solitaire Diamond Illusion Setting Band",
+    "category": "Rings",
+    "subcategory": "Solitaire rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/3/image_1.png",
+      "/products/Rings/3/image_2.png"
+    ]
+  },
+  {
+    "index": 4,
+    "id": "prod-ring-4",
+    "sku": "GURU-RNG-004",
+    "slug": "classic-floral-diamond-cluster-silver-ring",
+    "name": "Classic Floral Diamond Cluster Silver Ring",
+    "category": "Rings",
+    "subcategory": "Gemstone silver rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/4/image_1.png",
+      "/products/Rings/4/image_2.png"
+    ]
+  },
+  {
+    "index": 5,
+    "id": "prod-ring-5",
+    "sku": "GURU-RNG-005",
+    "slug": "princess-cut-statement-silver-ring",
+    "name": "Princess Cut Statement Silver Ring",
+    "category": "Rings",
+    "subcategory": "Solitaire rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/5/image_1.png",
+      "/products/Rings/5/image_2.png"
+    ]
+  },
+  {
+    "index": 6,
+    "id": "prod-ring-6",
+    "sku": "GURU-RNG-006",
+    "slug": "vintage-filigree-navarathna-cocktail-ring",
+    "name": "Vintage Filigree Navarathna Cocktail Ring",
+    "category": "Rings",
+    "subcategory": "Gemstone silver rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/6/image_1.png",
+      "/products/Rings/6/image_2.png"
+    ]
+  },
+  {
+    "index": 7,
+    "id": "prod-ring-7",
+    "sku": "GURU-RNG-007",
+    "slug": "oval-cut-royal-blue-sapphire-silver-band",
+    "name": "Oval Cut Royal Blue Sapphire Silver Band",
+    "category": "Rings",
+    "subcategory": "Gemstone silver rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/7/image_1.png",
+      "/products/Rings/7/image_2.png"
+    ]
+  },
+  {
+    "index": 8,
+    "id": "prod-ring-8",
+    "sku": "GURU-RNG-008",
+    "slug": "men-s-bold-onyx-diamond-silver-signet-ring",
+    "name": "Men's Bold Onyx & Diamond Silver Signet Ring",
+    "category": "Rings",
+    "subcategory": "Men’s rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/8/image_1.png",
+      "/products/Rings/8/image_2.png"
+    ]
+  },
+  {
+    "index": 9,
+    "id": "prod-ring-9",
+    "sku": "GURU-RNG-009",
+    "slug": "delicate-twin-heart-pav-diamond-ring",
+    "name": "Delicate Twin Heart Pavé Diamond Ring",
+    "category": "Rings",
+    "subcategory": "Adjustable rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/9/image_1.png",
+      "/products/Rings/9/image_2.png"
+    ]
+  },
+  {
+    "index": 10,
+    "id": "prod-ring-10",
+    "sku": "GURU-RNG-010",
+    "slug": "crown-imperial-halo-diamond-silver-ring",
+    "name": "Crown Imperial Halo Diamond Silver Ring",
+    "category": "Rings",
+    "subcategory": "Solitaire rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/10/image_1.png",
+      "/products/Rings/10/image_2.png"
+    ]
+  },
+  {
+    "index": 11,
+    "id": "prod-ring-11",
+    "sku": "GURU-RNG-011",
+    "slug": "infinity-twist-pav-sterling-silver-ring",
+    "name": "Infinity Twist Pavé Sterling Silver Ring",
+    "category": "Rings",
+    "subcategory": "Adjustable rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/11/image_1.png",
+      "/products/Rings/11/image_2.png"
+    ]
+  },
+  {
+    "index": 12,
+    "id": "prod-ring-12",
+    "sku": "GURU-RNG-012",
+    "slug": "regal-ruby-diamond-silver-cocktail-ring",
+    "name": "Regal Ruby & Diamond Silver Cocktail Ring",
+    "category": "Rings",
+    "subcategory": "Gemstone silver rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/12/image_1.png",
+      "/products/Rings/12/image_2.png"
+    ]
+  },
+  {
+    "index": 13,
+    "id": "prod-ring-13",
+    "sku": "GURU-RNG-013",
+    "slug": "pear-cut-tear-drop-solitaire-silver-ring",
+    "name": "Pear Cut Tear Drop Solitaire Silver Ring",
+    "category": "Rings",
+    "subcategory": "Solitaire rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/13/image_1.png",
+      "/products/Rings/13/image_2.png"
+    ]
+  },
+  {
+    "index": 14,
+    "id": "prod-ring-14",
+    "sku": "GURU-RNG-014",
+    "slug": "artisan-textured-dual-tone-silver-ring",
+    "name": "Artisan Textured Dual-Tone Silver Ring",
+    "category": "Rings",
+    "subcategory": "Men’s rings",
+    "variantsCount": 6,
+    "images": [
+      "/products/Rings/14/image_1.png",
+      "/products/Rings/14/image_2.png"
+    ]
+  },
+  {
+    "index": 15,
+    "id": "prod-earring-1",
+    "sku": "GURU-EAR-001",
+    "slug": "traditional-temple-navarathna-drop-earrings",
+    "name": "Traditional Temple Navarathna Drop Earrings",
+    "category": "Earrings",
+    "subcategory": "Drop Earrings",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/1/image_1.png",
+      "/products/Earrings/1/image_2.png"
+    ]
+  },
+  {
+    "index": 16,
+    "id": "prod-earring-2",
+    "sku": "GURU-EAR-002",
+    "slug": "sparkling-diamond-halo-stud-earrings",
+    "name": "Sparkling Diamond Halo Stud Earrings",
+    "category": "Earrings",
+    "subcategory": "Studs",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/2/image_1.png",
+      "/products/Earrings/2/image_2.png"
+    ]
+  },
+  {
+    "index": 17,
+    "id": "prod-earring-3",
+    "sku": "GURU-EAR-003",
+    "slug": "royal-jhumki-with-hanging-pearl-bells",
+    "name": "Royal Jhumki with Hanging Pearl Bells",
+    "category": "Earrings",
+    "subcategory": "Jhumkas",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/3/image_1.png",
+      "/products/Earrings/3/image_2.png"
+    ]
+  },
+  {
+    "index": 18,
+    "id": "prod-earring-4",
+    "sku": "GURU-EAR-004",
+    "slug": "classic-round-brilliant-solitaire-studs",
+    "name": "Classic Round Brilliant Solitaire Studs",
+    "category": "Earrings",
+    "subcategory": "Studs",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/4/image_1.png",
+      "/products/Earrings/4/image_2.png"
+    ]
+  },
+  {
+    "index": 19,
+    "id": "prod-earring-5",
+    "sku": "GURU-EAR-005",
+    "slug": "grand-chandbali-filigree-silver-earrings",
+    "name": "Grand Chandbali Filigree Silver Earrings",
+    "category": "Earrings",
+    "subcategory": "Chandbalis",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/5/image_1.png",
+      "/products/Earrings/5/image_2.png"
+    ]
+  },
+  {
+    "index": 20,
+    "id": "prod-earring-6",
+    "sku": "GURU-EAR-006",
+    "slug": "modern-geometric-drop-dangle-earrings",
+    "name": "Modern Geometric Drop Dangle Earrings",
+    "category": "Earrings",
+    "subcategory": "Drop Earrings",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/6/image_1.png",
+      "/products/Earrings/6/image_2.png"
+    ]
+  },
+  {
+    "index": 21,
+    "id": "prod-earring-7",
+    "sku": "GURU-EAR-007",
+    "slug": "floral-cluster-diamond-chandelier-earrings",
+    "name": "Floral Cluster Diamond Chandelier Earrings",
+    "category": "Earrings",
+    "subcategory": "Drop Earrings",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/7/image_1.png",
+      "/products/Earrings/7/image_2.png"
+    ]
+  },
+  {
+    "index": 22,
+    "id": "prod-earring-8",
+    "sku": "GURU-EAR-008",
+    "slug": "emerald-diamond-tiered-drop-earrings",
+    "name": "Emerald & Diamond Tiered Drop Earrings",
+    "category": "Earrings",
+    "subcategory": "Drop Earrings",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/8/image_1.png",
+      "/products/Earrings/8/image_2.png"
+    ]
+  },
+  {
+    "index": 23,
+    "id": "prod-earring-9",
+    "sku": "GURU-EAR-009",
+    "slug": "antique-oxidized-heritage-silver-jhumkas",
+    "name": "Antique Oxidized Heritage Silver Jhumkas",
+    "category": "Earrings",
+    "subcategory": "Jhumkas",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/9/image_1.png",
+      "/products/Earrings/9/image_2.png"
+    ]
+  },
+  {
+    "index": 24,
+    "id": "prod-earring-10",
+    "sku": "GURU-EAR-010",
+    "slug": "delicate-heart-drop-diamond-huggies",
+    "name": "Delicate Heart Drop Diamond Huggies",
+    "category": "Earrings",
+    "subcategory": "Hoops",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/10/image_1.png",
+      "/products/Earrings/10/image_2.png"
+    ]
+  },
+  {
+    "index": 25,
+    "id": "prod-earring-11",
+    "sku": "GURU-EAR-011",
+    "slug": "starburst-pav-diamond-silver-studs",
+    "name": "Starburst Pavé Diamond Silver Studs",
+    "category": "Earrings",
+    "subcategory": "Studs",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/11/image_1.png",
+      "/products/Earrings/11/image_2.png"
+    ]
+  },
+  {
+    "index": 26,
+    "id": "prod-earring-12",
+    "sku": "GURU-EAR-012",
+    "slug": "contemporary-loop-huggie-silver-earrings",
+    "name": "Contemporary Loop Huggie Silver Earrings",
+    "category": "Earrings",
+    "subcategory": "Hoops",
+    "variantsCount": 1,
+    "images": [
+      "/products/Earrings/12/image_1.png",
+      "/products/Earrings/12/image_2.png"
+    ]
+  },
+  {
+    "index": 27,
+    "id": "prod-pendant-1",
+    "sku": "GURU-PND-001",
+    "slug": "sacred-shree-ganesha-silver-temple-pendant",
+    "name": "Sacred Shree Ganesha Silver Temple Pendant",
+    "category": "Pendants",
+    "subcategory": "God Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/1/image_1.png",
+      "/products/Pendants/1/image_2.png"
+    ]
+  },
+  {
+    "index": 28,
+    "id": "prod-pendant-2",
+    "sku": "GURU-PND-002",
+    "slug": "divine-omkara-diamond-studded-silver-pendant",
+    "name": "Divine Omkara Diamond Studded Silver Pendant",
+    "category": "Pendants",
+    "subcategory": "Religious Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/2/image_1.png",
+      "/products/Pendants/2/image_2.png"
+    ]
+  },
+  {
+    "index": 29,
+    "id": "prod-pendant-3",
+    "sku": "GURU-PND-003",
+    "slug": "royal-emerald-halo-solitaire-silver-pendant",
+    "name": "Royal Emerald Halo Solitaire Silver Pendant",
+    "category": "Pendants",
+    "subcategory": "Gemstone Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/3/image_1.png",
+      "/products/Pendants/3/image_2.png"
+    ]
+  },
+  {
+    "index": 30,
+    "id": "prod-pendant-4",
+    "sku": "GURU-PND-004",
+    "slug": "veera-hanuman-kavach-silver-sacred-amulet",
+    "name": "Veera Hanuman Kavach Silver Sacred Amulet",
+    "category": "Pendants",
+    "subcategory": "Kavach Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/4/image_1.png",
+      "/products/Pendants/4/image_2.png"
+    ]
+  },
+  {
+    "index": 31,
+    "id": "prod-pendant-5",
+    "sku": "GURU-PND-005",
+    "slug": "navarathna-cosmic-mandala-silver-locket",
+    "name": "Navarathna Cosmic Mandala Silver Locket",
+    "category": "Pendants",
+    "subcategory": "Gemstone Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/5/image_1.png",
+      "/products/Pendants/5/image_2.png"
+    ]
+  },
+  {
+    "index": 32,
+    "id": "prod-pendant-6",
+    "sku": "GURU-PND-006",
+    "slug": "brilliant-solitaire-diamond-illusion-pendant",
+    "name": "Brilliant Solitaire Diamond Illusion Pendant",
+    "category": "Pendants",
+    "subcategory": "Gemstone Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/6/image_1.png",
+      "/products/Pendants/6/image_2.png"
+    ]
+  },
+  {
+    "index": 33,
+    "id": "prod-pendant-7",
+    "sku": "GURU-PND-007",
+    "slug": "peacock-motif-enamel-925-silver-pendant",
+    "name": "Peacock Motif Enamel & 925 Silver Pendant",
+    "category": "Pendants",
+    "subcategory": "Religious Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/7/image_1.png",
+      "/products/Pendants/7/image_2.png"
+    ]
+  },
+  {
+    "index": 34,
+    "id": "prod-pendant-8",
+    "sku": "GURU-PND-008",
+    "slug": "sacred-trishul-damru-silver-mahadev-pendant",
+    "name": "Sacred Trishul & Damru Silver Mahadev Pendant",
+    "category": "Pendants",
+    "subcategory": "Religious Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/8/image_1.png",
+      "/products/Pendants/8/image_2.png"
+    ]
+  },
+  {
+    "index": 35,
+    "id": "prod-pendant-9",
+    "sku": "GURU-PND-009",
+    "slug": "classic-tear-drop-diamond-halo-silver-pendant",
+    "name": "Classic Tear Drop Diamond Halo Silver Pendant",
+    "category": "Pendants",
+    "subcategory": "Gemstone Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/9/image_1.png",
+      "/products/Pendants/9/image_2.png"
+    ]
+  },
+  {
+    "index": 36,
+    "id": "prod-pendant-10",
+    "sku": "GURU-PND-010",
+    "slug": "lord-shiva-medallion-temple-silver-pendant",
+    "name": "Lord Shiva Medallion Temple Silver Pendant",
+    "category": "Pendants",
+    "subcategory": "God Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/10/image_1.png",
+      "/products/Pendants/10/image_2.png"
+    ]
+  },
+  {
+    "index": 37,
+    "id": "prod-pendant-11",
+    "sku": "GURU-PND-011",
+    "slug": "blossom-floral-cluster-silver-diamond-pendant",
+    "name": "Blossom Floral Cluster Silver Diamond Pendant",
+    "category": "Pendants",
+    "subcategory": "Gemstone Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/11/image_1.png",
+      "/products/Pendants/11/image_2.png"
+    ]
+  },
+  {
+    "index": 38,
+    "id": "prod-pendant-12",
+    "sku": "GURU-PND-012",
+    "slug": "infinity-heart-duo-diamond-silver-pendant",
+    "name": "Infinity Heart Duo Diamond Silver Pendant",
+    "category": "Pendants",
+    "subcategory": "Gemstone Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/12/image_1.png",
+      "/products/Pendants/12/image_2.png"
+    ]
+  },
+  {
+    "index": 39,
+    "id": "prod-pendant-13",
+    "sku": "GURU-PND-013",
+    "slug": "astrological-ruby-sun-surya-yantra-pendant",
+    "name": "Astrological Ruby Sun Surya Yantra Pendant",
+    "category": "Pendants",
+    "subcategory": "Kavach Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/13/image_1.png",
+      "/products/Pendants/13/image_2.png"
+    ]
+  },
+  {
+    "index": 40,
+    "id": "prod-pendant-14",
+    "sku": "GURU-PND-014",
+    "slug": "vintage-filigree-oval-locket-silver-pendant",
+    "name": "Vintage Filigree Oval Locket Silver Pendant",
+    "category": "Pendants",
+    "subcategory": "Religious Pendants",
+    "variantsCount": 1,
+    "images": [
+      "/products/Pendants/14/image_1.png",
+      "/products/Pendants/14/image_2.png"
+    ]
+  },
+  {
+    "index": 41,
+    "id": "prod-neck-1",
+    "sku": "GURU-NCK-001",
+    "slug": "grand-bridal-diamond-gemstone-silver-choker",
+    "name": "Grand Bridal Diamond & Gemstone Silver Choker",
+    "category": "Neck Jewellery",
+    "subcategory": "Chokers",
+    "variantsCount": 1,
+    "images": [
+      "/products/Neck%20Jewellery/1/image_1.png",
+      "/products/Neck%20Jewellery/1/image_2.png",
+      "/products/Neck%20Jewellery/1/image_3.png",
+      "/products/Neck%20Jewellery/1/image_4.png"
+    ]
+  },
+  {
+    "index": 42,
+    "id": "prod-neck-2",
+    "sku": "GURU-NCK-002",
+    "slug": "solid-925-sterling-silver-royal-link-chain",
+    "name": "Solid 925 Sterling Silver Royal Link Chain",
+    "category": "Neck Jewellery",
+    "subcategory": "Silver Chains",
+    "variantsCount": 1,
+    "images": [
+      "/products/Neck%20Jewellery/2/image_1.png",
+      "/products/Neck%20Jewellery/2/image_2.png",
+      "/products/Neck%20Jewellery/2/image_3.png"
+    ]
+  },
+  {
+    "index": 43,
+    "id": "prod-neck-3",
+    "sku": "GURU-NCK-003",
+    "slug": "traditional-antique-temple-nakshi-long-haram",
+    "name": "Traditional Antique Temple Nakshi Long Haram",
+    "category": "Neck Jewellery",
+    "subcategory": "Temple Necklaces",
+    "variantsCount": 1,
+    "images": [
+      "/products/Neck%20Jewellery/3/image_1.png",
+      "/products/Neck%20Jewellery/3/image_2.png"
+    ]
+  },
+  {
+    "index": 44,
+    "id": "prod-neck-4",
+    "sku": "GURU-NCK-004",
+    "slug": "cascading-pav-diamond-silver-statement-necklace",
+    "name": "Cascading Pavé Diamond Silver Statement Necklace",
+    "category": "Neck Jewellery",
+    "subcategory": "Chokers",
+    "variantsCount": 1,
+    "images": [
+      "/products/Neck%20Jewellery/4/image_1.png",
+      "/products/Neck%20Jewellery/4/image_2.png",
+      "/products/Neck%20Jewellery/4/image_3.png"
+    ]
+  },
+  {
+    "index": 45,
+    "id": "prod-neck-5",
+    "sku": "GURU-NCK-005",
+    "slug": "heavy-franco-curb-silver-men-s-link-chain",
+    "name": "Heavy Franco Curb Silver Men's Link Chain",
+    "category": "Neck Jewellery",
+    "subcategory": "Link Chains",
+    "variantsCount": 1,
+    "images": [
+      "/products/Neck%20Jewellery/5/image_1.png",
+      "/products/Neck%20Jewellery/5/image_2.png",
+      "/products/Neck%20Jewellery/5/image_3.png"
+    ]
+  },
+  {
+    "index": 46,
+    "id": "prod-neck-6",
+    "sku": "GURU-NCK-006",
+    "slug": "contemporary-layered-diamond-y-drop-necklace",
+    "name": "Contemporary Layered Diamond Y-Drop Necklace",
+    "category": "Neck Jewellery",
+    "subcategory": "Silver Chains",
+    "variantsCount": 1,
+    "images": [
+      "/products/Neck%20Jewellery/6/image_1.png",
+      "/products/Neck%20Jewellery/6/image_2.png"
+    ]
+  },
+  {
+    "index": 47,
+    "id": "prod-neck-7",
+    "sku": "GURU-NCK-007",
+    "slug": "regal-navarathna-silver-statement-collar",
+    "name": "Regal Navarathna Silver Statement Collar",
+    "category": "Neck Jewellery",
+    "subcategory": "Temple Necklaces",
+    "variantsCount": 1,
+    "images": [
+      "/products/Neck%20Jewellery/7/image_1.png",
+      "/products/Neck%20Jewellery/7/image_2.png"
+    ]
+  },
+  {
+    "index": 48,
+    "id": "prod-statue-1",
+    "sku": "GURU-STA-001",
+    "slug": "divine-lord-ganesha-idol-handcrafted-silver-finish",
+    "name": "Divine Lord Ganesha Idol (Handcrafted Silver Finish)",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/1/image_1.png"
+    ]
+  },
+  {
+    "index": 49,
+    "id": "prod-statue-2",
+    "sku": "GURU-STA-002",
+    "slug": "sacred-goddess-lakshmi-idol-wealth-prosperity",
+    "name": "Sacred Goddess Lakshmi Idol (Wealth & Prosperity)",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/2/image_1.png"
+    ]
+  },
+  {
+    "index": 50,
+    "id": "prod-statue-3",
+    "sku": "GURU-STA-003",
+    "slug": "radha-krishna-eternal-divine-brass-silver-idol",
+    "name": "Radha Krishna Eternal Divine Brass & Silver Idol",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/3/image_1.png"
+    ]
+  },
+  {
+    "index": 51,
+    "id": "prod-statue-4",
+    "sku": "GURU-STA-004",
+    "slug": "lord-shiva-in-dhyana-mudra-meditation-statue",
+    "name": "Lord Shiva in Dhyana Mudra Meditation Statue",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/4/image_1.png"
+    ]
+  },
+  {
+    "index": 52,
+    "id": "prod-statue-5",
+    "sku": "GURU-STA-005",
+    "slug": "lord-venkateshwara-balaji-sacred-pooja-vigraha",
+    "name": "Lord Venkateshwara Balaji Sacred Pooja Vigraha",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/5/image_1.png"
+    ]
+  },
+  {
+    "index": 53,
+    "id": "prod-statue-6",
+    "sku": "GURU-STA-006",
+    "slug": "sacred-kamadhenu-cow-calf-prosperity-idol",
+    "name": "Sacred Kamadhenu Cow & Calf Prosperity Idol",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/6/image_1.png"
+    ]
+  },
+  {
+    "index": 54,
+    "id": "prod-statue-7",
+    "sku": "GURU-STA-007",
+    "slug": "panchamukhi-veera-hanuman-powerful-idol",
+    "name": "Panchamukhi Veera Hanuman Powerful Idol",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/7/image_1.png"
+    ]
+  },
+  {
+    "index": 55,
+    "id": "prod-statue-8",
+    "sku": "GURU-STA-008",
+    "slug": "goddess-saraswati-idol-wisdom-fine-arts",
+    "name": "Goddess Saraswati Idol (Wisdom & Fine Arts)",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/8/image_1.png"
+    ]
+  },
+  {
+    "index": 56,
+    "id": "prod-statue-9",
+    "sku": "GURU-STA-009",
+    "slug": "sacred-shivling-with-nandi-shrine-temple-idol",
+    "name": "Sacred Shivling with Nandi Shrine Temple Idol",
+    "category": "God Small Statues",
+    "subcategory": "God Small Statues",
+    "variantsCount": 1,
+    "images": [
+      "/products/God%20Small%20Statues/9/image_1.png"
+    ]
+  }
+]

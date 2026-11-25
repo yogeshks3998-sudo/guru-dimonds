@@ -55,28 +55,40 @@ export const AdminInquiriesPage: React.FC = () => {
   const newCount = inquiries.filter((i) => i.status === 'NEW').length;
   const respondedCount = inquiries.filter((i) => i.status === 'RESPONDED').length;
 
-  const handleStatusChange = (id: string, status: ContactInquiry['status']) => {
-    updateInquiryStatus(id, status);
-    showToast('Inquiry Updated', `Marked as ${status}`);
-    if (selectedInquiry && selectedInquiry.id === id) {
-      setSelectedInquiry({ ...selectedInquiry, status });
+  const handleStatusChange = async (id: string, status: ContactInquiry['status']) => {
+    try {
+      await updateInquiryStatus(id, status);
+      showToast('Inquiry Updated', `Marked as ${status}`);
+      if (selectedInquiry && selectedInquiry.id === id) {
+        setSelectedInquiry({ ...selectedInquiry, status });
+      }
+    } catch (err) {
+      showToast('Update Failed', err instanceof Error ? err.message : 'Unable to update status');
     }
   };
 
-  const handleSaveNotes = (e: React.FormEvent) => {
+  const handleSaveNotes = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedInquiry) return;
-    updateInquiryStatus(selectedInquiry.id, selectedInquiry.status, adminNoteInput.trim());
-    showToast('Notes Saved', 'Admin notes updated successfully');
-    setSelectedInquiry({ ...selectedInquiry, adminNotes: adminNoteInput.trim() });
+    try {
+      await updateInquiryStatus(selectedInquiry.id, selectedInquiry.status, adminNoteInput.trim());
+      showToast('Notes Saved', 'Admin notes updated successfully');
+      setSelectedInquiry({ ...selectedInquiry, adminNotes: adminNoteInput.trim() });
+    } catch (err) {
+      showToast('Save Failed', err instanceof Error ? err.message : 'Unable to save notes');
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this contact inquiry?')) {
-      deleteInquiry(id);
-      showToast('Deleted', 'Inquiry removed from system');
-      if (selectedInquiry?.id === id) {
-        setSelectedInquiry(null);
+      try {
+        await deleteInquiry(id);
+        showToast('Deleted', 'Inquiry removed from system');
+        if (selectedInquiry?.id === id) {
+          setSelectedInquiry(null);
+        }
+      } catch (err) {
+        showToast('Delete Failed', err instanceof Error ? err.message : 'Unable to delete inquiry');
       }
     }
   };

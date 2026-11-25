@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev": "vite --port=5173 --host=0.0.0.0",
     "dev:api": "tsx watch backend/src/server.ts",
     "dev:full": "concurrently \"npm run dev:api\" \"npm run dev\"",
-    "build": "vite build",
+    "build": "vite build && npm run build:seo",
     "build:server": "node scripts/build-backend.mjs app",
     "build:api": "node scripts/build-backend.mjs server",
     "build:seo": "tsx scripts/generate-seo.ts",
@@ -34,7 +34,13 @@
     "test:backend": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.ts tests/backend tests/database",
     "test:auth": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.ts tests/auth",
     "test:vitest": "vitest run --config vitest.config.ts",
-    "clean": "node -e \"fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('dist-server',{recursive:true,force:true})\""
+    "clean": "node -e \"fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('dist-server',{recursive:true,force:true})\"",
+    "import:silver": "node --import tsx scripts/import-silver-products.ts",
+    "import:silver:dry-run": "node --import tsx scripts/import-silver-products.ts --dry-run",
+    "import:silver-studs": "node --import tsx scripts/import-silver-turtle-studs.ts",
+    "import:silver-studs:dry-run": "node --import tsx scripts/import-silver-turtle-studs.ts --dry-run",
+    "cleanup:demo": "node --import tsx scripts/cleanup-demo-products.ts",
+    "cleanup:demo:dry-run": "node --import tsx scripts/cleanup-demo-products.ts --dry-run"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

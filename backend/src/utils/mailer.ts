@@ -44,7 +44,18 @@ const sendViaBrevo = async (payload: EmailPayload) => {
   });
 
   if (!response.ok) {
-    const errorBody = await response.text();
+    let errorBody = '';
+    try {
+      if (typeof response.text === 'function') {
+        errorBody = await response.text();
+      } else if (typeof response.json === 'function') {
+        errorBody = JSON.stringify(await response.json());
+      } else {
+        errorBody = response.statusText || 'Unknown Brevo API error';
+      }
+    } catch {
+      errorBody = response.statusText || 'Unknown error response';
+    }
     throw new Error(`Brevo Email API failed (${response.status}): ${errorBody}`);
   }
 
@@ -72,7 +83,18 @@ const sendViaResend = async (payload: EmailPayload) => {
   });
 
   if (!response.ok) {
-    const errorBody = await response.text();
+    let errorBody = '';
+    try {
+      if (typeof response.text === 'function') {
+        errorBody = await response.text();
+      } else if (typeof response.json === 'function') {
+        errorBody = JSON.stringify(await response.json());
+      } else {
+        errorBody = response.statusText || 'Unknown Resend API error';
+      }
+    } catch {
+      errorBody = response.statusText || 'Unknown error response';
+    }
     throw new Error(`Resend Email API failed (${response.status}): ${errorBody}`);
   }
 

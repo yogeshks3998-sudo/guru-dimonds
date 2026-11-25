@@ -122,12 +122,18 @@ export const AdminCMSPage: React.FC = () => {
     }
   };
 
-  const handleSaveCMS = (e: React.FormEvent) => {
+  const handleSaveCMS = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateHeroBanner(heroForm);
-    updateAnnouncement(announcementForm.enabled, announcementForm.text, announcementForm.link);
-    updateFooter(footerForm);
-    showToast('CMS Content Published', 'Storefront banners and editorial copy updated successfully.');
+    try {
+      await Promise.all([
+        updateHeroBanner(heroForm),
+        updateAnnouncement(announcementForm.enabled, announcementForm.text, announcementForm.link),
+        updateFooter(footerForm),
+      ]);
+      showToast('CMS Content Published', 'Storefront banners and editorial copy updated successfully.');
+    } catch (err) {
+      showToast('Publication Failed', err instanceof Error ? err.message : 'Unable to publish CMS content.');
+    }
   };
 
   return (

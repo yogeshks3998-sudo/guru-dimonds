@@ -1,4 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
+import { Modal } from '../components/ui/Modal';
+import { SupplierPriceReview } from '../components/common/SupplierPriceReview';
+import { canPurchaseProduct } from '../utils/supplierProducts';
 import { Product, ProductVariant } from '../types';
 import { useProductStore } from '../stores/useProductStore';
 import { useMetalRateStore } from '../stores/useMetalRateStore';
@@ -14,6 +17,10 @@ import { SizeGuideModal } from '../components/storefront/SizeGuideModal';
 import { CompareDrawer } from '../components/storefront/CompareDrawer';
 import { Badge } from '../components/ui/Badge';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
+import { JewellerySpecsCard } from '../components/storefront/JewellerySpecsCard';
+import { JewelleryOptionSelector } from '../components/storefront/JewelleryOptionSelector';
+import { JewelleryTrustBadges } from '../components/storefront/JewelleryTrustBadges';
+import { getJewellerySizeOptions, getStoneDetails, getWarrantyText } from '../utils/jewelleryDetails';
 import {
   ShieldCheck,
   Award,
@@ -34,6 +41,7 @@ import {
   Ruler,
   ThumbsUp,
   MessageSquare,
+  Phone,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/useAuthStore';
 import { isProductActive } from '../utils/productFilters';
@@ -55,13 +63,54 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   const isActive = isProductActive(product);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(
-    product?.variants && product.variants.length > 0 ? product.variants[0] : undefined
-  );
-  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>(
-    selectedVariant?.attributes || {}
-  );
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>(() => {
+    return product?.variants && product.variants.length > 0
+      ? (product.variants[0].attributes || {})
+      : {};
+  });
   const [quantity, setQuantity] = useState(1);
+
+  // Dynamically resolve variant from latest product store data
+  const selectedVariant = useMemo(() => {
+    if (!product?.variants || product.variants.length === 0) return undefined;
+    const match = product.variants.find((v) =>
+      Object.entries(selectedAttributes).every(([k, val]) => v.attributes?.[k] === val)
+    );
+    return match || product.variants[0];
+  }, [product?.variants, selectedAttributes]);
+
+  const [customEngraving, setCustomEngraving] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [pincodeMessage, setPincodeMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'certification' | 'reviews'>('description');
+  const [showPriceModal, setShowPriceModal] = useState(false);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
+  // Review Form state
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewAuthor, setReviewAuthor] = useState('');
+
+  // Hover-Based Detail Zoom Lens State
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  const stoneDetails = useMemo(() => (product ? getStoneDetails(product) : { name: 'Fine Natural Gemstone' }), [product]);
+  const warrantyText = useMemo(() => (product ? getWarrantyText(product) : '1 Year Craftsmanship Guarantee'), [product]);
+  const sizeOptionGroup = useMemo(() => (product ? getJewellerySizeOptions(product) : null), [product]);
+
+  React.useEffect(() => {
+    if (sizeOptionGroup && !selectedAttributes[sizeOptionGroup.name]) {
+      setSelectedAttributes((prev) => ({
+        ...prev,
+        [sizeOptionGroup.name]: sizeOptionGroup.defaultOption,
+      }));
+    }
+  }, [sizeOptionGroup, selectedAttributes]);
 
   if (!product || (!isActive && !isAdminLoggedIn)) {
     return (
@@ -86,25 +135,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
       </div>
     );
   }
-  const [customEngraving, setCustomEngraving] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [pincodeMessage, setPincodeMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'certification' | 'reviews'>('description');
-  const [showPriceModal, setShowPriceModal] = useState(false);
-  const [showSizeGuide, setShowSizeGuide] = useState(false);
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-
-  // Review Form state
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewTitle, setReviewTitle] = useState('');
-  const [reviewComment, setReviewComment] = useState('');
-  const [reviewAuthor, setReviewAuthor] = useState('');
-
-  // Hover-Based Detail Zoom Lens State
-  const [isZooming, setIsZooming] = useState(false);
-  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const isWishlisted = isInWishlist(product.id);
   const isCompared = compareIds.includes(product.id);
@@ -120,10 +150,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   };
 
   // Price breakdown formula calculation
-  const netWeight = selectedVariant ? selectedVariant.netWeightGrams : product.netWeightGrams;
+  const netWeight = (selectedVariant?.netWeightGrams !== undefined && selectedVariant.netWeightGrams > 0)
+    ? selectedVariant.netWeightGrams
+    : product.netWeightGrams;
+
   const priceBreakdown = calculateJewelleryPrice({
     pricingMode: product.pricingMode,
-    fixedPrice: selectedVariant ? selectedVariant.price : product.fixedPrice,
+    fixedPrice: product.pricingMode === 'FIXED'
+      ? (product.fixedPrice ?? selectedVariant?.price ?? 0)
+      : (product.fixedPrice || selectedVariant?.price || 0),
     metalType: product.metalType,
     purity: product.metalPurity,
     netWeightGrams: netWeight,
@@ -138,21 +173,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   });
 
   const finalPrice = priceBreakdown.finalPrice;
+  const supplier = product.supplierReview;
+  const isEnquiry = product.pricingMode === 'ENQUIRY';
+  const isDraftAdminPreview = product.status === 'DRAFT' && isAdminLoggedIn && !!supplier;
+  const canPurchase = canPurchaseProduct(product);
 
   const handleAttributeChange = (attrName: string, optionValue: string) => {
     const newAttrs = { ...selectedAttributes, [attrName]: optionValue };
     setSelectedAttributes(newAttrs);
-
-    // Find matching variant if exists
-    if (product.variants) {
-      const match = product.variants.find((v) =>
-        Object.entries(newAttrs).every(([k, val]) => v.attributes[k] === val)
-      );
-      if (match) setSelectedVariant(match);
-    }
   };
 
   const handleAddToCart = () => {
+    if (!canPurchase) return;
     addItem({
       product,
       variant: selectedVariant,
@@ -178,7 +210,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   };
 
   const images = product.images && product.images.length > 0 ? product.images : [
-    'https://images.unsplash.com/photo-1611591475281-a120023a105f?auto=format&fit=crop&w=800&q=80'
+    '/images/product-placeholder.svg'
   ];
 
   return (
@@ -241,9 +273,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                 e.stopPropagation();
                 toggleWishlist(product.id);
               }}
-              className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md transition-all shadow-lg ${
-                isWishlisted ? 'bg-[#A67C32] text-white' : 'bg-white/80 text-[#1B1A18] hover:bg-white'
-              }`}
+              className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md transition-all shadow-lg ${isWishlisted ? 'bg-[#A67C32] text-white' : 'bg-white/80 text-[#1B1A18] hover:bg-white'
+                }`}
             >
               <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
             </button>
@@ -255,9 +286,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               <button
                 key={idx}
                 onClick={() => setSelectedImageIndex(idx)}
-                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-[#FAF8F3] relative ${
-                  selectedImageIndex === idx ? 'border-[#A67C32] scale-105 shadow-md ring-2 ring-[#A67C32]/20' : 'border-[#E7E1D7] opacity-70 hover:opacity-100'
-                }`}
+                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-[#FAF8F3] relative ${selectedImageIndex === idx ? 'border-[#A67C32] scale-105 shadow-md ring-2 ring-[#A67C32]/20' : 'border-[#E7E1D7] opacity-70 hover:opacity-100'
+                  }`}
               >
                 <ImageWithFallback src={img} fallbackSrc={images[0]} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
               </button>
@@ -280,153 +310,200 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             <div className="flex items-center gap-4 text-xs pt-1">
               <div className="flex items-center gap-1 text-[#A67C32]">
                 <Star className="w-4 h-4 fill-current" />
-                <span className="font-bold text-[#1B1A18]">{product.rating}</span>
+                <span className="font-bold text-[#1B1A18]">{product.reviewCount ? product.rating : 'No reviews yet'}</span>
                 <span className="text-[#6F6A62]">({product.reviewCount} Patron Reviews)</span>
               </div>
               <span className="text-[#6F6A62]">|</span>
               <span className="text-[#2E7D5B] font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" /> 100% BIS Hallmarked {product.metalPurity}
+                <CheckCircle2 className="w-4 h-4" /> {product.hallmarked ? `Hallmark stated: ${product.metalPurity}` : supplier ? 'Hallmark not verified' : (product.certified ? (product.certificationAgency || 'Certified') : 'Handcrafted Authenticity')}
               </span>
             </div>
           </div>
 
-          {/* Pricing Box */}
-          <div className="bg-gradient-to-br from-[#FAF8F3] to-[#FAF3E6] border border-[#D8C29D]/60 p-6 rounded-2xl space-y-3 shadow-sm">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <span className="text-[11px] uppercase font-bold tracking-widest text-[#6F6A62] block">Current Formula Retail Price</span>
-                <span className="text-3xl sm:text-4xl font-serif font-extrabold text-[#A67C32] tracking-tight">{formatINR(finalPrice)}</span>
+          {isEnquiry && (
+            <div className="bg-gradient-to-br from-[#FAF8F3] to-[#FFF9F0] border border-[#D8C29D] p-6 rounded-3xl space-y-4 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span className="text-[11px] uppercase font-bold tracking-widest text-[#A67C32] block">
+                    Bespoke Order & Immediate Pricing
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#1B1A18] mt-0.5">
+                    Price on Request / Call to Order
+                  </h3>
+                </div>
+                <span className="text-xs text-[#2E7D5B] font-bold bg-[#E6F4EA] border border-[#2E7D5B]/30 px-3 py-1 rounded-full shrink-0">
+                  925 Silver Certified
+                </span>
               </div>
-              <span className="text-xs text-[#2E7D5B] font-bold bg-[#E6F4EA] border border-[#2E7D5B]/30 px-3 py-1 rounded-full shadow-xs">
-                Includes 3% GST
-              </span>
-            </div>
 
-            {/* Live rate timestamp notice */}
-            <div className="flex flex-wrap items-center justify-between text-[11px] text-[#6F6A62] pt-3 border-t border-[#D8C29D]/40 gap-2">
-              <span className="flex items-center gap-1.5 font-medium">
-                <Clock className="w-3.5 h-3.5 text-[#A67C32]" /> Spot Rate: {formatINR(currentRate)}/g ({product.metalPurity} {product.metalType})
-              </span>
-              <button
-                onClick={() => setShowPriceModal(true)}
-                className="text-[#A67C32] font-bold underline hover:text-[#8e6828] transition-colors"
-              >
-                View Transparent Formula
-              </button>
-            </div>
-          </div>
+              <p className="text-xs sm:text-sm text-[#6F6A62] leading-relaxed">
+                This authentic handcrafted creation is available on order. Contact our master artisans directly for immediate price quotation, exact silver weight, hallmarking certification, and custom sizing.
+              </p>
 
-          {/* Jewellery Technical Parameters Summary */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-white p-4 border border-[#E7E1D7] rounded-2xl shadow-xs">
-            <div className="space-y-0.5">
-              <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Metal & Purity</span>
-              <span className="font-bold text-[#1B1A18]">{product.metalPurity} {product.metalType}</span>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Net Weight</span>
-              <span className="font-bold text-[#1B1A18]">{netWeight}g</span>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Gross Weight</span>
-              <span className="font-bold text-[#1B1A18]">{product.grossWeightGrams}g</span>
-            </div>
-            {product.gemstones && product.gemstones.length > 0 && (
-              <div className="space-y-0.5">
-                <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Gemstone</span>
-                <span className="font-bold text-[#1B1A18]">{product.gemstones[0].type}</span>
+              {/* Contact Phone & Actions */}
+              <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                <a
+                  href="tel:+917899125449"
+                  className="flex-1 py-3.5 px-5 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] text-xs sm:text-sm font-bold uppercase tracking-wider rounded-2xl transition-all shadow-md flex items-center justify-center gap-2.5 text-center"
+                >
+                  <Phone className="w-4 h-4 text-[#B8893D]" />
+                  <span>Call Us: +91 78991 25449</span>
+                </a>
+                <a
+                  href={`https://wa.me/917899125449?text=${encodeURIComponent(
+                    `Namaste Guru Diamonds, I would like to order / enquire about: ${product.name} (SKU: ${product.sku}).`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-3.5 px-5 bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-2xl transition-all shadow-md flex items-center justify-center gap-2.5 text-center"
+                >
+                  <MessageCircle className="w-4 h-4 text-white" />
+                  <span>Order on WhatsApp</span>
+                </a>
               </div>
-            )}
-            <div className="space-y-0.5">
-              <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Hallmarking</span>
-              <span className="font-bold text-[#2E7D5B]">{product.hallmarkCenter || 'BIS HUID Verified'}</span>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[#6F6A62] block text-[10px] uppercase font-semibold">Lab Certification</span>
-              <span className="font-bold text-[#1B1A18]">{product.certificationAgency || 'SGL Certified'}</span>
-            </div>
-          </div>
 
-          {/* Variant Attribute Selectors */}
-          {product.variantAttributes?.map((attr, idx) => (
-            <div key={idx} className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1B1A18] block">
-                Select {attr.name}:
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {attr.options.map((option) => {
-                  const isSelected = selectedAttributes[attr.name] === option;
-                  return (
-                    <button
-                      key={option}
-                      onClick={() => handleAttributeChange(attr.name, option)}
-                      className={`px-4 py-2 text-xs font-semibold rounded-xl border transition-all ${
-                        isSelected
-                          ? 'bg-[#1B1A18] text-white border-[#1B1A18] shadow-md'
-                          : 'bg-white text-[#1B1A18] border-[#E7E1D7] hover:border-[#A67C32]'
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  );
-                })}
+              <div className="flex items-center gap-2 text-[11px] text-[#6F6A62] pt-2 border-t border-[#D8C29D]/40">
+                <Clock className="w-3.5 h-3.5 text-[#A67C32]" />
+                <span>Direct consultation available Mon – Sat, 10:00 AM – 8:00 PM IST</span>
               </div>
             </div>
-          ))}
+          )}
 
-          {/* Custom Engraving Field */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#1B1A18] uppercase tracking-wider flex items-center justify-between">
-              <span>Custom Engraving (Optional)</span>
-              <span className="text-[10px] text-[#6F6A62]">Max 20 chars</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Ananya & Rajesh 2026"
-              maxLength={20}
-              value={customEngraving}
-              onChange={(e) => setCustomEngraving(e.target.value)}
-              className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3.5 py-2.5 text-xs text-[#1B1A18] focus:outline-none focus:border-[#A67C32]"
-            />
-          </div>
+          {!isEnquiry && isDraftAdminPreview && supplier && (
+            <div className="rounded-xl border border-[#D8C29D] bg-[#FAF8F3] p-4 text-sm space-y-2 break-words">
+              <strong>{supplier.state === 'PENDING' ? 'Draft — supplier information awaiting verification' : 'Custom product enquiry'}</strong>
+              <p>Price on enquiry. Purity, certificate evidence, warranty terms and GST remain unconfirmed.</p>
+              <p>{product.category === 'Rings' ? 'Custom ring sizing: enquire with the team; no ready-stock sizes are confirmed.' : supplier.specifications.Length ? `Length: ${supplier.specifications.Length} (supplier statement).` : 'Earring dimensions, fastening and package quantity require confirmation.'}</p>
+              <button className="underline font-bold text-[#A67C32]" onClick={() => setShowPriceModal(true)}>Review supplier price breakdown</button>
+              <ul className="list-disc pl-5 text-xs text-[#6F6A62]">{supplier.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}</ul>
+            </div>
+          )}
 
-          {/* Pincode Delivery Checker */}
-          <div className="p-4 bg-white border border-[#E7E1D7] rounded-2xl space-y-2">
-            <span className="text-xs font-bold text-[#1B1A18] block uppercase tracking-wider">
-              Check Express Insured Delivery:
-            </span>
-            <form onSubmit={handleCheckPincode} className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Enter 6-digit Pincode"
-                maxLength={6}
-                value={pincode}
-                onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                className="flex-1 bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#A67C32]"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#1B1A18] text-white text-xs font-bold uppercase rounded-xl hover:bg-[#A67C32] transition-colors"
-              >
-                Check
-              </button>
-            </form>
-            {pincodeMessage && <p className="text-xs font-medium mt-1">{pincodeMessage}</p>}
-          </div>
+          {!isEnquiry && !isDraftAdminPreview && (
+            <>
+              {/* Pricing Box */}
+              <div className="bg-gradient-to-br from-[#FAF8F3] to-[#FAF3E6] border border-[#D8C29D]/60 p-6 rounded-2xl space-y-3 shadow-sm">
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <span className="text-[11px] uppercase font-bold tracking-widest text-[#6F6A62] block">Current Formula Retail Price</span>
+                    <span className="text-3xl sm:text-4xl font-serif font-extrabold text-[#A67C32] tracking-tight">{formatINR(finalPrice)}</span>
+                  </div>
+                  <span className="text-xs text-[#2E7D5B] font-bold bg-[#E6F4EA] border border-[#2E7D5B]/30 px-3 py-1 rounded-full shadow-xs">
+                    Includes 3% GST
+                  </span>
+                </div>
+
+                {/* Live rate timestamp notice */}
+                <div className="flex flex-wrap items-center justify-between text-[11px] text-[#6F6A62] pt-3 border-t border-[#D8C29D]/40 gap-2">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Clock className="w-3.5 h-3.5 text-[#A67C32]" /> Spot Rate: {formatINR(currentRate)}/g ({product.metalPurity} {product.metalType})
+                  </span>
+                  <button
+                    onClick={() => setShowPriceModal(true)}
+                    className="text-[#A67C32] font-bold underline hover:text-[#8e6828] transition-colors cursor-pointer"
+                  >
+                    View Transparent Formula
+                  </button>
+                </div>
+              </div>
+
+              {/* Prominent Technical Specifications & Authenticity Matrix Card */}
+              <JewellerySpecsCard product={product} netWeight={netWeight} />
+
+              {/* Dynamic Size & Attribute Selector */}
+              {product.variantAttributes && product.variantAttributes.length > 0 ? (
+                product.variantAttributes.map((attr, idx) => (
+                  <div key={idx} className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-[#1B1A18] block">
+                      Select {attr.name}:
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {attr.options.map((option) => {
+                        const isSelected = selectedAttributes[attr.name] === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => handleAttributeChange(attr.name, option)}
+                            className={`px-4 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${isSelected
+                              ? 'bg-[#7A1822] text-white border-[#7A1822] shadow-md ring-2 ring-[#7A1822]/20'
+                              : 'bg-white text-[#1B1A18] border-[#E7E1D7] hover:border-[#A67C32]'
+                              }`}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              ) : sizeOptionGroup ? (
+                <JewelleryOptionSelector
+                  group={sizeOptionGroup}
+                  selectedValue={selectedAttributes[sizeOptionGroup.name]}
+                  onChange={(val) => handleAttributeChange(sizeOptionGroup.name, val)}
+                  onOpenGuide={() => setShowSizeGuide(true)}
+                />
+              ) : null}
+
+              {/* Custom Engraving Field */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[#1B1A18] uppercase tracking-wider flex items-center justify-between">
+                  <span>Custom Engraving (Optional)</span>
+                  <span className="text-[10px] text-[#6F6A62]">Max 20 chars</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Ananya & Rajesh 2026"
+                  maxLength={20}
+                  value={customEngraving}
+                  onChange={(e) => setCustomEngraving(e.target.value)}
+                  className="w-full bg-white border border-[#E7E1D7] rounded-xl px-3.5 py-2.5 text-xs text-[#1B1A18] focus:outline-none focus:border-[#A67C32]"
+                />
+              </div>
+
+              {/* Pincode Delivery Checker */}
+              <div className="p-4 bg-white border border-[#E7E1D7] rounded-2xl space-y-2">
+                <span className="text-xs font-bold text-[#1B1A18] block uppercase tracking-wider">
+                  Check Express Insured Delivery:
+                </span>
+                <form onSubmit={handleCheckPincode} className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter 6-digit Pincode"
+                    maxLength={6}
+                    value={pincode}
+                    onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                    className="flex-1 bg-[#FAF8F3] border border-[#E7E1D7] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#A67C32]"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-[#1B1A18] text-white text-xs font-bold uppercase rounded-xl hover:bg-[#A67C32] transition-colors cursor-pointer"
+                  >
+                    Check
+                  </button>
+                </form>
+                {pincodeMessage && <p className="text-xs font-medium mt-1">{pincodeMessage}</p>}
+              </div>
+
+              {/* Trust Reassurance Badges */}
+              <JewelleryTrustBadges />
+            </>
+          )}
 
           {/* Action Helper Bar: Size Guide & Compare */}
           <div className="flex items-center justify-between text-xs font-bold pt-1 border-t border-[#E7E1D7]">
             <button
+              disabled={isDraftAdminPreview}
               onClick={() => setShowSizeGuide(true)}
-              className="text-[#7A1822] hover:underline flex items-center gap-1.5 p-1"
+              className="text-[#7A1822] hover:underline flex items-center gap-1.5 p-1 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               <Ruler className="w-4 h-4 text-[#B8893D]" />
-              <span>Royal Sizing & Fit Guide</span>
+              <span>{isDraftAdminPreview ? (product.category === 'Rings' ? 'Custom sizing by enquiry' : supplier?.specifications.Length ? `Length: ${supplier.specifications.Length}` : 'Earring specifications by enquiry') : 'Royal Sizing & Fit Guide'}</span>
             </button>
             <button
               onClick={() => toggleCompare(product.id)}
-              className={`flex items-center gap-1.5 p-1 hover:underline ${
-                isCompared ? 'text-[#7A1822] font-extrabold' : 'text-[#796A65]'
-              }`}
+              className={`flex items-center gap-1.5 p-1 hover:underline ${isCompared ? 'text-[#7A1822] font-extrabold' : 'text-[#796A65]'
+                }`}
             >
               <Scale className="w-4 h-4 text-[#B8893D]" />
               <span>{isCompared ? 'In Comparison Matrix' : 'Compare Creation'}</span>
@@ -434,47 +511,103 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           </div>
 
           {/* Primary Call-to-Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 py-4 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] text-xs font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
-            >
-              <ShoppingBag className="w-4 h-4 text-[#B8893D]" /> Add to Shopping Bag
-            </button>
+          {isEnquiry ? (
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              <a
+                href="tel:+917899125449"
+                className="flex-1 py-4 bg-[#7A1822] hover:bg-[#4D1017] text-[#FFF9F0] text-xs font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 text-center"
+              >
+                <Phone className="w-4 h-4 text-[#B8893D]" /> Direct Call (+91 78991 25449)
+              </a>
+              <a
+                href={`https://wa.me/917899125449?text=${encodeURIComponent(
+                  `Namaste Guru Diamonds, I would like to order: ${product.name} (SKU: ${product.sku}).`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-4 bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-extrabold uppercase tracking-widest rounded-2xl transition-all shadow-xl flex items-center justify-center gap-2 text-center"
+              >
+                <MessageCircle className="w-4 h-4 text-white" /> WhatsApp Order
+              </a>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              <button
+                disabled={!canPurchase}
+                onClick={handleAddToCart}
+                className="flex-1 py-4 bg-[#7A1822] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#4D1017] text-[#FFF9F0] text-xs font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <ShoppingBag className="w-4 h-4 text-[#B8893D]" /> Add to Shopping Bag
+              </button>
 
-            <button
-              onClick={handleBuyNow}
-              className="flex-1 py-4 bg-[#B8893D] hover:bg-[#966d2a] text-[#281C18] text-xs font-extrabold uppercase tracking-widest rounded-2xl transition-all shadow-xl"
-            >
-              Buy Now (Insured Express)
-            </button>
-          </div>
+              <button
+                disabled={!canPurchase}
+                onClick={handleBuyNow}
+                className="flex-1 py-4 bg-[#B8893D] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#966d2a] text-[#281C18] text-xs font-extrabold uppercase tracking-widest rounded-2xl transition-all shadow-xl"
+              >
+                Buy Now (Insured Express)
+              </button>
+            </div>
+          )}
 
           {/* Sticky Mobile Add to Bag Bar */}
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFF9F0] border-t border-[#E9D9C5] p-3 shadow-2xl flex items-center justify-between gap-3">
-            <div>
-              <span className="text-[10px] uppercase tracking-wider text-[#796A65] font-bold block">
-                {product.metalPurity} {product.metalType}
-              </span>
-              <span className="text-sm font-extrabold text-[#7A1822]">
-                {formatINR(finalPrice)}
-              </span>
+          {isEnquiry ? (
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFF9F0] border-t border-[#E9D9C5] p-3 shadow-2xl flex items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-[#796A65] font-bold block">
+                  Direct Artisan Order
+                </span>
+                <span className="text-xs font-extrabold text-[#7A1822]">
+                  +91 78991 25449
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href="tel:+917899125449"
+                  className="px-4 py-2.5 bg-[#7A1822] text-[#FFF9F0] text-xs font-bold rounded-xl uppercase tracking-wider flex items-center gap-1 shadow-md"
+                >
+                  <Phone className="w-3.5 h-3.5 text-[#B8893D]" /> Call
+                </a>
+                <a
+                  href={`https://wa.me/917899125449?text=${encodeURIComponent(
+                    `Namaste Guru Diamonds, I would like to order: ${product.name} (SKU: ${product.sku}).`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2.5 bg-[#25D366] text-white text-xs font-extrabold rounded-xl uppercase tracking-wider shadow-md flex items-center gap-1"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-white" /> WhatsApp
+                </a>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleAddToCart}
-                className="px-4 py-2.5 bg-[#7A1822] text-[#FFF9F0] text-xs font-bold rounded-xl uppercase tracking-wider flex items-center gap-1 shadow-md"
-              >
-                <ShoppingBag className="w-3.5 h-3.5 text-[#B8893D]" /> Add
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="px-4 py-2.5 bg-[#B8893D] text-[#281C18] text-xs font-extrabold rounded-xl uppercase tracking-wider shadow-md"
-              >
-                Buy
-              </button>
+          ) : (
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFF9F0] border-t border-[#E9D9C5] p-3 shadow-2xl flex items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-[#796A65] font-bold block">
+                  {product.metalPurity} {product.metalType}
+                </span>
+                <span className="text-sm font-extrabold text-[#7A1822]">
+                  {isDraftAdminPreview ? 'Price on enquiry' : formatINR(finalPrice)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={!canPurchase}
+                  onClick={handleAddToCart}
+                  className="px-4 py-2.5 bg-[#7A1822] text-[#FFF9F0] text-xs font-bold rounded-xl uppercase tracking-wider flex items-center gap-1 shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 text-[#B8893D]" /> Add
+                </button>
+                <button
+                  disabled={!canPurchase}
+                  onClick={handleBuyNow}
+                  className="px-4 py-2.5 bg-[#B8893D] text-[#281C18] text-xs font-extrabold rounded-xl uppercase tracking-wider shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Buy
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* WhatsApp Direct Inquiry */}
           <a
@@ -483,9 +616,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/30 text-xs font-bold rounded-2xl flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/30 text-xs font-bold rounded-2xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
-            <MessageCircle className="w-4 h-4" /> Chat with Concierge on WhatsApp
+            <MessageCircle className="w-4 h-4" /> {isDraftAdminPreview && product.category === 'Rings' ? 'Enquire about custom sizing & price' : 'Chat with Concierge on WhatsApp'}
           </a>
         </div>
       </div>
@@ -495,35 +628,31 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
         <div className="flex border-b border-[#E7E1D7] space-x-8 text-sm font-serif font-bold overflow-x-auto">
           <button
             onClick={() => setActiveTab('description')}
-            className={`pb-3 transition-colors relative whitespace-nowrap ${
-              activeTab === 'description' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
-            }`}
+            className={`pb-3 transition-colors relative whitespace-nowrap ${activeTab === 'description' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
+              }`}
           >
             Detailed Description
           </button>
           <button
             onClick={() => setActiveTab('specs')}
-            className={`pb-3 transition-colors relative whitespace-nowrap ${
-              activeTab === 'specs' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
-            }`}
+            className={`pb-3 transition-colors relative whitespace-nowrap ${activeTab === 'specs' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
+              }`}
           >
             Technical Specifications
           </button>
           <button
             onClick={() => setActiveTab('certification')}
-            className={`pb-3 transition-colors relative whitespace-nowrap ${
-              activeTab === 'certification' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
-            }`}
+            className={`pb-3 transition-colors relative whitespace-nowrap ${activeTab === 'certification' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
+              }`}
           >
             Hallmark & Certification
           </button>
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`pb-3 transition-colors relative whitespace-nowrap ${
-              activeTab === 'reviews' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
-            }`}
+            className={`pb-3 transition-colors relative whitespace-nowrap ${activeTab === 'reviews' ? 'text-[#7A1822] border-b-2 border-[#7A1822]' : 'text-[#6F6A62]'
+              }`}
           >
-            Patron Reviews ({product.reviewCount || 12})
+            Patron Reviews ({product.reviewCount || 0})
           </button>
         </div>
 
@@ -538,44 +667,78 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
 
         {activeTab === 'specs' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
-              <span className="text-[#6F6A62]">Product Category:</span>
-              <span className="font-bold">{product.category}</span>
-            </div>
-            <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
-              <span className="text-[#6F6A62]">Metal Type & Purity:</span>
-              <span className="font-bold">{product.metalPurity} {product.metalType}</span>
-            </div>
-            <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
-              <span className="text-[#6F6A62]">Gross Weight:</span>
-              <span className="font-bold">{product.grossWeightGrams} grams</span>
-            </div>
-            <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
-              <span className="text-[#6F6A62]">Net Metal Weight:</span>
-              <span className="font-bold">{netWeight} grams</span>
-            </div>
-            <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
-              <span className="text-[#6F6A62]">Return Eligibility:</span>
-              <span className="font-bold text-[#2E7D5B]">{product.returnPolicyDays}-Day Easy Return Policy</span>
-            </div>
+            {isDraftAdminPreview && supplier && Object.entries(supplier.specifications).map(([key, value]) => (
+              <div key={key} className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                <span className="text-[#6F6A62]">{key}:</span>
+                <span className="font-bold">{value}</span>
+              </div>
+            ))}
+            {!isDraftAdminPreview && (
+              <>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Product Category:</span>
+                  <span className="font-bold">{product.category}</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Metal Type & Purity:</span>
+                  <span className="font-bold">{product.metalPurity} {product.metalType}</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Gross Weight:</span>
+                  <span className="font-bold">{product.grossWeightGrams} grams</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Net Metal Weight:</span>
+                  <span className="font-bold">{netWeight} grams</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Centre Gemstone / Beads:</span>
+                  <span className="font-bold">{stoneDetails.name}</span>
+                </div>
+                {stoneDetails.weight && (
+                  <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                    <span className="text-[#6F6A62]">Stone Weight & Shape:</span>
+                    <span className="font-bold">{stoneDetails.weight}{stoneDetails.shape ? ` (${stoneDetails.shape})` : ''}</span>
+                  </div>
+                )}
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Hallmarking Standard:</span>
+                  <span className="font-bold text-[#2E7D5B]">{product.hallmarked ? (product.hallmarkCenter || '925 BIS Hallmarked') : '925 Fine Silver'}</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Authenticity Certification:</span>
+                  <span className="font-bold">{product.certified ? (product.certificationAgency || 'Certified') : 'Authenticity Guarantee Card Included'}</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Warranty:</span>
+                  <span className="font-bold">{supplier?.specifications?.Warranty || warrantyText}</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Sizing & Customization:</span>
+                  <span className="font-bold">Complimentary sizing assistance</span>
+                </div>
+                <div className="p-3 bg-[#FAF8F3] rounded-xl flex justify-between">
+                  <span className="text-[#6F6A62]">Return & Exchange:</span>
+                  <span className="font-bold text-[#2E7D5B]">7-Day Easy Exchange Policy</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
         {activeTab === 'certification' && (
           <div className="space-y-3 text-xs text-[#6F6A62] leading-relaxed">
-            <p>
-              This creation is officially hallmarked by BIS (Bureau of Indian Standards) carrying the unique 6-digit HUID code.
-            </p>
-            <div className="p-4 bg-[#FAF3E6] border border-[#D8C29D] rounded-2xl flex items-center gap-3 text-[#1B1A18]">
-              <Award className="w-6 h-6 text-[#A67C32] shrink-0" />
-              <span>
-                Accompanying Lab Certificate: <strong>{product.certificationAgency || 'SGL Certified Lab Certificate'}</strong>.
-              </span>
-            </div>
+            <p>{product.hallmarked ? `Hallmark details: ${product.hallmarkCenter || 'Official 925 BIS Hallmarked assay verification'}.` : 'Official 925 Sterling Silver certification guaranteed.'}</p>
+            {isDraftAdminPreview ? (
+              <p>{supplier?.raw?.certificationSupplied ? 'The seller claims certification availability. No product-specific certificate has been verified.' : 'Certification information was not supplied. Availability and supporting evidence are unknown.'}</p>
+            ) : (
+              <p>Every Guru Diamonds jewellery creation is accompanied by an official Certificate of Authenticity confirming metal purity, gross weight, net silver weight, and natural gemstone characteristics.</p>
+            )}
           </div>
         )}
 
-        {activeTab === 'reviews' && (
+        {activeTab === 'reviews' && supplier && <p className="text-sm text-[#6F6A62]">No reviews yet.</p>}
+        {activeTab === 'reviews' && !supplier && (
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[#FFF9F0] border border-[#E9D9C5] rounded-2xl">
               <div>
@@ -749,8 +912,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
         </div>
       )}
 
+      {showPriceModal && isDraftAdminPreview && supplier && (
+        <Modal isOpen onClose={() => setShowPriceModal(false)} title="Supplier price review">
+          <SupplierPriceReview review={supplier} />
+        </Modal>
+      )}
       {/* Formula Price Modal */}
-      {showPriceModal && (
+      {showPriceModal && !isDraftAdminPreview && (
         <PriceBreakdownModal
           isOpen={showPriceModal}
           onClose={() => setShowPriceModal(false)}

@@ -1,4 +1,5 @@
 import type { Product } from '../types';
+import { supplierPublicationError } from './supplierProducts';
 
 const normalize = (value?: string | null) =>
   (value || '')
@@ -116,9 +117,39 @@ export function productMatchesCategory(product: Product, selectedCategory: strin
   return false;
 }
 
+export const CANONICAL_CATEGORY_IDS = new Set([
+  'cat-rings',
+  'cat-earrings',
+  'cat-neck-jewellery',
+  'cat-pendants',
+  'cat-bracelets-bangles',
+  'cat-gemstones',
+  'cat-spiritual-maalas',
+  'cat-rudraksha',
+  'cat-god-statues',
+]);
+
+export const CANONICAL_CATEGORY_SLUGS = new Set([
+  'rings',
+  'earrings',
+  'neck-jewellery',
+  'pendants',
+  'bracelets-bangles',
+  'gemstones',
+  'spiritual-maalas',
+  'rudraksha',
+  'god-small-statues',
+]);
+
+export function isCanonicalCategory(cat: { id?: string; slug?: string; name?: string }): boolean {
+  if (cat.id && CANONICAL_CATEGORY_IDS.has(cat.id)) return true;
+  if (cat.slug && CANONICAL_CATEGORY_SLUGS.has(cat.slug)) return true;
+  return false;
+}
+
 export function isProductActive(product?: Product | null): boolean {
   if (!product) return false;
-  if (product.enabled === false) return false;
+  if (product.enabled === false || supplierPublicationError(product)) return false;
   if (product.status === 'HIDDEN' || product.status === 'DRAFT' || product.status === 'ARCHIVED') return false;
   return true;
 }

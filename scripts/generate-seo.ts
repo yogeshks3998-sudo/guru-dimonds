@@ -1,57 +1,103 @@
 import fs from 'fs';
 import path from 'path';
-import { INITIAL_PRODUCTS } from '../src/data/mockProducts';
+import { prisma } from '../backend/src/config/db';
+import { isDemoProduct } from '../src/utils/supplierProducts';
 
-const siteUrl = (process.env.SITE_URL || process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+const siteUrl = (process.env.SITE_URL || process.env.APP_URL || 'https://gurudiamonds.in').replace(/\/$/, '');
 const publicDir = path.resolve('dist');
 
-const routes = [
-  '/',
-  '/shop',
-  '/about',
-  '/contact',
-  '/size-guide',
-  '/privacy-policy',
-  '/terms',
-  '/wishlist',
-  '/track-order',
-  ...INITIAL_PRODUCTS.map((product) => `/product/${product.slug}`),
-];
-
 const escapeXml = (value: string) =>
-  value
+  String(value || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes
+async function generateSEO() {
+  const staticRoutes = [
+    { loc: `${siteUrl}/`, changefreq: 'daily', priority: '1.0' },
+    { loc: `${siteUrl}/shop`, changefreq: 'daily', priority: '0.9' },
+    { loc: `${siteUrl}/about`, changefreq: 'monthly', priority: '0.6' },
+    { loc: `${siteUrl}/contact`, changefreq: 'monthly', priority: '0.7' },
+    { loc: `${siteUrl}/size-guide`, changefreq: 'monthly', priority: '0.5' },
+    { loc: `${siteUrl}/privacy-policy`, changefreq: 'monthly', priority: '0.4' },
+    { loc: `${siteUrl}/terms`, changefreq: 'monthly', priority: '0.4' },
+    { loc: `${siteUrl}/track-order`, changefreq: 'weekly', priority: '0.6' },
+  ];
+
+  let publishedProducts: Array<{ name: string; slug: string; updatedAt: Date; images: any }> = [];
+  let categories: Array<{ name: string; slug: string; updatedAt: Date }> = [];
+
+  try {
+    const dbActiveProducts = await prisma.product.findMany({
+      where: { status: 'ACTIVE' },
+      select: { name: true, slug: true, updatedAt: true, images: true },
+    });
+    publishedProducts = dbActiveProducts.filter((p) => !isDemoProduct(p.slug));
+    categories = await prisma.category.findMany({
+      select: { name: true, slug: true, updatedAt: true },
+    });
+    console.log(`[SEO] Retrieved ${publishedProducts.length} published products and ${categories.length} categories from PostgreSQL.`);
+  } catch (error) {
+    console.warn('[SEO] Database unavailable during SEO build, falling back to static routes:', error);
+  } finally {
+    await prisma.$disconnect().catch(() => {});
+  }
+
+  const categoryEntries = categories.map((cat) => ({
+    loc: `${siteUrl}/shop?category=${encodeURIComponent(cat.slug || cat.name)}`,
+    lastmod: cat.updatedAt ? new Date(cat.updatedAt).toISOString().split('T')[0] : undefined,
+    changefreq: 'weekly',
+    priority: '0.8',
+  }));
+
+  const productEntries = publishedProducts.map((prod) => ({
+    loc: `${siteUrl}/product/${encodeURIComponent(prod.slug)}`,
+    lastmod: prod.updatedAt ? new Date(prod.updatedAt).toISOString().split('T')[0] : undefined,
+    changefreq: 'weekly',
+    priority: '0.8',
+  }));
+
+  const allUrls = [...staticRoutes, ...categoryEntries, ...productEntries];
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allUrls
   .map(
-    (route) => `  <url>
-    <loc>${escapeXml(`${siteUrl}${route}`)}</loc>
-    <changefreq>${route.startsWith('/product/') ? 'weekly' : 'monthly'}</changefreq>
-    <priority>${route === '/' ? '1.0' : route.startsWith('/product/') ? '0.8' : '0.6'}</priority>
+    (entry) => `  <url>
+    <loc>${escapeXml(entry.loc)}</loc>${entry.lastmod ? `\n    <lastmod>${entry.lastmod}</lastmod>` : ''}
+    <changefreq>${entry.changefreq}</changefreq>
+    <priority>${entry.priority}</priority>
   </url>`
   )
-  .join('\n')}\n</urlset>\n`;
+  .join('\n')}
+</urlset>\n`;
 
-const imageSitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${INITIAL_PRODUCTS.map(
-  (product) => `  <url>
-    <loc>${escapeXml(`${siteUrl}/product/${product.slug}`)}</loc>
-${product.images
-  .slice(0, 3)
+  const imageSitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${publishedProducts
+  .map((p) => {
+    const images = Array.isArray(p.images) ? (p.images as string[]) : [];
+    if (images.length === 0) return '';
+    return `  <url>
+    <loc>${escapeXml(`${siteUrl}/product/${encodeURIComponent(p.slug)}`)}</loc>
+${images
+  .slice(0, 5)
   .map(
-    (image) => `    <image:image>
-      <image:loc>${escapeXml(image)}</image:loc>
-      <image:title>${escapeXml(product.name)}</image:title>
+    (img) => `    <image:image>
+      <image:loc>${escapeXml(img.startsWith('http') ? img : `${siteUrl}${img.startsWith('/') ? '' : '/'}${img}`)}</image:loc>
+      <image:title>${escapeXml(p.name)}</image:title>
     </image:image>`
   )
   .join('\n')}
-  </url>`
-).join('\n')}\n</urlset>\n`;
+  </url>`;
+  })
+  .filter(Boolean)
+  .join('\n')}
+</urlset>\n`;
 
-const robots = `User-agent: *
+  const robots = `User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /checkout
@@ -61,10 +107,21 @@ Sitemap: ${siteUrl}/sitemap.xml
 Sitemap: ${siteUrl}/image-sitemap.xml
 `;
 
-fs.mkdirSync(publicDir, { recursive: true });
-fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemap);
-fs.writeFileSync(path.join(publicDir, 'image-sitemap.xml'), imageSitemap);
-fs.writeFileSync(path.join(publicDir, 'robots.txt'), robots);
+  const targetDirs = [path.resolve('dist'), path.resolve('public')];
+  for (const dir of targetDirs) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'sitemap.xml'), sitemap);
+      fs.writeFileSync(path.join(dir, 'image-sitemap.xml'), imageSitemap);
+      fs.writeFileSync(path.join(dir, 'robots.txt'), robots);
+    } catch {
+      // Continue if one directory cannot be accessed
+    }
+  }
 
-console.log(`Generated SEO files for ${siteUrl}`);
+  console.log(`[SEO] Generated SEO files for ${siteUrl} in dist/ and public/ (Total URLs: ${allUrls.length})`);
+}
 
+generateSEO().catch((err) => {
+  console.error('[SEO] Failed to generate SEO files:', err);
+});

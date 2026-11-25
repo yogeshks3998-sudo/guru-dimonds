@@ -3,7 +3,7 @@ import { prisma } from '../config/db';
 import { asyncHandler, HttpError } from '../utils/http';
 import { toAddressData, toCustomerData, toOrderCreateData, toOrderResponse } from '../utils/serializers';
 import type { Customer, Order } from '../../../src/types';
-import { requireRole } from '../middleware/auth';
+import { requireRole, requireCustomer, extractAuthToken } from '../middleware/auth';
 import { canTransitionOrderStatus } from '../../../src/utils/orderLifecycle';
 import type { OrderStatus } from '../../../src/types';
 
@@ -29,14 +29,145 @@ ordersRouter.get(
 );
 
 ordersRouter.get(
-  '/orders/:id',
-  requireRole('OWNER', 'ORDER_MANAGER', 'FINANCE'),
+  '/orders/my-orders',
+  requireCustomer,
   asyncHandler(async (req, res) => {
+    const customerId = req.auth!.sub;
+    const page = Math.max(1, Number(req.query.page || 1));
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit || 20)));
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where: { customerId },
+        include: orderInclude,
+        orderBy: { placedAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.order.count({ where: { customerId } }),
+    ]);
+
+    res.json({
+      orders: orders.map((order) => toOrderResponse(order as unknown as Order)),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  })
+);
+
+// Rate limiter for tracking lookups: max 20 requests per 5 minutes per IP to block enumeration attacks
+const trackingRateLimiter = new Map<string, number[]>();
+const TRACK_WINDOW_MS = 5 * 60 * 1000;
+const MAX_TRACK_PER_WINDOW = 20;
+
+const checkTrackingRateLimit = (ip: string) => {
+  const now = Date.now();
+  const timestamps = (trackingRateLimiter.get(ip) || []).filter((ts) => now - ts < TRACK_WINDOW_MS);
+  if (timestamps.length >= MAX_TRACK_PER_WINDOW) {
+    throw new HttpError(429, 'Too many tracking requests. Please try again after a few minutes.');
+  }
+  timestamps.push(now);
+  trackingRateLimiter.set(ip, timestamps);
+};
+
+ordersRouter.get(
+  '/orders/track/:reference',
+  asyncHandler(async (req, res) => {
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    checkTrackingRateLimit(clientIp);
+
+    const reference = String(req.params.reference || '').trim();
+    if (!reference || reference.length < 3) {
+      throw new HttpError(400, 'Please enter a valid order number or tracking number');
+    }
+
     const order = await prisma.order.findFirst({
-      where: { OR: [{ id: String(req.params.id) }, { orderNumber: String(req.params.id) }] },
+      where: {
+        OR: [
+          { orderNumber: { equals: reference, mode: 'insensitive' } },
+          { trackingNumber: { equals: reference, mode: 'insensitive' } },
+        ],
+      },
+      include: orderInclude,
+    });
+
+    if (!order) {
+      throw new HttpError(404, 'No shipment found matching the provided reference');
+    }
+
+    const auth = extractAuthToken(req);
+    const contact = req.query.contact ? String(req.query.contact).trim().toLowerCase() : '';
+
+    const isAdmin = auth?.type === 'ADMIN' && ['OWNER', 'ORDER_MANAGER', 'FINANCE', 'SUPER_ADMIN'].includes(auth.role || '');
+    const isOwnerCustomer = auth?.type === 'CUSTOMER' && order.customerId === auth.sub;
+
+    if (!isAdmin && !isOwnerCustomer && contact) {
+      const snap = order.customerSnapshot as any;
+      const ship = order.shippingAddress as any;
+      const customerEmail = String(snap?.email || '').toLowerCase();
+      const customerPhone = String(snap?.phone || '').replace(/\D/g, '');
+      const shipPhone = String(ship?.phone || '').replace(/\D/g, '');
+      const cleanContact = contact.replace(/\D/g, '');
+
+      const matches =
+        (contact.includes('@') && customerEmail === contact) ||
+        (cleanContact.length >= 7 && (customerPhone.endsWith(cleanContact) || shipPhone.endsWith(cleanContact)));
+
+      if (!matches) {
+        throw new HttpError(403, 'The contact details provided do not match the order record');
+      }
+    }
+
+    // Sanitize output strictly: Zero PII exposure
+    const safeTrackingData = {
+      orderNumber: order.orderNumber,
+      orderStatus: order.orderStatus,
+      courierPartner: order.courierPartner || 'BlueDart Air Express',
+      trackingNumber: order.trackingNumber || 'Pending Dispatch',
+      placedAt: order.placedAt instanceof Date ? order.placedAt.toISOString() : order.placedAt,
+      history: (order.history || []).map((step: any) => ({
+        status: step.status,
+        note: step.note,
+        timestamp: step.timestamp instanceof Date ? step.timestamp.toISOString() : step.timestamp,
+      })),
+      items: (order.items || []).map((item: any) => ({
+        productName: item.productName,
+        quantity: item.quantity,
+        image: item.image,
+      })),
+    };
+
+    res.json(safeTrackingData);
+  })
+);
+
+ordersRouter.get(
+  '/orders/:id',
+  asyncHandler(async (req, res) => {
+    const auth = extractAuthToken(req);
+    if (!auth) {
+      throw new HttpError(401, 'Authentication required');
+    }
+
+    const id = String(req.params.id);
+    const order = await prisma.order.findFirst({
+      where: { OR: [{ id }, { orderNumber: id }] },
       include: orderInclude,
     });
     if (!order) throw new HttpError(404, 'Order not found');
+
+    const isAdmin = auth.type === 'ADMIN' && ['OWNER', 'ORDER_MANAGER', 'FINANCE', 'SUPER_ADMIN'].includes(auth.role || '');
+    if (!isAdmin) {
+      if (auth.type !== 'CUSTOMER' || order.customerId !== auth.sub) {
+        throw new HttpError(403, 'You do not have permission to view this order');
+      }
+    }
+
     res.json(toOrderResponse(order as unknown as Order));
   })
 );
@@ -83,7 +214,22 @@ ordersRouter.post(
     const saved = await prisma.order.create({
       data: {
         ...toOrderCreateData(order),
-        items: { create: order.items as any },
+        items: {
+          create: (order.items || []).map(({ orderId: _orderId, ...item }: any) => ({
+            id: item.id,
+            productId: item.productId,
+            variantId: item.variantId || null,
+            productName: item.productName,
+            variantSku: item.variantSku || null,
+            variantDetails: item.variantDetails || null,
+            image: item.image,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            priceBreakdownSnapshot: item.priceBreakdownSnapshot,
+            customEngraving: item.customEngraving || null,
+          })),
+        },
         history: {
           create: order.history.map((step) => ({
             status: step.status,
@@ -114,6 +260,28 @@ ordersRouter.patch(
     if (!existing) throw new HttpError(404, 'Order not found');
     if (!canTransitionOrderStatus(existing.orderStatus as OrderStatus, status as OrderStatus)) {
       throw new HttpError(400, `Cannot transition order from ${existing.orderStatus} to ${status}`);
+    }
+
+    if (status === 'CANCELLED' && existing.orderStatus !== 'CANCELLED' && existing.paymentStatus === 'PAID') {
+      const fullOrder = await prisma.order.findUnique({ where: { id: existing.id }, include: { items: true } });
+      if (fullOrder?.items) {
+        for (const item of fullOrder.items) {
+          if (item.variantId) {
+            await prisma.productVariant.updateMany({
+              where: { id: item.variantId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+          await prisma.product.updateMany({
+            where: { id: item.productId },
+            data: { totalStock: { increment: item.quantity } },
+          });
+          await prisma.inventoryItem.updateMany({
+            where: { productId: item.productId, ...(item.variantId ? { variantId: item.variantId } : {}) },
+            data: { quantity: { increment: item.quantity } },
+          });
+        }
+      }
     }
 
     const saved = await prisma.order.update({

@@ -37,9 +37,9 @@ export const AdminCustomersPage: React.FC = () => {
         search: searchQuery,
         status: selectedStatus,
       });
-      setCustomers(apiCustomers && apiCustomers.length > 0 ? apiCustomers : INITIAL_CUSTOMERS);
+      setCustomers(apiCustomers || []);
     } catch {
-      setCustomers(INITIAL_CUSTOMERS);
+      setCustomers([]);
     } finally {
       setLoading(false);
     }

@@ -6,7 +6,7 @@ interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElemen
   alt: string;
 }
 
-const DEFAULT_JEWELLERY_FALLBACK = 'https://images.unsplash.com/photo-1611591475281-a120023a105f?auto=format&fit=crop&w=800&q=80';
+const DEFAULT_JEWELLERY_FALLBACK = '/images/product-placeholder.svg';
 
 export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,
@@ -33,6 +33,9 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
         if (!hasError) {
           setHasError(true);
           setImgSrc(fallbackSrc);
+        } else {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = DEFAULT_JEWELLERY_FALLBACK;
         }
         if (onError) {
           onError(e);

@@ -1,3 +1,4 @@
+import { canPurchaseProduct } from '../../../src/utils/supplierProducts';
 import { Router } from 'express';
 import { prisma } from '../config/db';
 import { requireCustomer } from '../middleware/auth';
@@ -32,7 +33,7 @@ cartRouter.post(
     const variantId = req.body.variantId ? String(req.body.variantId) : null;
     const quantity = Math.max(1, Number(req.body.quantity || 1));
     const product = await prisma.product.findUnique({ where: { id: productId }, include: { variants: true } });
-    if (!product || product.status !== 'ACTIVE') throw new HttpError(404, 'Product is not available');
+    if (!product || !canPurchaseProduct(product as any)) throw new HttpError(404, 'Product is not available');
     if (variantId && !product.variants.some((variant: any) => variant.id === variantId && variant.enabled)) {
       throw new HttpError(400, 'Selected variant is not available');
     }

@@ -20,6 +20,7 @@ import {
   X,
   UserCheck,
   Layers,
+  Sliders,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
