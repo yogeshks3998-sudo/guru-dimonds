@@ -89,6 +89,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   const primaryImg = product.images[0] || '/images/product-placeholder.svg';
   const secondaryImg = product.images[1] || primaryImg;
+  const hasSecondary = Boolean(product.images[1] && product.images[1] !== primaryImg);
 
   return (
     <div
@@ -99,13 +100,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     >
       {/* Product Image Area: 1:1 Aspect Ratio by default */}
       <div className={`relative ${imageAspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-square'} overflow-hidden bg-[#FFF9F0]`}>
+        {/* Main Product Image (1st Image) */}
         <ImageWithFallback
-          src={isHovered ? secondaryImg : primaryImg}
-          fallbackSrc={primaryImg}
+          src={primaryImg}
+          fallbackSrc="/images/product-placeholder.svg"
           alt={product.name}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          className={`w-full h-full object-cover object-center transition-all duration-500 group-hover:scale-105 ${
+            hasSecondary ? 'group-hover:opacity-0' : ''
+          }`}
           loading="lazy"
         />
+
+        {/* Hover Secondary Image (2nd Image) */}
+        {hasSecondary && (
+          <ImageWithFallback
+            src={secondaryImg}
+            fallbackSrc={primaryImg}
+            alt={`${product.name} - Alternate View`}
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 pointer-events-none"
+            loading="lazy"
+          />
+        )}
 
         {/* Single Primary Badge */}
         {primaryBadge && (

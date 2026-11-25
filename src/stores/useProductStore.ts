@@ -43,8 +43,9 @@ interface ProductState {
   duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
-const STORAGE_KEY = 'guru_diamonds_products_v8';
+const STORAGE_KEY = 'guru_diamonds_products_v9';
 const LEGACY_STORAGE_KEYS = [
+  'guru_diamonds_products_v8',
   'guru_diamonds_products_v7',
   'guru_diamonds_products_v6',
   'guru_diamonds_products_v5',
