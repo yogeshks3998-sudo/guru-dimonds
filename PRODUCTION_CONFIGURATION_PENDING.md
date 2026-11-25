@@ -132,3 +132,4 @@ Once environment variables are set and the service is deployed:
 2. Complete payment via UPI in an external browser.
 3. Confirm immediate transition to `/order-success` and verify order status moves to `PROCESSING` with `PAID` in admin panel.
 4. Issue a full refund from Razorpay Dashboard to confirm reverse accounting.
+

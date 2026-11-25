@@ -1,6 +1,7 @@
 import { Product } from '../types';
 import { SUPPLIER_PRODUCT_DRAFTS } from './supplierProductBatches';
 import { PRODUCT_MEDIA_MAP } from './productMediaMap';
+import { ENQUIRY_PRODUCTS } from './enquiryProducts';
 
 /**
  * Guru Diamonds Active Catalogue
@@ -68,4 +69,15 @@ export const INITIAL_PRODUCTS: Product[] = SUPPLIER_PRODUCT_DRAFTS.map((p) => {
   };
 });
 
-export const mockProducts = INITIAL_PRODUCTS;
+/**
+ * Complete Catalogue:
+ * - 16 active direct-purchase supplier products with certified pricing & authentic media
+ * - 44 handcrafted catalogue products available on direct Call to Order / Enquiry
+ */
+export const ALL_CATALOGUE_PRODUCTS: Product[] = [
+  ...INITIAL_PRODUCTS,
+  ...ENQUIRY_PRODUCTS,
+];
+
+export const mockProducts = ALL_CATALOGUE_PRODUCTS;
+

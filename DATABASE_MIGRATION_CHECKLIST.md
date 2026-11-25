@@ -158,3 +158,4 @@ psql "$DATABASE_URL" -c 'DROP TABLE IF EXISTS "Inquiry" CASCADE;'
 psql "$DATABASE_URL" -c 'DELETE FROM "_prisma_migrations" WHERE migration_name = "20260815000000_inquiry_system";'
 ```
 *(Because changes are strictly additive, existing application code on `main` can operate normally even if the `Inquiry` table remains in the database).*
+

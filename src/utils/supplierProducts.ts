@@ -5,68 +5,14 @@ export const RETAINED_SUPPLIER_IDS = new Set(SUPPLIER_PRODUCT_DRAFTS.map((p) => 
 export const RETAINED_SUPPLIER_SKUS = new Set(SUPPLIER_PRODUCT_DRAFTS.map((p) => p.sku));
 export const RETAINED_SUPPLIER_SLUGS = new Set(SUPPLIER_PRODUCT_DRAFTS.map((p) => p.slug));
 
-export const DEMO_PRODUCT_SLUGS = new Set([
-  'royal-gomedhika-gemstone-ring',
-  'imperial-emerald-cut-925-silver-ring',
-  'solitaire-diamond-illusion-setting-band',
-  'classic-floral-diamond-cluster-silver-ring',
-  'princess-cut-statement-silver-ring',
-  'vintage-filigree-navarathna-cocktail-ring',
-  'oval-cut-royal-blue-sapphire-silver-band',
-  'men-s-bold-onyx-diamond-silver-signet-ring',
-  'delicate-twin-heart-pav-diamond-ring',
-  'crown-imperial-halo-diamond-silver-ring',
-  'infinity-twist-pav-sterling-silver-ring',
-  'regal-ruby-diamond-silver-cocktail-ring',
-  'pear-cut-tear-drop-solitaire-silver-ring',
-  'artisan-textured-dual-tone-silver-ring',
-  'traditional-temple-navarathna-drop-earrings',
-  'sparkling-diamond-halo-stud-earrings',
-  'royal-jhumki-with-hanging-pearl-bells',
-  'classic-round-brilliant-solitaire-studs',
-  'grand-chandbali-filigree-silver-earrings',
-  'modern-geometric-drop-dangle-earrings',
-  'floral-cluster-diamond-chandelier-earrings',
-  'emerald-diamond-tiered-drop-earrings',
-  'antique-oxidized-heritage-silver-jhumkas',
-  'delicate-heart-drop-diamond-huggies',
-  'starburst-pav-diamond-silver-studs',
-  'contemporary-loop-huggie-silver-earrings',
-  'sacred-shree-ganesha-silver-temple-pendant',
-  'divine-omkara-diamond-studded-silver-pendant',
-  'royal-emerald-halo-solitaire-silver-pendant',
-  'veera-hanuman-kavach-silver-sacred-amulet',
-  'navarathna-cosmic-mandala-silver-locket',
-  'brilliant-solitaire-diamond-illusion-pendant',
-  'peacock-motif-enamel-925-silver-pendant',
-  'sacred-trishul-damru-silver-mahadev-pendant',
-  'classic-tear-drop-diamond-halo-silver-pendant',
-  'lord-shiva-medallion-temple-silver-pendant',
-  'blossom-floral-cluster-silver-diamond-pendant',
-  'infinity-heart-duo-diamond-silver-pendant',
-  'astrological-ruby-sun-surya-yantra-pendant',
-  'vintage-filigree-oval-locket-silver-pendant',
-  'grand-bridal-diamond-gemstone-silver-choker',
-  'solid-925-sterling-silver-royal-link-chain',
-  'traditional-antique-temple-nakshi-long-haram',
-  'cascading-pav-diamond-silver-statement-necklace',
-  'heavy-franco-curb-silver-men-s-link-chain',
-  'contemporary-layered-diamond-y-drop-necklace',
-  'regal-navarathna-silver-statement-collar',
-  'divine-lord-ganesha-idol-handcrafted-silver-finish',
-  'sacred-goddess-lakshmi-idol-wealth-prosperity',
-  'radha-krishna-eternal-divine-brass-silver-idol',
-  'lord-shiva-in-dhyana-mudra-meditation-statue',
-  'lord-venkateshwara-balaji-sacred-pooja-vigraha',
-  'sacred-kamadhenu-cow-calf-prosperity-idol',
-  'panchamukhi-veera-hanuman-powerful-idol',
-  'goddess-saraswati-idol-wisdom-fine-arts',
-  'sacred-shivling-with-nandi-shrine-temple-idol',
-]);
+export const DEMO_PRODUCT_SLUGS = new Set<string>();
 
 export function isDemoProduct(productOrIdentifier: Product | string | { id?: string; sku?: string; slug?: string }): boolean {
   if (typeof productOrIdentifier === 'string') {
     const s = productOrIdentifier.trim();
+    if (s.startsWith('prod-enquiry-') || s.startsWith('GURU-ENQ-')) {
+      return false;
+    }
     if (RETAINED_SUPPLIER_IDS.has(s) || RETAINED_SUPPLIER_SKUS.has(s) || RETAINED_SUPPLIER_SLUGS.has(s)) {
       return false;
     }
@@ -77,6 +23,9 @@ export function isDemoProduct(productOrIdentifier: Product | string | { id?: str
   }
 
   const p = productOrIdentifier;
+  if (p.id?.startsWith('prod-enquiry-') || p.sku?.startsWith('GURU-ENQ-')) {
+    return false;
+  }
   if ((p.id && RETAINED_SUPPLIER_IDS.has(p.id)) || (p.sku && RETAINED_SUPPLIER_SKUS.has(p.sku)) || (p.slug && RETAINED_SUPPLIER_SLUGS.has(p.slug))) {
     return false;
   }
@@ -124,5 +73,6 @@ export function supplierPublicationError(product: Product): string | null {
 }
 export function canPurchaseProduct(product: Product): boolean {
   return product.status === 'ACTIVE' && product.enabled !== false
+    && product.pricingMode !== 'ENQUIRY'
     && !supplierPublicationError(product) && product.supplierReview?.purchaseMode !== 'ENQUIRY';
 }

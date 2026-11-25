@@ -19,7 +19,7 @@ export interface MetalRate {
   updatedAt: string;
 }
 
-export type PricingMode = 'FIXED' | 'RATE_LINKED' | 'FORMULA' | 'MADE_TO_ORDER';
+export type PricingMode = 'FIXED' | 'RATE_LINKED' | 'FORMULA' | 'MADE_TO_ORDER' | 'ENQUIRY';
 
 export interface GemstoneInfo {
   type: string; // Emerald, Ruby, Sapphire, Diamond, Sphatika, Pearl, Rudraksha, etc.
@@ -156,7 +156,7 @@ export interface Product {
   codAvailable: boolean;
 
   // Marketing & Metadata
-  badges: ('NEW' | 'BEST_SELLER' | 'HALLMARKED' | 'CERTIFIED' | 'SALE' | 'LIMITED' | 'MADE_TO_ORDER')[];
+  badges: ('NEW' | 'BEST_SELLER' | 'HALLMARKED' | 'CERTIFIED' | 'SALE' | 'LIMITED' | 'MADE_TO_ORDER' | 'CALL_TO_ORDER')[];
   rating: number;
   reviewCount: number;
   status: 'DRAFT' | 'ACTIVE' | 'SCHEDULED' | 'HIDDEN' | 'ARCHIVED';

@@ -15,7 +15,7 @@ if (fs.existsSync(fixPath)) {
 }
 
 const sources = [
-  { id: 'prod-supplier-silver-20261117-01', src: 'Products/Pendants/Lord Ayyappa Rudraksha Silver Pendant', dest: 'public/products/spiritual-maalas/ayyappa-mala', urlBase: '/products/spiritual-maalas/ayyappa-mala', price: 8500 },
+  { id: 'prod-supplier-silver-20261117-01', src: 'Products/Ayyappa Silver Tulasi & Rudraksha Mala', dest: 'public/products/spiritual-maalas/ayyappa-mala', urlBase: '/products/spiritual-maalas/ayyappa-mala', price: 8500 },
   { id: 'prod-supplier-silver-20261117-02', src: 'Products/Rings/Auspicious Gomedha Hessonite Silver Ring', dest: 'public/products/Rings/gomedhika', urlBase: '/products/Rings/gomedhika', price: 5230 },
   { id: 'prod-supplier-silver-20261117-03', src: 'Products/Rings/Mens Yellow Sapphire and Ruby Dual Ring', dest: 'public/products/Rings/sapphire-ruby', urlBase: '/products/Rings/sapphire-ruby', price: 7290 },
   { id: 'prod-supplier-silver-20261117-04', src: 'Products/Rings/Natural Yellow Sapphire Classic Ring', dest: 'public/products/Rings/yellow-sapphire-oval-3ct', urlBase: '/products/Rings/yellow-sapphire-oval-3ct', price: 5266 },

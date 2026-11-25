@@ -121,3 +121,4 @@
    - **CONFIRMED:** Neither `.env` nor `.env.*` files are tracked or staged.
 3. **User Drafts:**
    - **CONFIRMED:** All user draft ring images under `Products/Rings/` and uncommitted local files remain untouched in the working tree.
+

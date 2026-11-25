@@ -93,10 +93,13 @@ export const toProductResponse = (product: ProductRecord): Product => {
   } as Product;
 };
 
-export const toCategoryData = (category: Category): Record<string, any> => ({
-  ...category,
-  subcategories: category.subcategories,
-});
+export const toCategoryData = (category: Category): Record<string, any> => {
+  const { enabled, ...rest } = category;
+  return {
+    ...rest,
+    subcategories: category.subcategories,
+  };
+};
 
 export const toCollectionData = (collection: Collection): Record<string, any> => ({
   ...collection,

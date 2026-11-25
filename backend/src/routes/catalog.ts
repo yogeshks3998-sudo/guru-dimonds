@@ -5,9 +5,10 @@ import { toCategoryData, toCollectionData, toProductCreateData, toProductRespons
 import type { Category, Collection, Product } from '../../../src/types';
 import { requireRole } from '../middleware/auth';
 import { supplierPublicationError, isDemoProduct } from '../../../src/utils/supplierProducts';
-import { isCanonicalCategory } from '../../../src/utils/productFilters';
+import { isCanonicalCategory, productMatchesCategory } from '../../../src/utils/productFilters';
 import { SUPPLIER_PRODUCT_DRAFTS } from '../../../src/data/supplierProductBatches';
-import { INITIAL_PRODUCTS } from '../../../src/data/mockProducts';
+import { INITIAL_PRODUCTS, ALL_CATALOGUE_PRODUCTS } from '../../../src/data/mockProducts';
+import { ENQUIRY_PRODUCTS } from '../../../src/data/enquiryProducts';
 
 function validateSupplierProduct(product: Product, previous?: Product) {
   const original = SUPPLIER_PRODUCT_DRAFTS.find((p) => p.id === product.id || p.sku === product.sku);
@@ -136,25 +137,32 @@ catalogRouter.get(
       .filter((p) => !isDemoProduct(p.id) && !isDemoProduct(p.sku) && p.status !== 'ARCHIVED')
       .map((product) => toProductResponse(product as unknown as Product));
 
-    if (sanitized.length === 0) {
-      let filtered = [...INITIAL_PRODUCTS];
-      if (category) {
-        filtered = filtered.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+    // If database has no active products, start from the 16 active supplier products
+    const baseProducts = sanitized.length > 0 ? sanitized : INITIAL_PRODUCTS;
+
+    // Ensure all 44 authentic enquiry products are included in the catalogue
+    const existingIds = new Set(baseProducts.map((p) => p.id));
+    const allProducts = [...baseProducts];
+    for (const ep of ENQUIRY_PRODUCTS) {
+      if (!existingIds.has(ep.id)) {
+        allProducts.push(ep);
       }
-      if (search) {
-        const q = search.toLowerCase();
-        filtered = filtered.filter(
-          (p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
-        );
-      }
-      if (status) {
-        filtered = filtered.filter((p) => p.status === status);
-      }
-      res.json(filtered);
-      return;
     }
 
-    res.json(sanitized);
+    let filtered = allProducts;
+    if (category) {
+      filtered = filtered.filter((p) => productMatchesCategory(p, category));
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(
+        (p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q))
+      );
+    }
+    if (status) {
+      filtered = filtered.filter((p) => p.status === status);
+    }
+    res.json(filtered);
   })
 );
 
@@ -184,7 +192,7 @@ catalogRouter.get(
     }
 
     if (!product || isDemoProduct(product.id) || isDemoProduct(product.sku) || product.status === 'ARCHIVED') {
-      const fallback = INITIAL_PRODUCTS.find((p) => p.slug === slug);
+      const fallback = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug === slug);
       if (fallback) {
         res.json(fallback);
         return;

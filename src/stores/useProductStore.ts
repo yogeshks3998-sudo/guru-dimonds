@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Product } from '../types';
-import { INITIAL_PRODUCTS } from '../data/mockProducts';
+import { INITIAL_PRODUCTS, ALL_CATALOGUE_PRODUCTS } from '../data/mockProducts';
 import { SUPPLIER_PRODUCT_DRAFTS } from '../data/supplierProductBatches';
 import {
   supplierPublicationError,
@@ -43,8 +43,9 @@ interface ProductState {
   duplicateProduct: (id: string) => Promise<Product | null>;
 }
 
-const STORAGE_KEY = 'guru_diamonds_products_v9';
+const STORAGE_KEY = 'guru_diamonds_products_v10';
 const LEGACY_STORAGE_KEYS = [
+  'guru_diamonds_products_v9',
   'guru_diamonds_products_v8',
   'guru_diamonds_products_v7',
   'guru_diamonds_products_v6',
@@ -67,14 +68,14 @@ function loadLocalProducts(): Product[] {
 
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      saveLocalProducts(INITIAL_PRODUCTS);
-      return INITIAL_PRODUCTS;
+      saveLocalProducts(ALL_CATALOGUE_PRODUCTS);
+      return ALL_CATALOGUE_PRODUCTS;
     }
 
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
       const cleanProducts = filterRetainedProducts(parsed);
-      const initialMap = new Map(INITIAL_PRODUCTS.map((p) => [p.id, p]));
+      const initialMap = new Map(ALL_CATALOGUE_PRODUCTS.map((p) => [p.id, p]));
 
       // Merge cached products while ensuring real images, active status, and pricing are preserved
       const merged: Product[] = cleanProducts.map((p) => {
@@ -99,8 +100,8 @@ function loadLocalProducts(): Product[] {
         return p;
       });
 
-      // Add any missing products from INITIAL_PRODUCTS
-      for (const init of INITIAL_PRODUCTS) {
+      // Add any missing products from ALL_CATALOGUE_PRODUCTS
+      for (const init of ALL_CATALOGUE_PRODUCTS) {
         if (!merged.some((m) => m.id === init.id)) {
           merged.push(init);
         }
@@ -112,8 +113,8 @@ function loadLocalProducts(): Product[] {
   } catch {
     // ignore parse error
   }
-  saveLocalProducts(INITIAL_PRODUCTS);
-  return INITIAL_PRODUCTS;
+  saveLocalProducts(ALL_CATALOGUE_PRODUCTS);
+  return ALL_CATALOGUE_PRODUCTS;
 }
 
 function saveLocalProducts(prods: Product[]): void {
@@ -165,11 +166,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const rawServerProducts = await productApi.listProducts();
       const serverProducts = filterRetainedProducts(rawServerProducts || []);
       if (serverProducts && serverProducts.length > 0) {
-        const initialMap = new Map(INITIAL_PRODUCTS.map((p) => [p.id, p]));
+        const initialMap = new Map(ALL_CATALOGUE_PRODUCTS.map((p) => [p.id, p]));
         const local = get().products;
         const localMap = new Map(local.map((p) => [p.id, p]));
 
-        const merged = serverProducts.map((sp) => {
+        const merged: Product[] = serverProducts.map((sp) => {
           const matched = localMap.get(sp.id);
           const init = initialMap.get(sp.id);
           const status = matched?.status && matched.status !== 'DRAFT' ? matched.status : sp.status;
@@ -187,15 +188,22 @@ export const useProductStore = create<ProductState>((set, get) => ({
           };
         });
 
+        // Ensure all catalogue products are present
+        for (const init of ALL_CATALOGUE_PRODUCTS) {
+          if (!merged.some((m) => m.id === init.id)) {
+            merged.push(init);
+          }
+        }
+
         saveLocalProducts(merged);
         set({ products: merged, loading: false });
       } else {
-        const fallback = get().products.length ? filterRetainedProducts(get().products) : INITIAL_PRODUCTS;
+        const fallback = get().products.length ? filterRetainedProducts(get().products) : ALL_CATALOGUE_PRODUCTS;
         saveLocalProducts(fallback);
         set({ products: fallback, loading: false });
       }
     } catch (error) {
-      const fallback = get().products.length ? filterRetainedProducts(get().products) : INITIAL_PRODUCTS;
+      const fallback = get().products.length ? filterRetainedProducts(get().products) : ALL_CATALOGUE_PRODUCTS;
       set({
         products: fallback,
         loading: false,

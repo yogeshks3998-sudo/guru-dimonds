@@ -277,25 +277,27 @@ export const ShopPage: React.FC = () => {
       }
 
       // 10. Live Price Range
-      const currentRate = getRate(product.metalType, product.metalPurity);
-      const calcPrice = calculateJewelleryPrice({
-        pricingMode: product.pricingMode,
-        fixedPrice: product.fixedPrice,
-        metalType: product.metalType,
-        purity: product.metalPurity,
-        netWeightGrams: product.netWeightGrams,
-        ratePerGram: currentRate,
-        makingChargeType: product.makingChargeType,
-        makingChargeValue: product.makingChargeValue,
-        wastagePercentage: product.wastagePercentage,
-        gemstones: product.gemstones,
-        certificationCharge: product.certificationCharge,
-        packagingCharge: product.packagingCharge,
-        gstPercentage: product.gstPercentage,
-      }).finalPrice;
+      if (product.pricingMode !== 'ENQUIRY') {
+        const currentRate = getRate(product.metalType, product.metalPurity);
+        const calcPrice = calculateJewelleryPrice({
+          pricingMode: product.pricingMode,
+          fixedPrice: product.fixedPrice,
+          metalType: product.metalType,
+          purity: product.metalPurity,
+          netWeightGrams: product.netWeightGrams,
+          ratePerGram: currentRate,
+          makingChargeType: product.makingChargeType,
+          makingChargeValue: product.makingChargeValue,
+          wastagePercentage: product.wastagePercentage,
+          gemstones: product.gemstones,
+          certificationCharge: product.certificationCharge,
+          packagingCharge: product.packagingCharge,
+          gstPercentage: product.gstPercentage,
+        }).finalPrice;
 
-      if (calcPrice < priceRange[0] || calcPrice > priceRange[1]) {
-        return false;
+        if (calcPrice < priceRange[0] || calcPrice > priceRange[1]) {
+          return false;
+        }
       }
 
       return true;

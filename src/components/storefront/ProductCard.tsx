@@ -10,7 +10,7 @@ import { formatINR } from '../../utils/formatters';
 import { navigateTo } from '../../utils/navigation';
 import { Badge } from '../ui/Badge';
 import { ImageWithFallback } from '../ui/ImageWithFallback';
-import { Heart, Star, Eye, ShoppingBag } from 'lucide-react';
+import { Heart, Star, Eye, ShoppingBag, Phone } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -62,6 +62,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   // Single most relevant badge to keep card clean and uncluttered
   const primaryBadge = (() => {
+    if (product.pricingMode === 'ENQUIRY' || product.badges?.includes('CALL_TO_ORDER')) {
+      return { label: 'CALL TO ORDER', variant: 'gold' as const };
+    }
     if (product.badges?.includes('BEST_SELLER')) {
       return { label: 'BEST SELLER', variant: 'gold' as const };
     }
@@ -188,24 +191,47 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Price & Action */}
         <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-[#E9D9C5] flex items-center justify-between gap-1">
           <div className="min-w-0">
-            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap min-h-[1.25rem] sm:min-h-[1.5rem]">
-              <span className="text-xs sm:text-base font-bold text-[#7A1822]">{product.supplierReview ? 'Price on enquiry' : formatINR(finalPrice)}</span>
-              {compareAt && compareAt > finalPrice && (
-                <span className="text-[10px] sm:text-xs text-[#796A65] line-through">{formatINR(compareAt)}</span>
-              )}
-            </div>
-            <span className="text-[9px] sm:text-[10px] text-[#2E7D5B] font-semibold block truncate">{product.supplierReview ? 'GST pending confirmation' : `${product.gstPercentage}% GST Included`}</span>
+            {product.pricingMode === 'ENQUIRY' ? (
+              <>
+                <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap min-h-[1.25rem] sm:min-h-[1.5rem]">
+                  <span className="text-xs sm:text-sm font-bold text-[#7A1822]">Contact for Price / Order</span>
+                </div>
+                <span className="text-[9px] sm:text-[10px] text-[#B8893D] font-semibold block truncate">Direct Artisan Consultation</span>
+              </>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap min-h-[1.25rem] sm:min-h-[1.5rem]">
+                  <span className="text-xs sm:text-base font-bold text-[#7A1822]">{product.supplierReview ? 'Price on enquiry' : formatINR(finalPrice)}</span>
+                  {compareAt && compareAt > finalPrice && (
+                    <span className="text-[10px] sm:text-xs text-[#796A65] line-through">{formatINR(compareAt)}</span>
+                  )}
+                </div>
+                <span className="text-[9px] sm:text-[10px] text-[#2E7D5B] font-semibold block truncate">{product.supplierReview ? 'GST pending confirmation' : `${product.gstPercentage}% GST Included`}</span>
+              </>
+            )}
           </div>
 
-          <button
-            disabled={!canPurchaseProduct(product)}
-            onClick={handleAddToCart}
-            className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0 cursor-pointer"
-            aria-label="Add to cart"
-            title="Add to shopping bag"
-          >
-            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </button>
+          {product.pricingMode === 'ENQUIRY' ? (
+            <a
+              href="tel:+917899125449"
+              onClick={(e) => e.stopPropagation()}
+              className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group/btn"
+              aria-label="Call to order"
+              title="Call to Order: +91 78991 25449"
+            >
+              <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#B8893D] group-hover/btn:text-[#FFF9F0]" />
+            </a>
+          ) : (
+            <button
+              disabled={!canPurchaseProduct(product)}
+              onClick={handleAddToCart}
+              className="p-1.5 sm:p-2.5 bg-[#FFF9F0] hover:bg-[#7A1822] text-[#7A1822] hover:text-[#FFF9F0] border border-[#E9D9C5] hover:border-[#7A1822] rounded-lg sm:rounded-xl transition-all shadow-xs shrink-0 cursor-pointer"
+              aria-label="Add to cart"
+              title="Add to shopping bag"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>
